@@ -1,0 +1,145 @@
+---
+
+service: linz-qgis-s3-plugin-repo
+
+plugins:
+  - serverless-s3-deploy
+  - serverless-plugin-aws-alerts
+
+provider:
+  name: aws
+  runtime: python3.7
+
+# Overwrite defaults here
+  stage: dev
+  region: ap-southeast-2
+
+
+# Define function environment variables here
+  environment:
+    STAGING_BUCKET_NAME: ${self:custom.bucket_base_name}-staging
+    REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
+
+custom:
+# Add folders to bucket
+  bucket_base_name: "linz-qgis-s3-plugin-repo-test" #${sls:instanceId}
+  assets:
+    auto: true
+    targets:
+      - bucket: ${self:custom.bucket_base_name}-staging
+        prefix: prd
+        files:
+          - source: assets/
+            globs: '**/*.xsl'
+      - bucket: ${self:custom.bucket_base_name}-staging
+        prefix: dev
+        files:
+          - source: assets/
+            globs: '**/*.xsl'
+      - bucket: ${self:custom.bucket_base_name}-staging
+        prefix: test
+        files:
+          - source: assets/
+            globs: '**/*.xsl'
+# TODO
+  # alerts:
+  #   stages:
+  #     - production
+  #   topics:
+  #     alarm:
+  #       topic: ${self:service}-production-alerts-alarm
+  #       notifications:
+  #         - protocol: email
+  #           endpoint: splanzer@gmail.com # Change this to your email address
+  #   alarms:
+  #     - functionErrors
+
+# Lambda Function
+functions:
+  Update:
+    handler: handler.lambda_handler
+    environmnet:
+      STAGING_BUCKET_NAME: ${self:custom.bucket_base_name}-staging
+      REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
+# CloudFormation resource templates
+resources:
+  Resources:
+    StagingBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket_base_name}-staging
+        AccessControl: PublicRead #TODO Staging needs to be private
+        NotificationConfiguration:
+          LambdaConfigurations:
+            - Event: s3:ObjectCreated:*
+              Function: 
+                'Fn::GetAtt':
+                - UpdateLambdaFunction
+                - Arn
+              Filter:
+                S3Key:
+                  Rules:
+                  - Name: suffix
+                    Value: .zip
+    ProcessingLambdaPermission:
+      DependsOn:
+        - UpdateLambdaFunction
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName:
+          "Fn::GetAtt": [ UpdateLambdaFunction, Arn ]
+        Action: "lambda:InvokeFunction"
+        Principal: "s3.amazonaws.com"
+        SourceArn: "arn:aws:s3:::${self:custom.bucket_base_name}-staging"
+# Configure Bucket Ploicy 
+    StagingBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref StagingBucket
+        PolicyDocument:
+          Id: StagingBucketPolicy
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PrivateObjPutObjDeleteBucketList
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - 's3:DeleteObject'
+                - 's3:PutObject'
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "Ref" : "StagingBucket"
+                    - '/*'
+# Configure Bucket Ploicy 
+    RepoBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket_base_name}
+        AccessControl: PublicRead
+    RepoBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref RepoBucket
+        PolicyDocument:
+          Id: RepoBucketPolicy
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PublicGetObjListBucket
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - "s3:*"
+                #- "s3:GetObject"
+                #- "s3:ListBucket"
+              Resource:
+                - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "Ref" : "RepoBucket"
+                    - '/*'
+                - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "Ref" : "RepoBucket"
