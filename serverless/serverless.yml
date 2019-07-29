@@ -22,7 +22,7 @@ provider:
 
 custom:
 # Add folders to bucket
-  bucket_base_name: "linz-qgis-s3-plugin-repo-test" #${sls:instanceId}
+  bucket_base_name: "qgis-plugin-repository"
   assets:
     auto: true
     targets:

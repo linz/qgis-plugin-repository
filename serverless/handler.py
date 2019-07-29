@@ -1,7 +1,6 @@
-import boto3, botocore, logging, zipfile, re, os, configparser, io, datetime
+import boto3, botocore, logging, zipfile, re, os, configparser, io, datetime, json
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-import json #temp
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -10,8 +9,8 @@ S3_RESOURCE_REPO = boto3.resource('s3')
 s3_RESOURCE_STAGE = boto3.resource('s3')
 S3_CLIENT = boto3.client('s3')
 
-# Name of bucket that is the plugin repository 
 TEMP_FOLDER = '/tmp/'
+
 # as per https://docs.qgis.org/3.4/en/docs/pyqgis_developer_cookbook
 #            /plugins/plugins.html#plugin-metadata-table
 REQUIRED_METADATA = [
@@ -30,24 +29,34 @@ def lambda_handler(event, context):
     Entry Method
     '''
     
-    # Event data
-    print(event)
+    # Log data
+    logger.info(event)
     record = event['Records'][0]
-    modified_s3_obj_key = record['s3']['object']['key']
-    #version - either test, dev, prd
-    version, filename = os.path.split(modified_s3_obj_key)
+    event_s3_obj_key = record['s3']['object']['key']
+    
+    #version - either test, dev, prd (as per bucket folders)
+    version, filename = os.path.split(event_s3_obj_key)
     event_type = record['eventName']
 
-    # Reference to bucket objects
+    # Resource reference to bucket objects. 
     logger.info(os.environ)
-    repo_bucket_name = os.environ['REPO_BUCKET_NAME']
-    staging_bucket_name = os.environ['STAGING_BUCKET_NAME']
+    
+    # Repository
+    if os.environ.get('REPO_BUCKET_NAME') is not None:
+        repo_bucket_name = os.environ['REPO_BUCKET_NAME']
+    else: 
+        repo_bucket_name = 'qgis-plugin-repository'
+    # Staging
+    if os.environ.get('STAGING_BUCKET_NAME') is not None:
+        staging_bucket_name = os.environ['STAGING_BUCKET_NAME']
+    else: 
+        staging_bucket_name = 'qgis-plugin-repository-staging'
+    
     repo_bucket = S3_RESOURCE_REPO.Bucket(repo_bucket_name)
     staging_bucket = s3_RESOURCE_STAGE.Bucket(staging_bucket_name)    
     
-    # What type of event was it
-    # If a new plugin has been added
-    # to the bucket, then validate it
+    # What type of event was it. If a new plugin has been added,
+    # validate it
     validated=True
 
     if event_type == 'ObjectRemoved:Delete':
@@ -55,7 +64,7 @@ def lambda_handler(event, context):
 
     if event_type == 'ObjectCreated:Put':
         logger.info('New plugin detected')
-        validated = validate(modified_s3_obj_key, staging_bucket_name)
+        validated = validate(event_s3_obj_key, staging_bucket_name)
 
     if validated:
         # Sync the staging and plugin repository buckets
@@ -96,42 +105,56 @@ def get_metadata_path(plugin_zip):
     Returns a list of possible metadata.txt matches
     The regex applied to the zipfles namelist only matches 
     one dir deep - therefore it will either return an list with
-    one item (path to metadata.txt) else an emplty list. If its 
-    is a emplty list that is returned, the metadata.txt was not found
+    one item (path to metadata.txt) else an empty list. If its 
+    is a empty list that is returned, the metadata.txt was not found
     '''
     
     plugin_files = plugin_zip.namelist()
     metadata_path = ([i for i in plugin_files if re.search(r'^\w*\/{1}metadata.txt', i) ])
     return metadata_path
 
-def validate(modified_s3_obj_key, staging_bucket_name):
+def metadata_exists(metadata_path):
     '''
-    Test the metadata.txt is present in the plugin zipfile
-    and that the contents of th metadata.txt contains the
-    required fields. 
+    Check the plugin has a metadata.txt file
     '''
     
-    logger.info('modified_s3_obj_key: '+modified_s3_obj_key)
-    
-    plugin_zip = download_pl_file(staging_bucket_name, modified_s3_obj_key)
-    metadata_path = get_metadata_path(plugin_zip)
     if len(metadata_path) == 0:
-        # TODO// create sns message servie notifying of failure
         logger.error('ERROR: metadata.txt not found')
         return False
-        
-    metadata_path = metadata_path[0]
+
+def metadata_fields_exist(plugin_zip, metadata_path):
+    '''
+    Check required metadata fields exist
+    '''
     
-    # Check contents
-    missing = []
+    missing_fields = []
     plugn_metadata = metadata_contents(plugin_zip, metadata_path)
     for required in REQUIRED_METADATA:
         if not plugn_metadata.has_option('general', required):
-            missing.append(required)
-    if missing:
-        # TODO// create sns message servie notifying of failure
-        logger.error('ERROR: The fields are missing from the metadata.txt: {0}'.format(missing))
+            missing_fields.append(required)
+    if missing_fields:
+        logger.error('ERROR: The following is missing from the metadata.txt: {0}'.format(missing_fields))
         return False
+
+def validate(event_s3_obj_key, staging_bucket_name):
+    '''
+    Test the metadata.txt is present in the plugin zipfile
+    and that the contents of the metadata.txt contains the
+    required fields. 
+    '''
+    
+    logger.info('validating s3 object key: '+event_s3_obj_key)
+    plugin_zip = download_pl_file(staging_bucket_name, event_s3_obj_key)
+    metadata_path = get_metadata_path(plugin_zip)
+    
+    # Check files exists
+    if not metadata_exists(metadata_path):
+        return False
+                
+    # Check contents
+    if  not metadata_fields_exist(plugin_zip , metadata_path):
+        return False
+    
     return True
 
 def sync(staging_bucket, repo_bucket, version):
@@ -139,14 +162,10 @@ def sync(staging_bucket, repo_bucket, version):
     Sync the staging bucket and qgis plugin repository bucket
     '''
     
-    # Move the below to get_buckets_contents method
-    # staging_plugins = S3_CLIENT.list_objects(Bucket=staging_bucket.name, Prefix=version+'/', Delimiter='/')
-    # staging_keys = [d['Key'] for d in staging_plugins['Contents'] if d['Key'] != version ]
-    # repo_plugins = S3_CLIENT.list_objects(Bucket=repo_bucket.name, Prefix=version+'/', Delimiter='/')
-    # plugin_repo_keys = [d['Key'] for d in repo_plugins['Contents'] if d['Key'] !=version ]
     staging_keys = get_buckets_contents(staging_bucket, version)
     plugin_repo_keys = get_buckets_contents(repo_bucket, version)
 
+    # Copy Plugins from staging to published repository 
     for obj_key in staging_keys:
         if obj_key not in plugin_repo_keys:
             copy_source = {'Bucket': staging_bucket.name,'Key': obj_key}
@@ -160,7 +179,7 @@ def sync(staging_bucket, repo_bucket, version):
 
 def get_buckets_contents(bucket, version):
     '''
-    Yields a reference to all plugins in bucket
+    Fetch the keys for a folder in the bucket
     '''
     keys = {}
     bucket_objs = S3_CLIENT.list_objects(Bucket=bucket.name, Prefix=version+'/', Delimiter='/')
@@ -262,7 +281,7 @@ def update_xml(repo_bucket, version):
     for key in repo_plugin_key:
         if  os.path.splitext(key)[1] == '.zip':
             pl_metadata.update(extract_metadata(repo_bucket, key, version))
-    logger.info('pl_metadata: '+json.dumps(pl_metadata))
+    logger.info('extracted metadata: '+json.dumps(pl_metadata))
 
     
     # Build the plugins.xml
