@@ -21,39 +21,77 @@ provider:
     REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
 
 custom:
-# Add folders to bucket
   bucket_base_name: "qgis-plugin-repository"
+  # Add folders to staging bucket
   assets:
     auto: true
     targets:
       - bucket: ${self:custom.bucket_base_name}-staging
         prefix: prd
+        acl: public-read-write
         files:
           - source: assets/
-            globs: '**/*.xsl'
+            globs: 'README.txt'
       - bucket: ${self:custom.bucket_base_name}-staging
         prefix: dev
+        acl: public-read-write
         files:
           - source: assets/
-            globs: '**/*.xsl'
+            globs: 'README.txt'
       - bucket: ${self:custom.bucket_base_name}-staging
         prefix: test
+        acl: public-read-write
+        files:
+          - source: assets/
+            globs: 'README.txt'
+        # Add folders to staging bucket
+      - bucket: ${self:custom.bucket_base_name}
+        prefix: prd
+        acl: public-read
         files:
           - source: assets/
             globs: '**/*.xsl'
-# TODO
-  # alerts:
-  #   stages:
-  #     - production
-  #   topics:
-  #     alarm:
-  #       topic: ${self:service}-production-alerts-alarm
-  #       notifications:
-  #         - protocol: email
-  #           endpoint: splanzer@gmail.com # Change this to your email address
-  #   alarms:
-  #     - functionErrors
-
+      - bucket: ${self:custom.bucket_base_name}
+        prefix: dev
+        acl: public-read
+        files:
+          - source: assets/
+            globs: '**/*.xsl'
+      - bucket: ${self:custom.bucket_base_name}
+        prefix: test
+        acl: public-read
+        files:
+          - source: assets/
+            globs: '**/*.xsl'
+  alerts:
+    dashboards: true
+    topics:
+      critical:
+        ok:
+          topic: ${self:service}-critical-alerts-ok
+          notifications:
+          - protocol: email
+            endpoint: splanzer@linz.govt.nz
+        alarm:
+          topic: ${self:service}-critical-alerts-alarm
+          notifications:
+          - protocol: email
+            endpoint: splanzer@linz.govt.nz
+    definitions:  
+      criticalFunctionErrors:
+        namespace: 'AWS/Lambda'
+        metric: Errors
+        threshold: 1
+        statistic: Sum
+        period: 60
+        evaluationPeriods: 1
+        comparisonOperator: GreaterThanOrEqualToThreshold
+        okActions:
+          - critical
+        alarmActions:
+          - critical
+    alarms:
+      - criticalFunctionErrors
 # Lambda Function
 functions:
   Update:
@@ -61,6 +99,8 @@ functions:
     environmnet:
       STAGING_BUCKET_NAME: ${self:custom.bucket_base_name}-staging
       REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
+    alarms:
+      - criticalFunctionErrors
 # CloudFormation resource templates
 resources:
   Resources:
@@ -81,6 +121,16 @@ resources:
                   Rules:
                   - Name: suffix
                     Value: .zip
+            - Event: s3:ObjectRemoved:*
+              Function: 
+                'Fn::GetAtt':
+                - UpdateLambdaFunction
+                - Arn
+              Filter:
+                S3Key:
+                  Rules:
+                  - Name: suffix
+                    Value: .zip
     ProcessingLambdaPermission:
       DependsOn:
         - UpdateLambdaFunction
@@ -91,7 +141,7 @@ resources:
         Action: "lambda:InvokeFunction"
         Principal: "s3.amazonaws.com"
         SourceArn: "arn:aws:s3:::${self:custom.bucket_base_name}-staging"
-# Configure Bucket Ploicy 
+# Configure Staging Bucket Ploicy 
     StagingBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
@@ -106,18 +156,19 @@ resources:
               Action:
                 - 's3:DeleteObject'
                 - 's3:PutObject'
+                - 's3:GetObject'
               Resource:
                 Fn::Join:
                   - ""
                   - - "arn:aws:s3:::"
                     - "Ref" : "StagingBucket"
                     - '/*'
-# Configure Bucket Ploicy 
+# Configure Repo Bucket Ploicy 
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.bucket_base_name}
-        AccessControl: PublicRead
+        AccessControl: PublicReadWrite
     RepoBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:

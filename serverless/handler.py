@@ -28,19 +28,19 @@ def lambda_handler(event, context):
     '''
     Entry Method
     '''
-    
+
     # Log data
     logger.info(event)
     record = event['Records'][0]
     event_s3_obj_key = record['s3']['object']['key']
-    
+
     #version - either test, dev, prd (as per bucket folders)
     version, filename = os.path.split(event_s3_obj_key)
     event_type = record['eventName']
 
     # Resource reference to bucket objects. 
     logger.info(os.environ)
-    
+
     # Repository
     if os.environ.get('REPO_BUCKET_NAME') is not None:
         repo_bucket_name = os.environ['REPO_BUCKET_NAME']
@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         staging_bucket_name = os.environ['STAGING_BUCKET_NAME']
     else: 
         staging_bucket_name = 'qgis-plugin-repository-staging'
-    
+
     repo_bucket = S3_RESOURCE_REPO.Bucket(repo_bucket_name)
     staging_bucket = s3_RESOURCE_STAGE.Bucket(staging_bucket_name)    
     
@@ -63,9 +63,10 @@ def lambda_handler(event, context):
         logger.info('Plugin deletion detected')
 
     if event_type == 'ObjectCreated:Put':
-        logger.info('New plugin detected')
+        logger.info('New plugin detected: {0}'.format(event_s3_obj_key))
         validated = validate(event_s3_obj_key, staging_bucket_name)
 
+    logger.info('validated == {0}'.format(validated))
     if validated:
         # Sync the staging and plugin repository buckets
         sync(staging_bucket, repo_bucket, version)
@@ -76,24 +77,23 @@ def remove_zip(file):
     '''
     Delete the downloaded zip file to free up mem
     '''
-    
+
     if os.path.exists(file):
         os.remove(file)
     else:
         logger.info(file+": does not exist")
-    
-    
+
 def download_pl_file(bucket, key, clean=True):
     '''
     Returns a zipfile obj
     '''
-    
+
     download_dest = TEMP_FOLDER+os.path.basename(key)
 
     logger.info('Downloading from - Bucket: {0}, Key: {1} to: {2}'.format(bucket,
                                                                           key, 
                                                                           download_dest))
-    
+
     S3_CLIENT.download_file(bucket, key, download_dest)
     plugin_zip = zipfile.ZipFile(download_dest)
     if clean: 
@@ -108,7 +108,7 @@ def get_metadata_path(plugin_zip):
     one item (path to metadata.txt) else an empty list. If its 
     is a empty list that is returned, the metadata.txt was not found
     '''
-    
+
     plugin_files = plugin_zip.namelist()
     metadata_path = ([i for i in plugin_files if re.search(r'^\w*\/{1}metadata.txt', i) ])
     return metadata_path
@@ -117,17 +117,20 @@ def metadata_exists(metadata_path):
     '''
     Check the plugin has a metadata.txt file
     '''
-    
+
     if len(metadata_path) == 0:
         logger.error('ERROR: metadata.txt not found')
         return False
+    logger.info('validation passed: metadata.txt exists')
+    return True
 
 def metadata_fields_exist(plugin_zip, metadata_path):
     '''
     Check required metadata fields exist
     '''
-    
+
     missing_fields = []
+    logger.info('plugin_zip: {0}, metadata_path: {1}'.format(plugin_zip, metadata_path))
     plugn_metadata = metadata_contents(plugin_zip, metadata_path)
     for required in REQUIRED_METADATA:
         if not plugn_metadata.has_option('general', required):
@@ -135,6 +138,8 @@ def metadata_fields_exist(plugin_zip, metadata_path):
     if missing_fields:
         logger.error('ERROR: The following is missing from the metadata.txt: {0}'.format(missing_fields))
         return False
+    logger.info('validation passed: metadata.txt required fields present')
+    return True
 
 def validate(event_s3_obj_key, staging_bucket_name):
     '''
@@ -142,7 +147,7 @@ def validate(event_s3_obj_key, staging_bucket_name):
     and that the contents of the metadata.txt contains the
     required fields. 
     '''
-    
+
     logger.info('validating s3 object key: '+event_s3_obj_key)
     plugin_zip = download_pl_file(staging_bucket_name, event_s3_obj_key)
     metadata_path = get_metadata_path(plugin_zip)
@@ -150,9 +155,9 @@ def validate(event_s3_obj_key, staging_bucket_name):
     # Check files exists
     if not metadata_exists(metadata_path):
         return False
-                
+
     # Check contents
-    if  not metadata_fields_exist(plugin_zip , metadata_path):
+    if  not metadata_fields_exist(plugin_zip , metadata_path[0]):
         return False
     
     return True
@@ -161,7 +166,7 @@ def sync(staging_bucket, repo_bucket, version):
     '''
     Sync the staging bucket and qgis plugin repository bucket
     '''
-    
+
     staging_keys = get_buckets_contents(staging_bucket, version)
     plugin_repo_keys = get_buckets_contents(repo_bucket, version)
 
@@ -169,6 +174,7 @@ def sync(staging_bucket, repo_bucket, version):
     for obj_key in staging_keys:
         if obj_key not in plugin_repo_keys:
             copy_source = {'Bucket': staging_bucket.name,'Key': obj_key}
+            logger.info('copying: {0}/{1} to {2}/{1}'.format(staging_bucket.name,obj_key, repo_bucket.name))
             S3_RESOURCE_REPO.meta.client.copy(copy_source, repo_bucket.name, obj_key)
     # remove plugins in repo that are no longer in staging
     for obj_key in plugin_repo_keys:
@@ -195,20 +201,20 @@ def metadata_contents(plugin_zip, metadata_path):
     Return metadata.txt contents that is stored in
     the plugin .zip file
     '''
-    
+
     metadata = plugin_zip.open(metadata_path)
     metadata = str(metadata.read(), 'utf-8')
     config = configparser.ConfigParser()
     config.readfp(io.StringIO(metadata))
-    
+
     return config
-    
+
 
 def extract_metadata(bucket, key, version):
     '''
     Read the metadata.txt file and return a dictionary mapping
     '''
-    
+
     pugin_metadata = {}
     plugin_zip = download_pl_file(bucket.name, key)
     metadata_path = get_metadata_path(plugin_zip)
@@ -217,10 +223,10 @@ def extract_metadata(bucket, key, version):
     plugin_name = plugin_metadata['general']['name']+'-'+plugin_metadata['general']['version']
     location = S3_CLIENT.get_bucket_location(Bucket=bucket.name)['LocationConstraint']
     location = location+'/'+version
-    
+
     last_modified = S3_RESOURCE_REPO.Object(bucket_name=bucket.name, key=key).last_modified # THIS IS VERY SLOW!
     last_modified = last_modified.strftime("%Y-%m-%d")
-    
+
 
     return { 
             plugin_name : {
@@ -240,7 +246,6 @@ def extract_metadata(bucket, key, version):
                 #'uploaded_by': plugin_metadata['general']['author']
                 }
             }
-            
 
 def create_xml(repo_bucket, pl_metadata, version):
     '''
