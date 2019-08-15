@@ -1,169 +1,33 @@
----
-
 service: linz-qgis-s3-plugin-repo
 
 plugins:
-  - serverless-s3-deploy
-  - serverless-plugin-aws-alerts
+  - serverless-python-requirements
+  - serverless-wsgi
+
+custom:
+  bucket_base_name: "qgis-plugin-repository": 'todos-${self:provider.stage}'
+  wsgi:
+    app: handler.app
+    packRequirements: false
 
 provider:
   name: aws
-  runtime: python3.7
-
-# Overwrite defaults here
+  runtime: python3.6
   stage: dev
   region: ap-southeast-2
-
-
-# Define function environment variables here
   environment:
-    STAGING_BUCKET_NAME: ${self:custom.bucket_base_name}-staging
     REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
 
-custom:
-  bucket_base_name: "qgis-plugin-repository"
-  # Add folders to staging bucket
-  assets:
-    auto: true
-    targets:
-      - bucket: ${self:custom.bucket_base_name}-staging
-        prefix: prd
-        acl: public-read-write
-        files:
-          - source: assets/
-            globs: 'README.txt'
-      - bucket: ${self:custom.bucket_base_name}-staging
-        prefix: dev
-        acl: public-read-write
-        files:
-          - source: assets/
-            globs: 'README.txt'
-      - bucket: ${self:custom.bucket_base_name}-staging
-        prefix: test
-        acl: public-read-write
-        files:
-          - source: assets/
-            globs: 'README.txt'
-        # Add folders to staging bucket
-      - bucket: ${self:custom.bucket_base_name}
-        prefix: prd
-        acl: public-read
-        files:
-          - source: assets/
-            globs: '**/*.xsl'
-      - bucket: ${self:custom.bucket_base_name}
-        prefix: dev
-        acl: public-read
-        files:
-          - source: assets/
-            globs: '**/*.xsl'
-      - bucket: ${self:custom.bucket_base_name}
-        prefix: test
-        acl: public-read
-        files:
-          - source: assets/
-            globs: '**/*.xsl'
-  alerts:
-    dashboards: true
-    topics:
-      critical:
-        ok:
-          topic: ${self:service}-critical-alerts-ok
-          notifications:
-          - protocol: email
-            endpoint: splanzer@linz.govt.nz
-        alarm:
-          topic: ${self:service}-critical-alerts-alarm
-          notifications:
-          - protocol: email
-            endpoint: splanzer@linz.govt.nz
-    definitions:  
-      criticalFunctionErrors:
-        namespace: 'AWS/Lambda'
-        metric: Errors
-        threshold: 1
-        statistic: Sum
-        period: 60
-        evaluationPeriods: 1
-        comparisonOperator: GreaterThanOrEqualToThreshold
-        okActions:
-          - critical
-        alarmActions:
-          - critical
-    alarms:
-      - criticalFunctionErrors
-# Lambda Function
 functions:
-  Update:
-    handler: handler.lambda_handler
-    environmnet:
-      STAGING_BUCKET_NAME: ${self:custom.bucket_base_name}-staging
-      REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
-    alarms:
-      - criticalFunctionErrors
-# CloudFormation resource templates
+  app:
+    handler: wsgi.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
 resources:
   Resources:
-    StagingBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.bucket_base_name}-staging
-        AccessControl: PublicRead #TODO Staging needs to be private
-        NotificationConfiguration:
-          LambdaConfigurations:
-            - Event: s3:ObjectCreated:*
-              Function: 
-                'Fn::GetAtt':
-                - UpdateLambdaFunction
-                - Arn
-              Filter:
-                S3Key:
-                  Rules:
-                  - Name: suffix
-                    Value: .zip
-            - Event: s3:ObjectRemoved:*
-              Function: 
-                'Fn::GetAtt':
-                - UpdateLambdaFunction
-                - Arn
-              Filter:
-                S3Key:
-                  Rules:
-                  - Name: suffix
-                    Value: .zip
-    ProcessingLambdaPermission:
-      DependsOn:
-        - UpdateLambdaFunction
-      Type: AWS::Lambda::Permission
-      Properties:
-        FunctionName:
-          "Fn::GetAtt": [ UpdateLambdaFunction, Arn ]
-        Action: "lambda:InvokeFunction"
-        Principal: "s3.amazonaws.com"
-        SourceArn: "arn:aws:s3:::${self:custom.bucket_base_name}-staging"
-# Configure Staging Bucket Ploicy 
-    StagingBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref StagingBucket
-        PolicyDocument:
-          Id: StagingBucketPolicy
-          Version: '2012-10-17'
-          Statement:
-            - Sid: PrivateObjPutObjDeleteBucketList
-              Effect: Allow
-              Principal: '*'
-              Action:
-                - 's3:DeleteObject'
-                - 's3:PutObject'
-                - 's3:GetObject'
-              Resource:
-                Fn::Join:
-                  - ""
-                  - - "arn:aws:s3:::"
-                    - "Ref" : "StagingBucket"
-                    - '/*'
-# Configure Repo Bucket Ploicy 
+    # Configure Repo Bucket Ploicy 
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
