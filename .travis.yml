@@ -2,9 +2,12 @@ language: python
 
 python: '3.7'
 
+before_install:
+  - pip install poetry
 
 install:
-  - pip install flake8
+  - poetry install -v
 
 script:
-  - flake8 .
+  - poetry run black . --check
+  - poetry run pylint src
