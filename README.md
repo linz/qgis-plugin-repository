@@ -1,5 +1,6 @@
 # S3-QGIS plugins
 
+[![Build Status](https://travis-ci.com/linz/s3-qgis-plugin-repo.svg?token=H9yU2isbwj6ss3KvHYyJ&branch=master)](https://travis-ci.com/linz/s3-qgis-plugin-repo)
 
 Store QGIS plugins in S3
 
