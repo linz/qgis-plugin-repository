@@ -3,9 +3,8 @@ service: linz-qgis-s3-plugin-repo
 plugins:
   - serverless-python-requirements
   - serverless-wsgi
-
 custom:
-  bucket_base_name: "qgis-plugin-repository": 'todos-${self:provider.stage}'
+  bucket_base_name: "qgis-plugin-repository"
   wsgi:
     app: handler.app
     packRequirements: false
@@ -27,7 +26,7 @@ functions:
 
 resources:
   Resources:
-    # Configure Repo Bucket Ploicy 
+    # Configure Repo Bucket Ploicy
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
