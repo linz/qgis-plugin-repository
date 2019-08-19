@@ -1,0 +1,59 @@
+service: linz-qgis-s3-plugin-repo
+
+plugins:
+  - serverless-python-requirements
+  - serverless-wsgi
+custom:
+  bucket_base_name: "qgis-plugin-repository"
+  wsgi:
+    app: handler.app
+    packRequirements: false
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: ap-southeast-2
+  environment:
+    REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
+
+functions:
+  app:
+    handler: wsgi.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+resources:
+  Resources:
+    # Configure Repo Bucket Ploicy
+    RepoBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket_base_name}
+        AccessControl: PublicReadWrite
+    RepoBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref RepoBucket
+        PolicyDocument:
+          Id: RepoBucketPolicy
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PublicGetObjListBucket
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - "s3:*"
+                #- "s3:GetObject"
+                #- "s3:ListBucket"
+              Resource:
+                - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "Ref" : "RepoBucket"
+                    - '/*'
+                - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - "Ref" : "RepoBucket"
