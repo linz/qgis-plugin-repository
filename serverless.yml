@@ -16,7 +16,7 @@ custom:
       - boto3
       - botocore
   wsgi:
-    app: src/api.app
+    app: src/plugin/api.app
 
 package:
   exclude:
