@@ -88,6 +88,7 @@ def list_all():
 
 @app.route("/upload", methods=["POST"])
 def upload():
+    print(request)
     if "file" not in request.files:
         return "No user_file key in request.files"
 
