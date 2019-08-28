@@ -1,4 +1,3 @@
 botocore #no-deploy
 boto3 #no-deploy
 Flask==1.1.1
-Werkzeug==0.15.5
