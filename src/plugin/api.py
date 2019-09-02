@@ -1,3 +1,19 @@
+"""
+################################################################################
+#
+# Copyright 2019 Crown copyright (c)
+# Land Information New Zealand and the New Zealand Government.
+# All rights reserved
+#
+# This program is released under the terms of the 3 clause BSD license. See the
+# LICENSE file for more information.
+#
+################################################################################
+
+    Flask API for managing QGIS Plugins in S3
+
+"""
+
 import os
 import re
 import json
@@ -30,11 +46,8 @@ def format_error(message, http_code):
     format error responses
     """
 
-    response_body = {'message': message}
-    response = app.response_class(
-        response=json.dumps(response_body),
-        status=http_code,
-        mimetype="application/json")
+    response_body = {"message": message}
+    response = app.response_class(response=json.dumps(response_body), status=http_code, mimetype="application/json")
     return response
 
 
@@ -88,10 +101,10 @@ def upload_plugin_to_s3(data, bucket, object_name):
 
     except ClientError as error:
         logging.error("s3 PUT error: %s", error)
-        return False, str(error)
+        return False
 
     logging.info("s3 PUT response: %s", response)
-    return True, response
+    return True
 
 
 @app.route("/plugin", methods=["POST"])
@@ -126,16 +139,15 @@ def upload():
     metadata = metadata_contents(plugin_zipfile, metadata_path)
     # The below will eventually be handle by metadata store method
     plugin_name = metadata["general"]["name"] + metadata["general"]["version"]
-    success, response = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
+    success = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
 
     # Respond to the user
-    if success:
-        logging.info("Plugin Upload: %s", plugin_name)
-        return format_response({"pluginName": plugin_name}, 201)
-
-    else:
+    if not success:
         logging.error("Plugin Upload Failed: %s", plugin_name)
         return format_error("Upload failed :See logs", 400)
+
+    logging.info("Plugin Upload: %s", plugin_name)
+    return format_response({"pluginName": plugin_name}, 201)
 
 
 if __name__ == "__main__":

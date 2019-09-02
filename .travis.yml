@@ -15,5 +15,7 @@ install:
 
 script:
   - black src/ --check --diff
+  - black test/ --check --diff
   - pylint src/
+  - pylint test/
   - python -m pytest
