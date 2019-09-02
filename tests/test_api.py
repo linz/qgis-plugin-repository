@@ -93,17 +93,30 @@ def s3_stub():
         yield stubber
 
 
+def test_format_error():
+    """
+    Test to ensure correct error formatting
+    """
+
+    expected_result = {"message": "This is an error"}
+
+    result = api.format_error("This is an error", 400)
+
+    assert expected_result == result.get_json()
+    assert result.status_code == 400
+
+
 def test_format_response():
     """
     Test to ensure correct response formatting
     """
 
-    expected_result = {"description": "this is a test", "data": {"plugin_name": "test_plugin"}}
+    expected_result = {"plugin_name": "test_plugin"}
 
-    result = api.format_response(http_code=200, description="this is a test", data={"plugin_name": "test_plugin"})
+    result = api.format_response({"plugin_name": "test_plugin"}, 201)
 
     assert expected_result == result.get_json()
-    assert result.status_code == 200
+    assert result.status_code == 201
 
 
 def test_get_metadata_path(plugin_zipfile):
@@ -178,7 +191,7 @@ def test_upload_no_data(client):
 
     result = client.post("/plugin")
     assert result.status_code == 400
-    assert result.get_json() == {"description": "No plugin file supplied", "data": {}}
+    assert result.get_json() == {"message": "No plugin file supplied"}
 
 
 def test_upload_no_stubmetadata(client, global_data):
@@ -192,7 +205,7 @@ def test_upload_no_stubmetadata(client, global_data):
         bytes_content = file_data.read()
     result = client.post("/plugin", data=bytes_content)
     assert result.status_code == 400
-    assert result.get_json() == {"description": "metadata.txt not found", "data": {}}
+    assert result.get_json() == {"message": "metadata.txt not found"}
 
 
 def test_upload_not_a_zipfile(client, global_data):
@@ -204,7 +217,7 @@ def test_upload_not_a_zipfile(client, global_data):
 
     result = client.post("/plugin", data=global_data["test_file_not_a_zipfile"])
     assert result.status_code == 400
-    assert result.get_json() == {"description": "File must be a zipfile", "data": {}}
+    assert result.get_json() == {"message": "File must be a zipfile"}
 
 
 def test_upload_data(client, s3_stub, global_data):
@@ -226,7 +239,7 @@ def test_upload_data(client, s3_stub, global_data):
 
     result = client.post("/plugin", data=bytes_content)
     assert result.status_code == 201
-    assert result.get_json() == {"description": "plugin uploaded", "data": {"pluginName": "Testplugin0.1"}}
+    assert result.get_json() == {"pluginName": "Testplugin0.1"}
 
 
 if __name__ == "__main__":

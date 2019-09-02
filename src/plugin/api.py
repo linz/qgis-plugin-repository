@@ -25,14 +25,25 @@ else:
 s3_client = boto3.client("s3")
 
 
-def format_response(http_code, description, data=None):
+def format_error(message, http_code):
+    """"
+    format error responses
+    """
+
+    response_body = {'message': message}
+    response = app.response_class(
+        response=json.dumps(response_body),
+        status=http_code,
+        mimetype="application/json")
+    return response
+
+
+def format_response(data, http_code):
     """
     format the http response
     """
-
-    res_body = {"description": description, "data": data}
-
-    response = app.response_class(response=json.dumps(res_body), status=http_code, mimetype="application/json")
+    # once metadata handling is delivered, this will always return standard plugin metadata
+    response = app.response_class(response=json.dumps(data), status=http_code, mimetype="application/json")
     return response
 
 
@@ -94,7 +105,7 @@ def upload():
     # Check data was posted by the user
     if not data:
         logging.error("Data Error: No plugin file supplied")
-        return format_response(400, "No plugin file supplied", {})
+        return format_error("No plugin file supplied", 400)
 
     # Store the uploaded data as binary
     zip_buffer = BytesIO(data)
@@ -102,14 +113,14 @@ def upload():
     # Test the file is a zipfile
     if not zipfile.is_zipfile(zip_buffer):
         logging.error("Data Error: Plugin file supplied not a Zipfile")
-        return format_response(400, "File must be a zipfile", {})
+        return format_error("File must be a zipfile", 400)
 
     # Extract plugin metadata
     plugin_zipfile = zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False)
     metadata_path = get_metadata_path(plugin_zipfile)
     if not metadata_path:
         logging.error("Data Error: metadata.txt not found")
-        return format_response(400, "metadata.txt not found", {})
+        return format_error("metadata.txt not found", 400)
 
     metadata_path = metadata_path[0]
     metadata = metadata_contents(plugin_zipfile, metadata_path)
@@ -120,13 +131,11 @@ def upload():
     # Respond to the user
     if success:
         logging.info("Plugin Upload: %s", plugin_name)
-        formatted_response = format_response(201, "plugin uploaded", {"pluginName": plugin_name})
+        return format_response({"pluginName": plugin_name}, 201)
 
     else:
         logging.error("Plugin Upload Failed: %s", plugin_name)
-        formatted_response = format_response(400, "failed :{0}".format(response), {"pluginName": plugin_name})
-
-    return formatted_response
+        return format_error("Upload failed :See logs", 400)
 
 
 if __name__ == "__main__":
