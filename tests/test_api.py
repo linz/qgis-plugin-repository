@@ -16,7 +16,7 @@ def client():
     yield client
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def global_data():
     """
     Fixture yielding variables to individual tests
@@ -54,30 +54,31 @@ def global_data():
         """
 
     return {
-        'test_plugin': test_plugin,
-        'test_plugin_no_md': test_plugin_no_md,
-        'test_file_not_a_zipfile': test_file_not_a_zipfile,
-        'response': response,
-        'data': data}
+        "test_plugin": test_plugin,
+        "test_plugin_no_md": test_plugin_no_md,
+        "test_file_not_a_zipfile": test_file_not_a_zipfile,
+        "response": response,
+        "data": data,
+    }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def plugin_zipfile(global_data):
     """
     Fixture yielding test plugin data
     """
 
-    with zipfile.ZipFile(global_data['test_plugin'], "r") as plugin_zip:
+    with zipfile.ZipFile(global_data["test_plugin"], "r") as plugin_zip:
         yield plugin_zip
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def plugin_zipfile_no_md(global_data):
     """
     Fixture yielding test plugin data
     """
 
-    with zipfile.ZipFile(global_data['test_plugin_no_md'], "r") as plugin_zip_no_md:
+    with zipfile.ZipFile(global_data["test_plugin_no_md"], "r") as plugin_zip_no_md:
         yield plugin_zip_no_md
 
 
@@ -97,14 +98,9 @@ def test_format_response():
     Test to ensure correct response formatting
     """
 
-    expected_result = {
-        "description": "this is a test",
-        "data": {"plugin_name": "test_plugin"},
-    }
+    expected_result = {"description": "this is a test", "data": {"plugin_name": "test_plugin"}}
 
-    result = api.format_response(
-        http_code=200, description="this is a test", data={"plugin_name": "test_plugin"}
-    )
+    result = api.format_response(http_code=200, description="this is a test", data={"plugin_name": "test_plugin"})
 
     assert expected_result == result.get_json()
     assert result.status_code == 200
@@ -150,13 +146,13 @@ def test_upload_plugin_to_s3(s3_stub, global_data):
 
     s3_stub.add_response(
         "put_object",
-        expected_params={"Body": global_data['data'], "Bucket": "test_bucket", "Key": "test_plugin"},
-        service_response=global_data['response'],
+        expected_params={"Body": global_data["data"], "Bucket": "test_bucket", "Key": "test_plugin"},
+        service_response=global_data["response"],
     )
 
-    result = api.upload_plugin_to_s3(global_data['data'], "test_bucket", "test_plugin")
+    result = api.upload_plugin_to_s3(global_data["data"], "test_bucket", "test_plugin")
 
-    assert result == (True, global_data['response'])
+    assert result == (True, global_data["response"])
 
 
 def test_upload_file_to_s3_error(s3_stub):
@@ -166,16 +162,11 @@ def test_upload_file_to_s3_error(s3_stub):
     """
 
     s3_stub.add_client_error(
-        "put_object",
-        expected_params={"Body": ANY, "Bucket": "test_bucket", "Key": "test_plugin"},
-        service_error_code="404",
+        "put_object", expected_params={"Body": ANY, "Bucket": "test_bucket", "Key": "test_plugin"}, service_error_code="404"
     )
 
     result = api.upload_plugin_to_s3("Durpa Durpa", "test_bucket", "test_plugin")
-    assert result == (
-        False,
-        "An error occurred (404) when calling the PutObject operation: ",
-    )
+    assert result == (False, "An error occurred (404) when calling the PutObject operation: ")
 
 
 def test_upload_no_data(client):
@@ -197,7 +188,7 @@ def test_upload_no_stubmetadata(client, global_data):
     data that contains no metadata.txt
     """
 
-    with open(global_data['test_plugin_no_md'], "rb") as file_data:
+    with open(global_data["test_plugin_no_md"], "rb") as file_data:
         bytes_content = file_data.read()
     result = client.post("/plugin", data=bytes_content)
     assert result.status_code == 400
@@ -211,7 +202,7 @@ def test_upload_not_a_zipfile(client, global_data):
     data that is not a zipfile
     """
 
-    result = client.post("/plugin", data=global_data['test_file_not_a_zipfile'])
+    result = client.post("/plugin", data=global_data["test_file_not_a_zipfile"])
     assert result.status_code == 400
     assert result.get_json() == {"description": "File must be a zipfile", "data": {}}
 
@@ -224,25 +215,18 @@ def test_upload_data(client, s3_stub, global_data):
     This test is at the integration level
     """
 
-    with open(global_data['test_plugin'], "rb") as file_data:
+    with open(global_data["test_plugin"], "rb") as file_data:
         bytes_content = file_data.read()
 
     s3_stub.add_response(
         "put_object",
-        expected_params={
-            "Body": bytes_content,
-            "Bucket": "qgis-plugin-repository",
-            "Key": "Testplugin0.1",
-        },
-        service_response=global_data['response'],
+        expected_params={"Body": bytes_content, "Bucket": "qgis-plugin-repository", "Key": "Testplugin0.1"},
+        service_response=global_data["response"],
     )
 
     result = client.post("/plugin", data=bytes_content)
     assert result.status_code == 201
-    assert result.get_json() == {
-        "description": "plugin uploaded",
-        "data": {"pluginName": "Testplugin0.1"},
-    }
+    assert result.get_json() == {"description": "plugin uploaded", "data": {"pluginName": "Testplugin0.1"}}
 
 
 if __name__ == "__main__":

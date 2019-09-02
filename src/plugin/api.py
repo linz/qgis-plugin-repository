@@ -32,9 +32,7 @@ def format_response(http_code, description, data=None):
 
     res_body = {"description": description, "data": data}
 
-    response = app.response_class(
-        response=json.dumps(res_body), status=http_code, mimetype="application/json"
-    )
+    response = app.response_class(response=json.dumps(res_body), status=http_code, mimetype="application/json")
     return response
 
 
@@ -122,15 +120,11 @@ def upload():
     # Respond to the user
     if success:
         logging.info("Plugin Upload: %s", plugin_name)
-        formatted_response = format_response(
-            201, "plugin uploaded", {"pluginName": plugin_name}
-        )
+        formatted_response = format_response(201, "plugin uploaded", {"pluginName": plugin_name})
 
     else:
         logging.error("Plugin Upload Failed: %s", plugin_name)
-        formatted_response = format_response(
-            400, "failed :{0}".format(response), {"pluginName": plugin_name}
-        )
+        formatted_response = format_response(400, "failed :{0}".format(response), {"pluginName": plugin_name})
 
     return formatted_response
 
