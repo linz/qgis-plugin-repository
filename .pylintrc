@@ -1,6 +1,5 @@
 [MASTER]
 disable =
-        missing-docstring,
-        invalid-name
+        invalid-name,
 [FORMAT]
 max-line-length=127
