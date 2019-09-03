@@ -1,5 +1,6 @@
 [MASTER]
 disable =
         invalid-name,
+        too-few-public-methods
 [FORMAT]
 max-line-length=127
