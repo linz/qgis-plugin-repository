@@ -20,11 +20,12 @@ import json
 import logging
 import zipfile
 import configparser
-
+import uuid
 from io import BytesIO, StringIO
 from flask import Flask, request
 from botocore.exceptions import ClientError
 import boto3
+from src.plugin.metadata_model import MetadataModel
 
 app = Flask(__name__)
 
@@ -55,6 +56,7 @@ def format_response(data, http_code):
     """
     format the http response
     """
+
     # once metadata handling is delivered, this will always return standard plugin metadata
     response = app.response_class(response=json.dumps(data), status=http_code, mimetype="application/json")
     return response
@@ -89,6 +91,36 @@ def metadata_contents(plugin_zipfile, metadata_path):
 
     logging.info("Plugin metadata: %s", config_parser)
     return config_parser
+
+
+def updated_metadata_db(metadata):
+    """
+    update dynamodb metadata store for uploaded plugin
+    """
+
+    general_metadata = metadata["general"]
+    name = general_metadata.get("name")
+    version = general_metadata.get("version")
+    plugin_id = "{0}.{1}".format(name, version)
+
+    plugin = MetadataModel(
+        id=str(uuid.uuid1()),
+        plugin_id=plugin_id,
+        name=name,
+        version=version,
+        author_name=general_metadata.get("author", None),
+        email=general_metadata.get("email", None),
+        description=general_metadata.get("description", None),
+        about=general_metadata.get("about", None),
+        qgis_minimum_version=general_metadata.get("qgisMinimumVersion", None),
+        homepage=general_metadata.get("homepage", None),
+        repository=general_metadata.get("repository", None),
+        experimental=general_metadata.get("experimental", None),
+    )
+
+    plugin.save()
+
+    return plugin_id
 
 
 def upload_plugin_to_s3(data, bucket, object_name):
@@ -138,7 +170,7 @@ def upload():
     metadata_path = metadata_path[0]
     metadata = metadata_contents(plugin_zipfile, metadata_path)
     # The below will eventually be handle by metadata store method
-    plugin_name = metadata["general"]["name"] + metadata["general"]["version"]
+    plugin_name = updated_metadata_db(metadata)
     success = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
 
     # Respond to the user
