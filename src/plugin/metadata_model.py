@@ -34,22 +34,29 @@ class MetadataModel(Model):
         db metadata
         """
 
-        table_name = os.environ["PLUGINS_TABLE_NAME"]
-        region = os.environ["REGION"]
+        table_name = os.environ.get("PLUGINS_TABLE_NAME", "qgis-plugin-repo-metadata")
+        region = os.environ.get("REGION", "ap-southeast-2")
 
     id = UnicodeAttribute(hash_key=True, null=False)
+    updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     plugin_id = UnicodeAttribute(null=False)
     name = UnicodeAttribute(null=False)
+    qgisMinimumVersion = UnicodeAttribute(null=False)
+    qgisMaximumVersion = UnicodeAttribute(null=True)
+    description = UnicodeAttribute(null=False)
+    about = UnicodeAttribute(null=False)
     version = UnicodeAttribute(null=False)
-    author_name = BooleanAttribute(null=False)
+    author = UnicodeAttribute(null=False)
     email = UnicodeAttribute(null=False)
-    description = UnicodeAttribute(null=True)
-    about = UnicodeAttribute(null=True)
-    qgis_minimum_version = UnicodeAttribute(null=False)
+    changelog = UnicodeAttribute(null=True)
+    experimental = BooleanAttribute(null=True)
+    deprecated = UnicodeAttribute(null=True)
+    tags = UnicodeAttribute(null=True)
     homepage = UnicodeAttribute(null=True)
-    repository = UnicodeAttribute(null=True)
-    experimental = BooleanAttribute(null=False)
-    updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
+    repository = UnicodeAttribute(null=False)
+    tracker = UnicodeAttribute(null=True)
+    icon = UnicodeAttribute(null=True)
+    category = UnicodeAttribute(null=True)
 
     def __iter__(self):
         for name, attr in self._get_attributes().items():

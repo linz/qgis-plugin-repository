@@ -13,6 +13,7 @@
 
 import os
 import zipfile
+import configparser
 import pytest
 from botocore.stub import Stubber
 from src.plugin import api
@@ -38,6 +39,8 @@ def global_data():
     test_data_dir = os.path.join(test_dir + "/data")
     test_plugin = os.path.join(test_data_dir + "/test_plugin.zip")
     test_plugin_no_md = os.path.join(test_data_dir + "/test_plugin_no_metadata.zip")
+    test_metadata = os.path.join(test_data_dir + "/metadata.txt")
+    test_metadata_invalid = os.path.join(test_data_dir + "/metadata_invalid.txt")
     test_file_not_a_zipfile = os.path.join(test_data_dir + "/not_a_zipfile.txt")
     response = {
         "ResponseMetadata": {
@@ -68,7 +71,9 @@ def global_data():
     return {
         "test_plugin": test_plugin,
         "test_plugin_no_md": test_plugin_no_md,
+        "test_metadata": test_metadata,
         "test_file_not_a_zipfile": test_file_not_a_zipfile,
+        "test_metadata_invalid": test_metadata_invalid,
         "response": response,
         "data": data,
     }
@@ -92,6 +97,32 @@ def plugin_zipfile_no_md(global_data_fixture):
 
     with zipfile.ZipFile(global_data_fixture["test_plugin_no_md"], "r") as plugin_zip_no_md:
         yield plugin_zip_no_md
+
+
+@pytest.fixture(name="metadata_fixture", scope="module")
+def metadata(global_data_fixture):
+    """
+    Fixture yielding config_parser object representing
+    plugin metadata
+    """
+
+    with open(global_data_fixture["test_metadata"], "r") as metadata_file:
+        config_parser = configparser.ConfigParser()
+        config_parser.read_file(metadata_file)
+        yield config_parser
+
+
+@pytest.fixture(name="metadata_invalid_fixture", scope="module")
+def metadata_invalid(global_data_fixture):
+    """
+    Fixture yielding config_parser object representing
+    invalid plugin metadata
+    """
+
+    with open(global_data_fixture["test_metadata_invalid"], "r") as metadata_file:
+        config_parser = configparser.ConfigParser()
+        config_parser.read_file(metadata_file)
+        yield config_parser
 
 
 @pytest.fixture(name="s3_stub_fixture")

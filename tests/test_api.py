@@ -74,6 +74,36 @@ def test_metadata_contents(plugin_zipfile_fixture):
     assert result["general"]["description"] == "Plugin for testing the repository"
 
 
+def test_updated_metadata_db(mocker, metadata_fixture):
+    """
+    Test the return value of updated_metadata_db
+    However, the value is a mock return - bit of a
+    waste of time
+    """
+
+    mocker.patch("pynamodb.connection.base.get_session")
+    mocker.patch("pynamodb.connection.table.Connection")
+    mocker.patch("pynamodb.models.Model._meta_table")
+
+    result = api.updated_metadata_db(metadata_fixture)
+    assert result == (None, "Testplugin.0.1")
+
+
+def test_updated_metadata_db_missing_field(mocker, metadata_invalid_fixture):
+    """
+    Test the return value of updated_metadata_db
+    However, the value is a mock return - bit of a
+    waste of time
+    """
+
+    mocker.patch("pynamodb.connection.base.get_session")
+    mocker.patch("pynamodb.connection.table.Connection")
+    mocker.patch("pynamodb.models.Model._meta_table")
+
+    result = api.updated_metadata_db(metadata_invalid_fixture)
+    assert result == ("ValueError: Attribute 'qgisMinimumVersion' cannot be None", "Testplugin.0.1")
+
+
 def test_upload_plugin_to_s3(s3_stub_fixture, global_data_fixture):
     """
     Test the upload_plugin_method returns
@@ -117,7 +147,7 @@ def test_upload_no_data(client_fixture):
     assert result.get_json() == {"message": "No plugin file supplied"}
 
 
-def test_upload_no_stubmetadata(client_fixture, global_data_fixture):
+def test_upload_no_metadata(client_fixture, global_data_fixture):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
@@ -143,7 +173,7 @@ def test_upload_not_a_zipfile(client_fixture, global_data_fixture):
     assert result.get_json() == {"message": "File must be a zipfile"}
 
 
-def test_upload_data(client_fixture, s3_stub_fixture, global_data_fixture):
+def test_upload_data(mocker, client_fixture, s3_stub_fixture, global_data_fixture):
     """
     When the users submits the correct plugin data
     test API responds indicating success.
@@ -151,18 +181,22 @@ def test_upload_data(client_fixture, s3_stub_fixture, global_data_fixture):
     This test is at the integration level
     """
 
+    mocker.patch("pynamodb.connection.base.get_session")
+    mocker.patch("pynamodb.connection.table.Connection")
+    mocker.patch("pynamodb.models.Model._meta_table")
+
     with open(global_data_fixture["test_plugin"], "rb") as file_data:
         bytes_content = file_data.read()
 
     s3_stub_fixture.add_response(
         "put_object",
-        expected_params={"Body": bytes_content, "Bucket": "qgis-plugin-repository", "Key": "Testplugin0.1"},
+        expected_params={"Body": bytes_content, "Bucket": "qgis-plugin-repository", "Key": "Testplugin.0.1"},
         service_response=global_data_fixture["response"],
     )
 
     result = client_fixture.post("/plugin", data=bytes_content)
     assert result.status_code == 201
-    assert result.get_json() == {"pluginName": "Testplugin0.1"}
+    assert result.get_json() == {"pluginName": "Testplugin.0.1"}
 
 
 if __name__ == "__main__":

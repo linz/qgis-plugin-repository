@@ -24,6 +24,7 @@ import uuid
 from io import BytesIO, StringIO
 from flask import Flask, request
 from botocore.exceptions import ClientError
+from pynamodb.exceptions import PutError, TableDoesNotExist, TableError, PynamoDBConnectionError
 import boto3
 from src.plugin.metadata_model import MetadataModel
 
@@ -95,32 +96,53 @@ def metadata_contents(plugin_zipfile, metadata_path):
 
 def updated_metadata_db(metadata):
     """
-    update dynamodb metadata store for uploaded plugin
+    Update dynamodb metadata store for uploaded plugin
     """
 
     general_metadata = metadata["general"]
-    name = general_metadata.get("name")
-    version = general_metadata.get("version")
-    plugin_id = "{0}.{1}".format(name, version)
+
+    plugin_id = "{0}.{1}".format(general_metadata.get("name"), general_metadata.get("version"))
 
     plugin = MetadataModel(
-        id=str(uuid.uuid1()),
+        id=str(uuid.uuid4()),
+        name=general_metadata.get("name", None),
+        version=general_metadata.get("version", None),
         plugin_id=plugin_id,
-        name=name,
-        version=version,
-        author_name=general_metadata.get("author", None),
-        email=general_metadata.get("email", None),
+        qgisMinimumVersion=general_metadata.get("qgisMinimumVersion", None),
+        qgisMaximumVersion=general_metadata.get("qgisMaximumVersion", None),
         description=general_metadata.get("description", None),
         about=general_metadata.get("about", None),
-        qgis_minimum_version=general_metadata.get("qgisMinimumVersion", None),
+        author=general_metadata.get("author", None),
+        email=general_metadata.get("email", None),
+        changelog=general_metadata.get("changelog", None),
+        experimental=general_metadata.get("experimental", None),
+        deprecated=general_metadata.get("deprecated", None),
+        tags=general_metadata.get("tags", None),
         homepage=general_metadata.get("homepage", None),
         repository=general_metadata.get("repository", None),
-        experimental=general_metadata.get("experimental", None),
+        tracker=general_metadata.get("tracker", None),
+        icon=general_metadata.get("icon", None),
+        category=general_metadata.get("category", None),
     )
 
-    plugin.save()
-
-    return plugin_id
+    try:
+        plugin.save()
+        return (None, plugin_id)
+    except ValueError as error:
+        logging.error("ValueError: %s", error)
+        return (("ValueError: {0}").format(error), plugin_id)
+    except TableDoesNotExist as error:
+        logging.error("TableDoesNotExist: %s", error)
+        return ("TableDoesNotExist", plugin_id)
+    except TableError as error:
+        logging.error("TableError: %s", error)
+        return ("TableError", plugin_id)
+    except PutError as error:
+        logging.error("PutError: %s", error)
+        return ("PutError", plugin_id)
+    except PynamoDBConnectionError as error:
+        logging.error("PynamoDBConnectionError: %s", error)
+        return ("PynamoDBConnectionError", plugin_id)
 
 
 def upload_plugin_to_s3(data, bucket, object_name):
@@ -170,9 +192,12 @@ def upload():
     metadata_path = metadata_path[0]
     metadata = metadata_contents(plugin_zipfile, metadata_path)
     # The below will eventually be handle by metadata store method
-    plugin_name = updated_metadata_db(metadata)
-    success = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
+    error, plugin_name = updated_metadata_db(metadata)
+    if error:
+        logging.error("Plugin Upload Failed: %s", plugin_name)
+        return format_error(error, 400)
 
+    success = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
     # Respond to the user
     if not success:
         logging.error("Plugin Upload Failed: %s", plugin_name)
