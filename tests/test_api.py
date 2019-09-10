@@ -98,7 +98,6 @@ def test_updated_metadata_db_missing_field(mocker, metadata_invalid_fixture):
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     result = api.updated_metadata_db(metadata_invalid_fixture)
     assert result == ("ValueError: Attribute 'qgisMinimumVersion' cannot be None", "Testplugin.0.1")
