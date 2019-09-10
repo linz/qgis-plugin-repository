@@ -12,7 +12,6 @@
 """
 
 import pytest
-from botocore.stub import ANY
 from src.plugin import api
 
 
@@ -81,6 +80,8 @@ def test_updated_metadata_db(mocker, metadata_fixture):
     waste of time
     """
 
+    # Mocker used rather than stubber
+    # Due to stubber issue. One mock method must be selected
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
     mocker.patch("pynamodb.models.Model._meta_table")
@@ -102,37 +103,6 @@ def test_updated_metadata_db_missing_field(mocker, metadata_invalid_fixture):
 
     result = api.updated_metadata_db(metadata_invalid_fixture)
     assert result == ("ValueError: Attribute 'qgisMinimumVersion' cannot be None", "Testplugin.0.1")
-
-
-def test_upload_plugin_to_s3(s3_stub_fixture, global_data_fixture):
-    """
-    Test the upload_plugin_method returns
-    the expected response on success
-    """
-
-    s3_stub_fixture.add_response(
-        "put_object",
-        expected_params={"Body": global_data_fixture["data"], "Bucket": "test_bucket", "Key": "test_plugin"},
-        service_response=global_data_fixture["response"],
-    )
-
-    result = api.upload_plugin_to_s3(global_data_fixture["data"], "test_bucket", "test_plugin")
-
-    assert result is True
-
-
-def test_upload_file_to_s3_error(s3_stub_fixture):
-    """
-    Test the upload_plugin_method returns
-    the expected response on error
-    """
-
-    s3_stub_fixture.add_client_error(
-        "put_object", expected_params={"Body": ANY, "Bucket": "test_bucket", "Key": "test_plugin"}, service_error_code="404"
-    )
-
-    result = api.upload_plugin_to_s3("Durpa Durpa", "test_bucket", "test_plugin")
-    assert result is False
 
 
 def test_upload_no_data(client_fixture):
@@ -197,6 +167,25 @@ def test_upload_data(mocker, client_fixture, s3_stub_fixture, global_data_fixtur
     result = client_fixture.post("/plugin", data=bytes_content)
     assert result.status_code == 201
     assert result.get_json() == {"pluginName": "Testplugin.0.1"}
+
+
+def test_upload_data_exception(mocker, client_fixture, global_data_fixture):
+    """
+    When s3_put error is encountered this should
+    be captured by the plugin as an 500
+
+    This test is at the integration level
+    """
+
+    mocker.patch("pynamodb.connection.base.get_session")
+    mocker.patch("pynamodb.connection.table.Connection")
+    mocker.patch("pynamodb.models.Model._meta_table")
+
+    with open(global_data_fixture["test_plugin"], "rb") as file_data:
+        bytes_content = file_data.read()
+        result = client_fixture.post("/plugin", data=bytes_content)
+
+        assert result.status_code == 500
 
 
 if __name__ == "__main__":

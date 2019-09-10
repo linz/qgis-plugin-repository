@@ -23,8 +23,6 @@ import configparser
 import uuid
 from io import BytesIO, StringIO
 from flask import Flask, request
-from botocore.exceptions import ClientError
-from pynamodb.exceptions import PutError, TableDoesNotExist, TableError, PynamoDBConnectionError
 import boto3
 from src.plugin.metadata_model import MetadataModel
 
@@ -46,6 +44,13 @@ s3_client = boto3.client("s3")
 def format_error(message, http_code):
     """"
     format error responses
+
+    :param message: API response message to be returned as part of the API response
+    :type message: int
+    :param http_code: http_code to return as part of the API response
+    :type http_code: str
+    :returns: API error response
+    :rtype: flask.wrappers.Response
     """
 
     response_body = {"message": message}
@@ -56,6 +61,13 @@ def format_error(message, http_code):
 def format_response(data, http_code):
     """
     format the http response
+
+    :param data: Data to return as part of the API response
+    :type data: Dict
+    :param http_code: http_code to return as part of the API response
+    :type http_code: str
+    :returns: API error response
+    :rtype: flask.wrappers.Response
     """
 
     # once metadata handling is delivered, this will always return standard plugin metadata
@@ -63,16 +75,21 @@ def format_response(data, http_code):
     return response
 
 
-def get_metadata_path(plugin_zip):
+def get_metadata_path(plugin_zipfile):
     """
     Returns a list of possible metadata.txt matches.
     The regex applied to the zipfles namelist only matches
     one dir deep - therefore it will either return an list with
     one item (path to metadata.txt) else an empty list. If its
     is an empty list that is returned, the metadata.txt was not found
+
+    :param plugin_zipfile: Zipfile obj representing the plugin
+    :type plugin_zipfile: zipfile.ZipFile
+    :returns: List of metadata path
+    :rtype: list
     """
 
-    plugin_files = plugin_zip.namelist()
+    plugin_files = plugin_zipfile.namelist()
     metadata_path = [i for i in plugin_files if re.search(r"^\w*\/{1}metadata.txt", i)]
 
     logging.info("Plugin metadata path: %s", metadata_path)
@@ -83,6 +100,13 @@ def metadata_contents(plugin_zipfile, metadata_path):
     """
     Return metadata.txt contents that is stored in
     the plugin .zip file
+
+    :param plugin_zipfile: Zipfile obj representing the plugin
+    :type plugin_zipfile: zipfile.ZipFile
+    :param metadata_path: Path in <plugin>.zip to metadata.txt file
+    :type metadata_path: str
+    :returns: ConfigParser representation of metadata
+    :rtype: configparser.ConfigParser
     """
 
     metadata = plugin_zipfile.open(metadata_path)
@@ -97,11 +121,18 @@ def metadata_contents(plugin_zipfile, metadata_path):
 def updated_metadata_db(metadata):
     """
     Update dynamodb metadata store for uploaded plugin
+
+    :param metadata: ConfigParser representation of metadata.txt
+    :type metadata: configparser.ConfigParser
+    :returns: tuple (<error>, <plugin_id>).
+              if successful error == None
+              plugin_id == <plugin_name>+<plugin_version>
+    :rtype: tuple
     """
 
     general_metadata = metadata["general"]
 
-    plugin_id = "{0}.{1}".format(general_metadata.get("name"), general_metadata.get("version"))
+    plugin_id = "{0}.{1}".format(general_metadata.get("name", None), general_metadata.get("version", None))
 
     plugin = MetadataModel(
         id=str(uuid.uuid4()),
@@ -131,80 +162,69 @@ def updated_metadata_db(metadata):
     except ValueError as error:
         logging.error("ValueError: %s", error)
         return (("ValueError: {0}").format(error), plugin_id)
-    except TableDoesNotExist as error:
-        logging.error("TableDoesNotExist: %s", error)
-        return ("TableDoesNotExist", plugin_id)
-    except TableError as error:
-        logging.error("TableError: %s", error)
-        return ("TableError", plugin_id)
-    except PutError as error:
-        logging.error("PutError: %s", error)
-        return ("PutError", plugin_id)
-    except PynamoDBConnectionError as error:
-        logging.error("PynamoDBConnectionError: %s", error)
-        return ("PynamoDBConnectionError", plugin_id)
 
 
 def upload_plugin_to_s3(data, bucket, object_name):
     """
     Upload plugin file to S3 plugin repository bucket
+
+    :param data: Object data
+    :type data: binary
+    :param bucket: bucket name
+    :type bucket: str
     """
 
-    try:
-        response = s3_client.put_object(Body=data, Bucket=bucket, Key=object_name)
-
-    except ClientError as error:
-        logging.error("s3 PUT error: %s", error)
-        return False
-
-    logging.info("s3 PUT response: %s", response)
-    return True
+    s3_client.put_object(Body=data, Bucket=bucket, Key=object_name)
 
 
 @app.route("/plugin", methods=["POST"])
 def upload():
     """
     End point for processing data POSTed by the user
+
+    :returns: flask response
+    :rtype: flask.wrappers.Response
     """
 
-    data = request.get_data()
+    try:
+        data = request.get_data()
 
-    # Check data was posted by the user
-    if not data:
-        logging.error("Data Error: No plugin file supplied")
-        return format_error("No plugin file supplied", 400)
+        # Check data was posted by the user
+        if not data:
+            logging.error("Data Error: No plugin file supplied")
+            return format_error("No plugin file supplied", 400)
 
-    # Store the uploaded data as binary
-    zip_buffer = BytesIO(data)
+        # Store the uploaded data as binary
+        zip_buffer = BytesIO(data)
 
-    # Test the file is a zipfile
-    if not zipfile.is_zipfile(zip_buffer):
-        logging.error("Data Error: Plugin file supplied not a Zipfile")
-        return format_error("File must be a zipfile", 400)
+        # Test the file is a zipfile
+        if not zipfile.is_zipfile(zip_buffer):
+            logging.error("Data Error: Plugin file supplied not a Zipfile")
+            return format_error("File must be a zipfile", 400)
 
-    # Extract plugin metadata
-    plugin_zipfile = zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False)
-    metadata_path = get_metadata_path(plugin_zipfile)
-    if not metadata_path:
-        logging.error("Data Error: metadata.txt not found")
-        return format_error("metadata.txt not found", 400)
+        # Extract plugin metadata
+        plugin_zipfile = zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False)
+        metadata_path = get_metadata_path(plugin_zipfile)
+        if not metadata_path:
+            logging.error("Data Error: metadata.txt not found")
+            return format_error("metadata.txt not found", 400)
+        metadata_path = metadata_path[0]
+        metadata = metadata_contents(plugin_zipfile, metadata_path)
 
-    metadata_path = metadata_path[0]
-    metadata = metadata_contents(plugin_zipfile, metadata_path)
-    # The below will eventually be handle by metadata store method
-    error, plugin_name = updated_metadata_db(metadata)
-    if error:
-        logging.error("Plugin Upload Failed: %s", plugin_name)
-        return format_error(error, 400)
+        # Update metadata database
+        error, plugin_name = updated_metadata_db(metadata)
+        if error:
+            return format_error(error, 400)
 
-    success = upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
-    # Respond to the user
-    if not success:
-        logging.error("Plugin Upload Failed: %s", plugin_name)
-        return format_error("Upload failed :See logs", 400)
+        # Upload plugin to s3 bucket
+        upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
+        logging.info("Plugin Upload: %s", plugin_name)
+        return format_response({"pluginName": plugin_name}, 201)
 
-    logging.info("Plugin Upload: %s", plugin_name)
-    return format_response({"pluginName": plugin_name}, 201)
+    # pylint: disable=W0703
+    except Exception as error:
+        logging.error("Error: %s", error)
+        return format_error("Upload failed :See logs", 500)
 
 
 if __name__ == "__main__":

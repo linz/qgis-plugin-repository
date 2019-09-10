@@ -38,6 +38,7 @@ class MetadataModel(Model):
         region = os.environ.get("REGION", "ap-southeast-2")
 
     id = UnicodeAttribute(hash_key=True, null=False)
+    created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     plugin_id = UnicodeAttribute(null=False)
     name = UnicodeAttribute(null=False)
