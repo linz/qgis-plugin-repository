@@ -84,7 +84,6 @@ def test_updated_metadata_db(mocker, metadata_fixture):
     # Due to stubber issue. One mock method must be selected
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     result = api.updated_metadata_db(metadata_fixture)
     assert result == (None, "Testplugin.0.1")
@@ -153,7 +152,6 @@ def test_upload_data(mocker, client_fixture, s3_stub_fixture, global_data_fixtur
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     with open(global_data_fixture["test_plugin"], "rb") as file_data:
         bytes_content = file_data.read()
@@ -179,7 +177,6 @@ def test_upload_data_exception(mocker, client_fixture, global_data_fixture):
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     with open(global_data_fixture["test_plugin"], "rb") as file_data:
         bytes_content = file_data.read()

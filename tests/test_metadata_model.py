@@ -23,7 +23,6 @@ def test_metadata_model(mocker):
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     metadata = {
         "id": "c611a73c-12a0-4414-9ab5-ed1889122073",
@@ -84,7 +83,6 @@ def test_metadata_model_missing_required(mocker):
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
-    mocker.patch("pynamodb.models.Model._meta_table")
 
     metadata = {
         "id": "c611a73c-12a0-4414-9ab5-ed1889122073",
