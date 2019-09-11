@@ -11,10 +11,22 @@ provider:
   stage: dev
   region: ap-southeast-2
   environment:
-    REPO_BUCKET_NAME: ${self:custom.bucket_base_name}
+    REPO_BUCKET_NAME: "qgis-plugin-repository"
+    PLUGINS_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    REGION: ${self:provider.region}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
 
 custom:
-  bucket_base_name: "qgis-plugin-repository"
   pythonRequirements:
    usePoetry: false
    noDeploy:
@@ -47,7 +59,7 @@ resources:
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:custom.bucket_base_name}
+        BucketName: ${self:provider.environment.REPO_BUCKET_NAME}
         AccessControl: PublicReadWrite
     RepoBucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -73,3 +85,15 @@ resources:
                   - ""
                   - - "arn:aws:s3:::"
                     - "Ref" : "RepoBucket"
+    PluginsDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.PLUGINS_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
