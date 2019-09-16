@@ -11,6 +11,7 @@
 ################################################################################
 """
 
+import uuid
 import pytest
 from src.plugin.metadata_model import MetadataModel
 
@@ -23,17 +24,17 @@ def test_metadata_model(mocker):
 
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
+    file_name = str(uuid.uuid4())
 
     metadata = {
         "id": "c611a73c-12a0-4414-9ab5-ed1889122073",
-        "plugin_id": "test.1.0.0",
         "name": "test",
-        "qgisMinimumVersion": "0.0.0",
-        "qgisMaximumVersion": "0.0.1",
+        "qgis_minimum_version": "0.0.0",
+        "qgis_maximum_version": "0.0.1",
         "description": "this is a test",
         "about": "testing",
         "version": "1.0.0",
-        "author": "me",
+        "author_name": "me",
         "email": "me@theinternet.com",
         "changelog": "done stuff",
         "experimental": "True",
@@ -44,18 +45,18 @@ def test_metadata_model(mocker):
         "tracker": "github/pluigin/issues",
         "icon": "icon.png",
         "category": "test",
+        "file_name": file_name,
     }
 
     result = MetadataModel(
         id=metadata.get("id"),
-        plugin_id=metadata.get("plugin_id"),
         name=metadata.get("name"),
-        qgisMinimumVersion=metadata.get("qgisMinimumVersion"),
-        qgisMaximumVersion=metadata.get("qgisMaximumVersion"),
+        qgis_minimum_version=metadata.get("qgis_minimum_version"),
+        qgis_maximum_version=metadata.get("qgis_maximum_version"),
         description=metadata.get("description"),
         about=metadata.get("about"),
         version=metadata.get("version"),
-        author=metadata.get("author"),
+        author_name=metadata.get("author_name"),
         email=metadata.get("email"),
         changelog=metadata.get("changelog"),
         experimental=metadata.get("experimental"),
@@ -66,6 +67,7 @@ def test_metadata_model(mocker):
         tracker=metadata.get("tracker"),
         icon=metadata.get("icon"),
         category=metadata.get("category"),
+        file_name=metadata.get("file_name"),
     )
 
     result.save()
@@ -86,7 +88,6 @@ def test_metadata_model_missing_required(mocker):
 
     metadata = {
         "id": "c611a73c-12a0-4414-9ab5-ed1889122073",
-        "plugin_id": "test.1.0.0",
         "name": "test",
         "qgisMinimumVersion": "0.0.0",
         "qgisMaximumVersion": "0.0.1",
@@ -100,14 +101,13 @@ def test_metadata_model_missing_required(mocker):
     result = MetadataModel(
         id=metadata.get("id"),
         updated_at=metadata.get("updated_at"),
-        plugin_id=metadata.get("plugin_id"),
         name=metadata.get("name"),
-        qgisMinimumVersion=metadata.get("qgisMinimumVersion"),
-        qgisMaximumVersion=metadata.get("qgisMaximumVersion"),
+        qgis_minimum_version=metadata.get("qgisMinimumVersion"),
+        qgis_maximum_version=metadata.get("qgisMaximumVersion"),
         description=metadata.get("description"),
         about=metadata.get("about"),
         version=metadata.get("version"),
-        author=metadata.get("author"),
+        author_name=metadata.get("author"),
         email=metadata.get("email"),
         changelog=metadata.get("changelog"),
         experimental=metadata.get("experimental"),

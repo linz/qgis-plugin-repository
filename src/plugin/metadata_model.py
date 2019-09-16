@@ -20,7 +20,7 @@
 import os
 from datetime import datetime
 
-from pynamodb.attributes import UnicodeAttribute, BooleanAttribute, UTCDateTimeAttribute
+from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute
 from pynamodb.models import Model
 
 
@@ -40,24 +40,24 @@ class MetadataModel(Model):
     id = UnicodeAttribute(hash_key=True, null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
-    plugin_id = UnicodeAttribute(null=False)
     name = UnicodeAttribute(null=False)
-    qgisMinimumVersion = UnicodeAttribute(null=False)
-    qgisMaximumVersion = UnicodeAttribute(null=True)
+    qgis_minimum_version = UnicodeAttribute(null=False)
+    qgis_maximum_version = UnicodeAttribute(null=True)
     description = UnicodeAttribute(null=False)
     about = UnicodeAttribute(null=False)
     version = UnicodeAttribute(null=False)
-    author = UnicodeAttribute(null=False)
+    author_name = UnicodeAttribute(null=False)
     email = UnicodeAttribute(null=False)
     changelog = UnicodeAttribute(null=True)
-    experimental = BooleanAttribute(null=True)
-    deprecated = UnicodeAttribute(null=True)
+    experimental = UnicodeAttribute(null=True, default="False")
+    deprecated = UnicodeAttribute(null=True, default="False")
     tags = UnicodeAttribute(null=True)
     homepage = UnicodeAttribute(null=True)
     repository = UnicodeAttribute(null=False)
     tracker = UnicodeAttribute(null=True)
     icon = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
+    file_name = UnicodeAttribute(null=False)
 
     def __iter__(self):
         for name, attr in self._get_attributes().items():

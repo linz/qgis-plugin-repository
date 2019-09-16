@@ -11,20 +11,35 @@
 ################################################################################
 """
 
+# pylint: disable=redefined-outer-name
+
+
 import os
 import zipfile
 import configparser
 import pytest
 from botocore.stub import Stubber
-from src.plugin import api
+
+
+@pytest.fixture(name="api_fixture")
+def api(monkeypatch):
+    """
+    Must monkey patch envi vars before importing the api module
+    """
+
+    monkeypatch.setenv("REPO_BUCKET_NAME", "dummy")
+    from src.plugin import api
+
+    return api
 
 
 @pytest.fixture(name="client_fixture")
-def client():
+def client(api_fixture):
     """
     Fixture yielding the flask test client
     """
-    app = api.app
+
+    app = api_fixture.app
     app.testing = True
     yield app.test_client()
 
@@ -126,11 +141,11 @@ def metadata_invalid(global_data_fixture):
 
 
 @pytest.fixture(name="s3_stub_fixture")
-def s3_stub():
+def s3_stub(api_fixture):
     """
     Fixture yielding stubdeb s3 client
     """
 
-    stubbed_client = api.s3_client
+    stubbed_client = api_fixture.s3_client
     with Stubber(stubbed_client) as stubber:
         yield stubber

@@ -22,9 +22,11 @@ import zipfile
 import configparser
 import uuid
 from io import BytesIO, StringIO
+import xml.etree.ElementTree as ET
 from flask import Flask, request
 import boto3
 from src.plugin.metadata_model import MetadataModel
+
 
 app = Flask(__name__)
 
@@ -32,10 +34,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Repository bucket name
-if os.environ.get("REPO_BUCKET_NAME") is not None:
-    repo_bucket_name = os.environ["REPO_BUCKET_NAME"]
-else:
-    repo_bucket_name = "qgis-plugin-repository"
+repo_bucket_name = os.environ["REPO_BUCKET_NAME"]
+
+# AWS region
+aws_region = os.environ.get("REGION", None)
 
 # Boto S3 client
 s3_client = boto3.client("s3")
@@ -96,6 +98,34 @@ def get_metadata_path(plugin_zipfile):
     return metadata_path
 
 
+def get_zipfile_root_dir(plugin_zipfile):
+    """
+    The plugin file must have a root directory. When unziped
+    QGIS uses this directory name to refer to the installation.
+    :param plugin_zipfile: Zipfile obj representing the plugin
+    :type plugin_zipfile: zipfile.ZipFile
+    :returns: tuple==(<error message>, <root dir name>)
+    :rtype: tuple
+    """
+
+    error = None
+
+    filelist = plugin_zipfile.filelist
+    plugin_root = set(path.filename.split(os.sep)[0] for path in filelist)
+
+    if len(plugin_root) > 1:
+        error = "plugin zipfile has multiple folders at root level"
+        logging.error("plugin zipfile has multiple folders at root level")
+        return error, None
+    if not plugin_root:
+        error = "plugin zipfile has no root directory"
+        logging.error("plugin zipfile has no root directory")
+        return error, None
+    plugin_root = next(iter(plugin_root))
+    logging.info("plugin_root: %s", plugin_root)
+    return (None, plugin_root)
+
+
 def metadata_contents(plugin_zipfile, metadata_path):
     """
     Return metadata.txt contents that is stored in
@@ -118,7 +148,7 @@ def metadata_contents(plugin_zipfile, metadata_path):
     return config_parser
 
 
-def updated_metadata_db(metadata):
+def update_metadata_db(metadata, plugin_id, plugin_file_name):
     """
     Update dynamodb metadata store for uploaded plugin
 
@@ -131,19 +161,15 @@ def updated_metadata_db(metadata):
     """
 
     general_metadata = metadata["general"]
-
-    plugin_id = "{0}.{1}".format(general_metadata.get("name", None), general_metadata.get("version", None))
-
     plugin = MetadataModel(
-        id=str(uuid.uuid4()),
+        id=plugin_id,  # partition_key
         name=general_metadata.get("name", None),
         version=general_metadata.get("version", None),
-        plugin_id=plugin_id,
-        qgisMinimumVersion=general_metadata.get("qgisMinimumVersion", None),
-        qgisMaximumVersion=general_metadata.get("qgisMaximumVersion", None),
+        qgis_minimum_version=general_metadata.get("qgisMinimumVersion", None),
+        qgis_maximum_version=general_metadata.get("qgisMaximumVersion", None),
         description=general_metadata.get("description", None),
         about=general_metadata.get("about", None),
-        author=general_metadata.get("author", None),
+        author_name=general_metadata.get("author", None),
         email=general_metadata.get("email", None),
         changelog=general_metadata.get("changelog", None),
         experimental=general_metadata.get("experimental", None),
@@ -154,17 +180,93 @@ def updated_metadata_db(metadata):
         tracker=general_metadata.get("tracker", None),
         icon=general_metadata.get("icon", None),
         category=general_metadata.get("category", None),
+        file_name=plugin_file_name,
     )
 
     try:
         plugin.save()
-        return (None, plugin_id)
+        return None
     except ValueError as error:
         logging.error("ValueError: %s", error)
-        return (("ValueError: {0}").format(error), plugin_id)
+        return ("ValueError: {0}").format(error)
 
 
-def upload_plugin_to_s3(data, bucket, object_name):
+def get_most_current_plugins_metadata():
+    """
+    The metadata database retains all iterations of the plugin unless
+    the record is explicitly deleted by the user. This method only
+    returns distinct plugin_id with the most recent created date for each.
+
+    :returns: Dict of distinct plugins
+    :rtype: Dict
+    """
+
+    most_current = {}
+    for item in MetadataModel.scan():
+        if item.id in most_current:
+            if item.created_at > most_current[item.id]["created_at"]:
+                most_current[item.id] = item.attribute_values
+        else:
+            most_current[item.id] = item.attribute_values
+    return most_current
+
+
+def generate_download_url(plugin_id):
+    """
+    Returns path to plugin download
+
+    :param plugin_id: plugin_id
+    :type plugin_id: string
+    :returns: path to plugin download
+    :rtype: string
+    """
+
+    download_url = ("https://{0}.s3-{1}.amazonaws.com/{2}".format(repo_bucket_name, aws_region, plugin_id),)
+    return download_url
+
+
+def new_xml_element(parameter, value):
+    """
+    Return build new xml element
+    :param parameter: New xml element parameter
+    :type parameter: string
+    :param value:  New xml element value
+    :type value: string
+
+    :returns: ElementTree Element
+    :rtype: xml.etree.ElementTree.Element
+    """
+
+    new_element = ET.Element(parameter)
+    new_element.text = str(value)
+    return new_element
+
+
+def generate_metadata_xml():
+    """
+    Generate XML describing plugin store
+    from dynamodb plugin metadata store
+
+    :returns: string representation of plugin xml
+    :rtype: string
+    """
+
+    current_plugins = get_most_current_plugins_metadata()
+
+    root = ET.Element("plugins")
+    for plugin in current_plugins.values():
+        current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
+        for key, value in plugin.items():
+            if key not in ("name", "id", "plugin_id", "changelog", "category", "email"):
+                new_element = new_xml_element(key, value)
+                current_group.append(new_element)
+        download_url = generate_download_url(plugin["id"])
+        new_element = new_xml_element("download_url", download_url)
+        current_group.append(new_element)
+    return ET.tostring(root)
+
+
+def put_to_s3(data, bucket, object_name, content_disposition=None):
     """
     Upload plugin file to S3 plugin repository bucket
 
@@ -174,10 +276,35 @@ def upload_plugin_to_s3(data, bucket, object_name):
     :type bucket: str
     """
 
-    s3_client.put_object(Body=data, Bucket=bucket, Key=object_name)
+    s3_client.put_object(Body=data, Bucket=bucket, Key=object_name, ContentDisposition=content_disposition)
 
 
-@app.route("/plugin", methods=["POST"])
+def validate_user_data(data):
+    """
+    ensure data was submitted by the user and it
+    is a zipfile
+
+    :param data: Object data
+    :type data: binary
+    """
+
+    # Check data was posted by the user
+    error = None
+    if not data:
+        logging.error("Data Error: No plugin file supplied")
+        error = "No plugin file supplied"
+        return error
+
+    # Test the file is a zipfile
+    if not zipfile.is_zipfile(BytesIO(data)):
+        logging.error("Data Error: Plugin file supplied not a Zipfile")
+        error = "File must be a zipfile"
+        return error
+
+    return error
+
+
+@app.route("/plugins", methods=["POST"])
 def upload():
     """
     End point for processing data POSTed by the user
@@ -187,23 +314,13 @@ def upload():
     """
 
     try:
-        data = request.get_data()
-
-        # Check data was posted by the user
-        if not data:
-            logging.error("Data Error: No plugin file supplied")
-            return format_error("No plugin file supplied", 400)
-
-        # Store the uploaded data as binary
-        zip_buffer = BytesIO(data)
-
-        # Test the file is a zipfile
-        if not zipfile.is_zipfile(zip_buffer):
-            logging.error("Data Error: Plugin file supplied not a Zipfile")
-            return format_error("File must be a zipfile", 400)
+        post_data = request.get_data()
+        error = validate_user_data(post_data)
+        if error:
+            return format_error(error, 400)
 
         # Extract plugin metadata
-        plugin_zipfile = zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False)
+        plugin_zipfile = zipfile.ZipFile(BytesIO(post_data), "r", zipfile.ZIP_DEFLATED, False)
         metadata_path = get_metadata_path(plugin_zipfile)
         if not metadata_path:
             logging.error("Data Error: metadata.txt not found")
@@ -211,20 +328,37 @@ def upload():
         metadata_path = metadata_path[0]
         metadata = metadata_contents(plugin_zipfile, metadata_path)
 
+        # Upload plugin to s3 bucket
+        error, content_disposition = get_zipfile_root_dir(plugin_zipfile)
+        if error:
+            return format_error(error, 400)
+        plugin_id = str(uuid.uuid4())
+        put_to_s3(post_data, repo_bucket_name, plugin_id, content_disposition)
+        logging.info("Plugin Upload: %s", plugin_id)
+
         # Update metadata database
-        error, plugin_name = updated_metadata_db(metadata)
+        error = update_metadata_db(metadata, plugin_id, content_disposition)
         if error:
             return format_error(error, 400)
 
-        # Upload plugin to s3 bucket
-        upload_plugin_to_s3(data, repo_bucket_name, plugin_name)
-        logging.info("Plugin Upload: %s", plugin_name)
-        return format_response({"pluginName": plugin_name}, 201)
+        return format_response({"plugin_id": plugin_id}, 201)
 
     # pylint: disable=W0703
     except Exception as error:
         logging.error("Error: %s", error)
         return format_error("Upload failed :See logs", 500)
+
+
+@app.route("/plugins", methods=["GET"])
+def get_plugins():
+    """"
+    Get xml describing current plugins
+    """
+
+    # Upload plugin xml
+    xml = generate_metadata_xml()
+    logging.info("plugins.xml updated")
+    return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 
 if __name__ == "__main__":
