@@ -35,5 +35,4 @@ jobs:
 
       - name: Coverage
         run: |
-          coverage run tests/test_api.py 
-          coverage report -m
+          pytest --cov
