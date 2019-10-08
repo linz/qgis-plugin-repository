@@ -19,3 +19,5 @@ script:
   - pylint src/
   - pylint tests/
   - python -m pytest
+  - coverage run tests/test_api.py 
+  - coverage report -m
