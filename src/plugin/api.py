@@ -151,7 +151,6 @@ def upload():
         return format_response(MetadataModel.json_dump_item(plugin), 201)
 
     except DataError as error:
-        logging.error("Error: %s", error)
         return format_error(error.msg, 500)
 
     except Exception as error:
@@ -193,7 +192,6 @@ def get_item(plugin_id):
         return format_response(MetadataModel.json_dump_item(plugin), 200)
 
     except DataError as error:
-        logging.error("Error: %s", error)
         return format_error(error.msg, 500)
     except Exception as error:
         logging.error("Error: %s", error)
@@ -236,7 +234,6 @@ def qgis_plugin_xml():
         logging.info("Returnig plugin xml to user")
         return app.response_class(response=xml, status=200, mimetype="text/xml")
     except DataError as error:
-        logging.error("Error: %s", error)
         return format_error("Request failed :See logs", 500)
     except Exception as error:
         logging.error("Error: %s", error)

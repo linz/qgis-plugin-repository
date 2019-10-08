@@ -13,6 +13,12 @@
     Custom Error class
 """
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 class DataError(Exception):
     """
@@ -22,6 +28,7 @@ class DataError(Exception):
     def __init__(self, msg):
         super(DataError, self).__init__(msg)
         self.msg = msg
+        logging.error("Error: %s", self.msg)
 
     def __str__(self):
         return repr(self.msg)
