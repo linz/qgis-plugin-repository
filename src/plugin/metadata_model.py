@@ -48,11 +48,19 @@ class ModelEncoder(json.JSONEncoder):
 class MetadataModel(Model):
     """
     metadata db model
+
     """
 
     class Meta:
         """
         db metadata
+
+        Maps metadata.txt value to metadata database.
+        Metadata values are described here -
+        https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/plugins/plugins.html#plugin-metadata-table
+        some database keys vary slightly in name than metadata.txt.
+        This is as database keys match the qgis plugins.xml and maps
+        to the this document (plugins.xml)
         """
 
         table_name = os.environ.get("PLUGINS_TABLE_NAME", "qgis-plugin-repo-metadata")
