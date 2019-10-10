@@ -34,6 +34,8 @@ class ModelEncoder(json.JSONEncoder):
     Encode json
     """
 
+    # pyint E0202 is a false positive in this case
+    # see - https://github.com/PyCQA/pylint/issues/414
     def default(self, o):  # pylint: disable=E0202
         """
         Handle types associated with model for loading to json
