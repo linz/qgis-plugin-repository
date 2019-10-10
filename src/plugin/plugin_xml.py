@@ -29,8 +29,7 @@ def generate_download_url(repo_bucket_name, aws_region, plugin_id):
     :rtype: string
     """
 
-    download_url = "https://{0}.s3-{1}.amazonaws.com/{2}".format(repo_bucket_name, aws_region, plugin_id)
-    return download_url
+    return "https://{0}.s3-{1}.amazonaws.com/{2}".format(repo_bucket_name, aws_region, plugin_id)
 
 
 def new_xml_element(parameter, value):
