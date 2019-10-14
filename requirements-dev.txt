@@ -15,5 +15,4 @@ pytest==5.1.2
 pytest-mock==1.10.4
 botocore==1.12.189
 pynamodb==4.0.0
-coverage==4.5.4
-
+pytest-cov==2.7.1

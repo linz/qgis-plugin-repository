@@ -13,7 +13,6 @@ provider:
   environment:
     REPO_BUCKET_NAME: "qgis-plugin-repository"
     PLUGINS_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
-    REGION: ${self:provider.region}
   iamRoleStatements:
     - Effect: Allow
       Action:
