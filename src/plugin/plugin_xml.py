@@ -61,16 +61,16 @@ def generate_xml_body(repo_bucket_name, aws_region):
     :rtype: string
     """
 
-    current_plugins = MetadataModel.json_dump_model_current()
+    current_plugins = MetadataModel.all_version_zeros()
 
     root = ET.Element("plugins")
-    for plugin in current_plugins.values():
+    for plugin in current_plugins:
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
         for key, value in plugin.items():
             if key not in ("name", "id", "plugin_id", "changelog", "category", "email"):
                 new_element = new_xml_element(key, value)
                 current_group.append(new_element)
-        download_url = generate_download_url(repo_bucket_name, aws_region, plugin["id"])
+        download_url = generate_download_url(repo_bucket_name, aws_region, plugin["file_name"])
         new_element = new_xml_element("download_url", download_url)
         current_group.append(new_element)
     return ET.tostring(root)

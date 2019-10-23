@@ -37,14 +37,11 @@ def metadata_path(plugin_zipfile):
     :rtype: str
     """
 
-    # Possible errors
-    errors = {"missing_metadata": "No metadata.txt file found in plugin directory"}
-
     # Get Metadata.txt path
     plugin_files = plugin_zipfile.namelist()
     path = [i for i in plugin_files if re.search(r"^[^/]*/metadata\.txt$", i)]
     if not path:
-        raise DataError(errors["missing_metadata"])
+        raise DataError("No metadata.txt file found in plugin directory")
     logging.info("Metadata path: %s", path[0])
     return path[0]
 

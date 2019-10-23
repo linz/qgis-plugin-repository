@@ -92,7 +92,11 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: item_version
+            AttributeType: N
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+          - AttributeName: item_version
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
