@@ -9,9 +9,7 @@
 # LICENSE file for more information.
 #
 ################################################################################
-
     For parsing plugin metadata
-
 """
 
 
@@ -30,7 +28,6 @@ logger.setLevel(logging.INFO)
 def metadata_path(plugin_zipfile):
     """
     Get reference to metadata.txt within zipfile.
-
     :param plugin_zipfile: Zipfile obj representing the plugin
     :type plugin_zipfile: zipfile.ZipFile
     :returns: metadata.txt path
@@ -41,7 +38,7 @@ def metadata_path(plugin_zipfile):
     plugin_files = plugin_zipfile.namelist()
     path = [i for i in plugin_files if re.search(r"^[^/]*/metadata\.txt$", i)]
     if not path:
-        raise DataError("No metadata.txt file found in plugin directory")
+        raise DataError(400, "No metadata.txt file found in plugin directory")
     logging.info("Metadata path: %s", path[0])
     return path[0]
 
@@ -56,19 +53,13 @@ def zipfile_root_dir(plugin_zipfile):
     :rtype: str
     """
 
-    # Possible errors
-    errors = {
-        "multiple_root_dirs": "Multiple directories exists at the root level. There should only be one",
-        "missing_root_dir": "The plugin has no root directory. One must exist",
-    }
-
     # Get root dir
     filelist = plugin_zipfile.filelist
     plugin_root = set(path.filename.split(os.sep)[0] for path in filelist)
     if len(plugin_root) > 1:
-        raise DataError(errors["multiple_root_dirs"])
+        raise DataError(400, "Multiple directories exists at the root level. There should only be one")
     if not plugin_root:
-        raise DataError(errors["missing_root_dir"])
+        raise DataError(400, "The plugin has no root directory. One must exist")
     plugin_root = next(iter(plugin_root))
     logging.info("plugin_root: %s", plugin_root)
     return plugin_root

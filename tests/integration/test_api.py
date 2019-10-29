@@ -14,6 +14,8 @@
 
 import tempfile
 import zipfile
+import pytest
+from src.plugin.error import DataError
 
 
 def test_upload_no_data(client_fixture):
@@ -23,9 +25,9 @@ def test_upload_no_data(client_fixture):
     part of the post
     """
 
-    result = client_fixture.post("/plugin")
-    assert result.status_code == 500
-    assert result.get_json() == {"message": "No plugin file supplied"}
+    with pytest.raises(DataError) as error:
+        client_fixture.post("/plugin")
+    assert "No plugin file supplied" in str(error.value)
 
 
 def test_upload_no_metadata(client_fixture):
@@ -40,9 +42,9 @@ def test_upload_no_metadata(client_fixture):
             archive.writestr("plugin/testplugin.py", "print(hello word)")
         tmp.seek(0)
         zipped_bytes = tmp.read()
-        result = client_fixture.post("/plugin", data=zipped_bytes)
-    assert result.status_code == 500
-    assert result.get_json() == {"message": "No metadata.txt file found in plugin directory"}
+        with pytest.raises(DataError) as error:
+            client_fixture.post("/plugin", data=zipped_bytes)
+    assert "No metadata.txt file found in plugin directory" in str(error.value)
 
 
 def test_upload_not_a_zipfile(client_fixture):
@@ -52,14 +54,14 @@ def test_upload_not_a_zipfile(client_fixture):
     data that is not a zipfile
     """
 
-    result = client_fixture.post("/plugin", data=b"0011010101010")
-    assert result.status_code == 500
-    assert result.get_json() == {"message": "Plugin file supplied not a Zipfile"}
+    with pytest.raises(DataError) as error:
+        client_fixture.post("/plugin", data=b"0011010101010")
+    assert "Plugin file supplied not a Zipfile" in str(error.value)
 
 
 def query_iter_obj(mocker):
     """
-    s
+    Return pynamodb like iterator object
     """
 
     plugin_item = mocker.Mock()
@@ -195,21 +197,3 @@ qgisMinimumVersion=4.0.0""",
         "updated_at": "2019-10-07T00:57:19.868980+00:00",
         "version": "0.0.0",
     }
-
-
-def test_upload_data_exception(mocker, client_fixture):
-    """
-    When s3_put error is encountered this should
-    be captured by the plugin as an 500
-
-    This test is at the integration level
-    """
-
-    mocker.patch("pynamodb.connection.base.get_session")
-    mocker.patch("pynamodb.connection.table.Connection")
-
-    result = client_fixture.post(
-        "/plugin", data=(b"PK\x05\x06\x00\x00\x00\x00\x04\x00\x04\x00\x8e\x01\x00\x00\xa2\t\x00\x00\x00\x00")
-    )
-
-    assert result.status_code == 500
