@@ -9,12 +9,11 @@
 # LICENSE file for more information.
 #
 ################################################################################
-
     Custom Error class
 """
 
 import logging
-
+from flask import jsonify
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -25,10 +24,42 @@ class DataError(Exception):
     Custom error for catch APP data errors
     """
 
-    def __init__(self, msg):
+    http_code: int
+    msg: str
+
+    def __init__(self, http_code: int, msg: str):
         super(DataError, self).__init__(msg)
         self.msg = msg
-        logging.error("Error: %s", self.msg)
+        self.http_code = http_code
 
     def __str__(self):
         return repr(self.msg)
+
+
+def handle_error(e: Exception):
+    """
+    Catch python standard exception
+    """
+
+    response_body = {"message": "Internal Server Error"}
+    logging.info("Response Message: %s", e)
+    return jsonify(response_body), 500
+
+
+def handle_data_error(e: DataError):
+    """
+    Custom error
+    """
+
+    response_body = {"message": e.msg}
+    logging.info("Response Message: %s %s", e.msg, e.http_code)
+    return jsonify(response_body), e.http_code
+
+
+def add_data_error_handler(app):
+    """
+    Register error handlers
+    """
+
+    app.register_error_handler(DataError, handle_data_error)
+    app.register_error_handler(Exception, handle_error)
