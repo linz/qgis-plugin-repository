@@ -21,7 +21,6 @@ import logging
 import zipfile
 import uuid
 from io import BytesIO
-from datetime import datetime
 from flask import Flask, request, jsonify
 from src.plugin import plugin_parser
 from src.plugin import aws
@@ -88,29 +87,13 @@ def validate_user_data(data):
     :rtype: str
     """
 
-    # Possible errors
-    errors = {"plugin_missing": "No plugin file supplied", "not_zipfile": "Plugin file supplied not a Zipfile"}
-
     # Check data was posted by the user
     if not data:
-        raise DataError(errors["plugin_missing"])
+        raise DataError("No plugin file supplied")
 
     # Test the file is a zipfile
     if not zipfile.is_zipfile(BytesIO(data)):
-        raise DataError(errors["not_zipfile"])
-
-
-def get_metadata_item(plugin_id):
-    """
-    Get the metadata_model representation of the plugin
-    :param plugin_id: plugin_id
-    :type plugin_id: str (str representaion of uuidd)
-    :returns: MetadataModel  object
-    :rtype: metadata_model.MetadataModel
-    """
-
-    item = MetadataModel.get(plugin_id)
-    return item
+        raise DataError("Plugin file supplied not a Zipfile")
 
 
 @app.route("/plugin", methods=["POST"])
@@ -136,19 +119,19 @@ def upload():
         content_disposition = plugin_parser.zipfile_root_dir(plugin_zipfile)
         logging.info("Content Disposition: %s", content_disposition)
 
-        # Allocate a unique ID. Pluign here on out will be referred to as this
-        plugin_id = str(uuid.uuid4())
-        logging.info("Plugin Id: %s", plugin_id)
+        # Allocate a filename
+        filename = str(uuid.uuid4())
+        logging.info("Plugin Id: %s", filename)
 
         # Upload the plugin to s3
-        aws.s3_put(post_data, repo_bucket_name, plugin_id, content_disposition)
-        logging.info("Plugin Upload to s3: %s", plugin_id)
+        aws.s3_put(post_data, repo_bucket_name, filename, content_disposition)
+        logging.info("Plugin Upload to s3: %s", filename)
 
         # Update metadata database
-        MetadataModel.update_metadata_db(metadata, plugin_id, content_disposition)
-        logging.info("Metadata updated for plugin: %s", plugin_id)
-        plugin = get_metadata_item(plugin_id)
-        return format_response(MetadataModel.json_dump_item(plugin), 201)
+        plugin_metadata = MetadataModel.new_plugin_version(metadata, content_disposition, filename)
+
+        logging.info("Metadata updated for plugin: %s", metadata)
+        return format_response(plugin_metadata, 201)
 
     except DataError as error:
         return format_error(error.msg, 500)
@@ -159,7 +142,7 @@ def upload():
 
 
 @app.route("/plugin", methods=["GET"])
-def get_all():
+def get_all_plugins():
     """
     List all plugin's metadata
     :returns: tuple (http response, http code)
@@ -167,7 +150,7 @@ def get_all():
     """
 
     try:
-        return format_response(MetadataModel.json_dump_model(), 200)
+        return format_response(MetadataModel.all_version_zeros(), 200)
 
     except Exception as error:
         logging.error("Error: %s", error)
@@ -175,7 +158,7 @@ def get_all():
 
 
 @app.route("/plugin/<plugin_id>", methods=["GET"])
-def get_item(plugin_id):
+def get_plugin(plugin_id):
     """
     Takes a plugin_id as input and returns the metadata of the
     one associated plugin to this Id
@@ -186,11 +169,7 @@ def get_item(plugin_id):
     """
 
     try:
-        plugin = get_metadata_item(plugin_id)
-        if not plugin:
-            raise DataError("Plugin not found")
-        return format_response(MetadataModel.json_dump_item(plugin), 200)
-
+        return format_response(MetadataModel.plugin_version_zero(plugin_id), 200)
     except DataError as error:
         return format_error(error.msg, 500)
     except Exception as error:
@@ -198,11 +177,10 @@ def get_item(plugin_id):
         return format_error("Request failed :See logs", 500)
 
 
-@app.route("/plugin/<plugin_id>", methods=["DELETE"])
-def delete(plugin_id):
+@app.route("/plugin/revisions/<plugin_id>", methods=["GET"])
+def get_all_revisions(plugin_id):
     """
-    Takes a plugin_id as input and adds an end-date to the
-    metadata record associated to the Id
+    Takes a plugin_id and returns all associated plugin revisions
     :param plugin_id: plugin_id
     :type data: string
     :returns: tuple (http response, http code)
@@ -210,13 +188,7 @@ def delete(plugin_id):
     """
 
     try:
-        logging.info("Attempting to delete record: %s", plugin_id)
-        plugin = get_metadata_item(plugin_id)
-
-        plugin.update(actions=[MetadataModel.ended_at.set(datetime.now()), MetadataModel.updated_at.set(datetime.now())])
-        plugin = get_metadata_item(plugin_id)
-        return format_response(MetadataModel.json_dump_item(plugin), 200)
-
+        return format_response(MetadataModel.plugin_all_versions(plugin_id), 200)
     except Exception as error:
         logging.error("Error: %s", error)
         return format_error("Request failed :See logs", 500)
@@ -224,12 +196,13 @@ def delete(plugin_id):
 
 @app.route("/plugins.xml", methods=["GET"])
 def qgis_plugin_xml():
-    """"
+    """
     Get xml describing current plugins
+    :returns: xml doc describing current (version==0) plugins
+    :rtype: tuple (flask.wrappers.Response, int)
     """
 
     try:
-        # Upload plugin xml
         xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region)
         logging.info("Returnig plugin xml to user")
         return app.response_class(response=xml, status=200, mimetype="text/xml")

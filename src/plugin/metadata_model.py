@@ -21,7 +21,7 @@ from datetime import datetime
 import json
 import logging
 
-from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute
+from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
 from pynamodb.models import Model
 
 
@@ -50,7 +50,6 @@ class ModelEncoder(json.JSONEncoder):
 class MetadataModel(Model):
     """
     metadata db model
-
     """
 
     class Meta:
@@ -69,6 +68,8 @@ class MetadataModel(Model):
         region = os.environ.get("AWS_REGION")
 
     id = UnicodeAttribute(hash_key=True, null=False)
+    item_version = NumberAttribute(range_key=True, null=False)
+    revisions = NumberAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     ended_at = UTCDateTimeAttribute(null=True)
@@ -96,80 +97,118 @@ class MetadataModel(Model):
             yield name, attr.serialize(getattr(self, name))
 
     @classmethod
-    def json_dump_model(cls):
+    def all_version_zeros(cls):
         """
-        Dump json representation of all items in model
-        """
-
-        json_representation = {}
-        for plugin in cls.scan():
-            json_representation.update(cls.json_dump_item(plugin))
-        return json_representation
-
-    @classmethod
-    def json_dump_item(cls, plugin):
-        """
-        Dump json representation of single item in model
+        Returns a json representation of all plugins
+        metadata for the most current version
+        :returns: json describing plugin metadata
+        :rtype: json
         """
 
-        json_representation = {}
-        json_representation[plugin.id] = json.loads(json.dumps(plugin.attribute_values, cls=ModelEncoder))
-        return json_representation
+        v_zeros = []
+        for item in cls.scan(cls.item_version == 0):
+            v_zeros.append(json.loads(json.dumps(item.attribute_values, cls=ModelEncoder)))
+        return v_zeros
 
     @classmethod
-    def json_dump_model_current(cls):
+    def plugin_version_zero(cls, plugin_id):
         """
-        Dump json representation of all items in model.
-        Where multiple dates exist for a duplicate
-        plugin name + version combination return the
-        last updated item.
+        Returns the most current metadata for the
+        plugin matching the plugin_id parameter
+        :param plugin_id: The plugin_id for the record to retrieve form the database.
+        :type plugin_id: str
+        :returns: json describing plugin metadata
+        :rtype: json
         """
 
-        most_current = {}
-        for plugin_metadata in cls.json_dump_model().values():
-            if "ended_at" not in plugin_metadata:
-                pluig_ref = plugin_metadata["name"] + "-" + plugin_metadata["version"]
-                if pluig_ref in most_current:
-                    if plugin_metadata["created_at"] > most_current[pluig_ref]["created_at"]:
-                        most_current[pluig_ref] = plugin_metadata
-                else:
-                    most_current[pluig_ref] = plugin_metadata
-        return most_current
+        result = cls.query(plugin_id, cls.item_version == 0)
+        if result:
+            version_zero = next(result)
+        return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
 
     @classmethod
-    def update_metadata_db(cls, metadata, plugin_id, plugin_file_name):
+    def plugin_all_versions(cls, plugin_id):
+        """
+        Returns the all versions of metadata for the
+        plugin matching the plugin_id parameter
+        :param plugin_id: The plugin_id for the record to retrieve form the database.
+        :type plugin_id: str
+        :returns: json describing plugin metadata
+        :rtype: json
+        """
+
+        versions = []
+        result = cls.query(plugin_id)
+        for version in result:
+            versions.append(json.loads(json.dumps(version.attribute_values, cls=ModelEncoder)))
+        return versions
+
+    @classmethod
+    def update_version_zero(cls, metadata, version_zero, filename):
+
         """
         Update dynamodb metadata store for uploaded plugin
 
         :param metadata: ConfigParser representation of metadata.txt
         :type metadata: configparser.ConfigParser
-        :returns: tuple (<error>, <plugin_id>).
-                  if successful error == None
-                  plugin_id == <plugin_name>+<plugin_version>
-        :rtype: tuple
+        :param version_zero: metadata object
+        :type version_zero: metadata_model.Metadata
+        :param filename: filename of plugin.zip in datastore (currently s3)
+        :type filename: str
         """
 
         general_metadata = metadata["general"]
-        plugin = cls(
-            id=plugin_id,  # partition_key
-            name=general_metadata.get("name", None),
-            version=general_metadata.get("version", None),
-            qgis_minimum_version=general_metadata.get("qgisMinimumVersion", None),
-            qgis_maximum_version=general_metadata.get("qgisMaximumVersion", None),
-            description=general_metadata.get("description", None),
-            about=general_metadata.get("about", None),
-            author_name=general_metadata.get("author", None),
-            email=general_metadata.get("email", None),
-            changelog=general_metadata.get("changelog", None),
-            experimental=general_metadata.get("experimental", None),
-            deprecated=general_metadata.get("deprecated", None),
-            tags=general_metadata.get("tags", None),
-            homepage=general_metadata.get("homepage", None),
-            repository=general_metadata.get("repository", None),
-            tracker=general_metadata.get("tracker", None),
-            icon=general_metadata.get("icon", None),
-            category=general_metadata.get("category", None),
-            file_name=plugin_file_name,
+
+        version_zero.update(
+            actions=[
+                cls.name.set(general_metadata.get("name", None)),
+                cls.version.set(general_metadata.get("version", None)),
+                cls.revisions.set(version_zero.revisions + 1),
+                cls.qgis_minimum_version.set(general_metadata.get("qgisMinimumVersion", None)),
+                cls.qgis_maximum_version.set(general_metadata.get("qgisMaximumVersion", None)),
+                cls.description.set(general_metadata.get("description", None)),
+                cls.about.set(general_metadata.get("about", None)),
+                cls.author_name.set(general_metadata.get("author", None)),
+                cls.email.set(general_metadata.get("email", None)),
+                cls.changelog.set(general_metadata.get("changelog", None)),
+                cls.experimental.set(general_metadata.get("experimental", None)),
+                cls.deprecated.set(general_metadata.get("deprecated", None)),
+                cls.tags.set(general_metadata.get("tags", None)),
+                cls.homepage.set(general_metadata.get("homepage", None)),
+                cls.repository.set(general_metadata.get("repository", None)),
+                cls.tracker.set(general_metadata.get("tracker", None)),
+                cls.icon.set(general_metadata.get("icon", None)),
+                cls.category.set(general_metadata.get("category", None)),
+                cls.file_name.set(filename),
+            ],
+            condition=(cls.revisions == version_zero.revisions),
         )
 
-        plugin.save()
+    @classmethod
+    def revision_former_version_zero(cls, attributes):
+        """
+        Insert a version of the previsous version zero record
+        for audit purposes
+        :param attributes: dict of properties representing the former version zero metadata
+        :type attributes: dict
+        """
+        attributes["item_version"] = attributes["revisions"]
+        former_record = cls(**attributes)
+        former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
+
+    @classmethod
+    def new_plugin_version(cls, metadata, content_disposition, filename):
+        """
+        If a new version of an existing plugin is submitted via the API
+        update the version zero record with its details and
+        store a revision of the former version zero entry for
+        database audit purposes.
+        """
+        result = cls.query(content_disposition, cls.item_version == 0)
+        version_zero = next(result)
+        # Update version zero
+        cls.update_version_zero(metadata, version_zero, filename)
+        # Insert former v0 into revision
+        cls.revision_former_version_zero(version_zero.attribute_values)
+        version_zero.refresh()
+        return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))

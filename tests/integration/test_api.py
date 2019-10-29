@@ -57,22 +57,41 @@ def test_upload_not_a_zipfile(client_fixture):
     assert result.get_json() == {"message": "Plugin file supplied not a Zipfile"}
 
 
-def test_upload_data(mocker, client_fixture):
+def query_iter_obj(mocker):
     """
-    When the users submits the correct plugin data
-    test API responds indicating success.
+    s
+    """
 
-    This test is at the integration level
-    """
-    mock_uuid = "88f530e5-8914-4bf8-9351-f351e6b0e8fc"
-    mocker.patch("pynamodb.connection.base.get_session")
-    mocker.patch("pynamodb.connection.table.Connection")
     plugin_item = mocker.Mock()
-    plugin_item.id = "139735175778432"
+    plugin_item.id = "test_plugin"
+    plugin_item.about = "For testing"
+    plugin_item.author_name = "Tester"
+    plugin_item.category = "Raster"
+    plugin_item.item_version = 0
+    plugin_item.revisions = 0
+    plugin_item.created_at = "2019-10-07T00:57:19.868970+00:00"
+    plugin_item.deprecated = "False"
+    plugin_item.description = "Test"
+    plugin_item.email = "test@gmail"
+    plugin_item.experimental = "False"
+    plugin_item.file_name = "test"
+    plugin_item.homepage = "http://github.com/test"
+    plugin_item.icon = "icon.svg"
+    plugin_item.id = "test_plugin"
+    plugin_item.name = "test plugin"
+    plugin_item.qgis_maximum_version = "4.00"
+    plugin_item.qgis_minimum_version = "4.00"
+    plugin_item.repository = "https://github.com/test"
+    plugin_item.tags = "raster"
+    plugin_item.tracker = "http://github.com/test/issues"
+    plugin_item.updated_at = "2019-10-07T00:57:19.868980+00:00"
+    plugin_item.version = "0.0.0"
     plugin_item.attribute_values = {
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
+        "item_version": 0,
+        "revisions": 0,
         "created_at": "2019-10-07T00:57:19.868970+00:00",
         "deprecated": "False",
         "description": "Test",
@@ -81,8 +100,8 @@ def test_upload_data(mocker, client_fixture):
         "file_name": "test",
         "homepage": "http://github.com/test",
         "icon": "icon.svg",
-        "id": "d41f5e33-d07d-4797-afec-ffca6ace7687",
-        "name": "Value Tool",
+        "id": "test_plugin",
+        "name": "test plugin",
         "qgis_maximum_version": "4.00",
         "qgis_minimum_version": "4.00",
         "repository": "https://github.com/test",
@@ -92,8 +111,23 @@ def test_upload_data(mocker, client_fixture):
         "version": "0.0.0",
     }
 
-    mocker.patch("src.plugin.metadata_model.MetadataModel.get", return_value=plugin_item)
-    mocker.patch("uuid.uuid4", return_value=mock_uuid)
+    li = [plugin_item]
+    for i in li:
+        yield i
+
+
+def test_upload_data(mocker, client_fixture):
+    """
+    When the users submits the correct plugin data
+    test API responds indicating success.
+
+    This test is at the integration level
+    """
+
+    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker))
+    mocker.patch("pynamodb.connection.base.get_session")
+    mocker.patch("pynamodb.connection.table.Connection")
+    mocker.patch("src.plugin.metadata_model.MetadataModel.save")
     mocker.patch(
         "botocore.client.BaseClient._make_api_call",
         return_value={
@@ -117,11 +151,11 @@ def test_upload_data(mocker, client_fixture):
 
     with tempfile.SpooledTemporaryFile() as tmp:
         with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("plugin/testplugin.py", "print(hello word)")
+            archive.writestr("test_plugin/test_plugin.py", "hello word")
             archive.writestr(
-                "plugin/metadata.txt",
+                "test_plugin/metadata.txt",
                 """[general]
-name=plugin
+name=test plugin
 icon=icon.png
 email=test@linz.govt.nz
 author=Tester
@@ -138,28 +172,28 @@ qgisMinimumVersion=4.0.0""",
         result = client_fixture.post("/plugin", data=zipped_bytes)
     assert result.status_code == 201
     assert result.get_json() == {
-        "139735175778432": {
-            "about": "For testing",
-            "author_name": "Tester",
-            "category": "Raster",
-            "created_at": "2019-10-07T00:57:19.868970+00:00",
-            "deprecated": "False",
-            "description": "Test",
-            "email": "test@gmail",
-            "experimental": "False",
-            "file_name": "test",
-            "homepage": "http://github.com/test",
-            "icon": "icon.svg",
-            "id": "d41f5e33-d07d-4797-afec-ffca6ace7687",
-            "name": "Value Tool",
-            "qgis_maximum_version": "4.00",
-            "qgis_minimum_version": "4.00",
-            "repository": "https://github.com/test",
-            "tags": "raster",
-            "tracker": "http://github.com/test/issues",
-            "updated_at": "2019-10-07T00:57:19.868980+00:00",
-            "version": "0.0.0",
-        }
+        "about": "For testing",
+        "author_name": "Tester",
+        "category": "Raster",
+        "item_version": 0,
+        "revisions": 0,
+        "created_at": "2019-10-07T00:57:19.868970+00:00",
+        "deprecated": "False",
+        "description": "Test",
+        "email": "test@gmail",
+        "experimental": "False",
+        "file_name": "test",
+        "homepage": "http://github.com/test",
+        "icon": "icon.svg",
+        "id": "test_plugin",
+        "name": "test plugin",
+        "qgis_maximum_version": "4.00",
+        "qgis_minimum_version": "4.00",
+        "repository": "https://github.com/test",
+        "tags": "raster",
+        "tracker": "http://github.com/test/issues",
+        "updated_at": "2019-10-07T00:57:19.868980+00:00",
+        "version": "0.0.0",
     }
 
 
