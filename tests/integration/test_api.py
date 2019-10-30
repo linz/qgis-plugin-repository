@@ -43,7 +43,7 @@ def test_upload_no_metadata(client_fixture):
         tmp.seek(0)
         zipped_bytes = tmp.read()
         with pytest.raises(DataError) as error:
-            client_fixture.post("/plugin", data=zipped_bytes)
+            client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
     assert "No metadata.txt file found in plugin directory" in str(error.value)
 
 
@@ -55,7 +55,7 @@ def test_upload_not_a_zipfile(client_fixture):
     """
 
     with pytest.raises(DataError) as error:
-        client_fixture.post("/plugin", data=b"0011010101010")
+        client_fixture.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
     assert "Plugin file supplied not a Zipfile" in str(error.value)
 
 
@@ -69,8 +69,8 @@ def query_iter_obj(mocker):
     plugin_item.about = "For testing"
     plugin_item.author_name = "Tester"
     plugin_item.category = "Raster"
-    plugin_item.item_version = 0
-    plugin_item.revisions = 0
+    plugin_item.item_version = "0"
+    plugin_item.revisions = "0"
     plugin_item.created_at = "2019-10-07T00:57:19.868970+00:00"
     plugin_item.deprecated = "False"
     plugin_item.description = "Test"
@@ -92,8 +92,8 @@ def query_iter_obj(mocker):
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
-        "item_version": 0,
-        "revisions": 0,
+        "item_version": "0",
+        "revisions": "0",
         "created_at": "2019-10-07T00:57:19.868970+00:00",
         "deprecated": "False",
         "description": "Test",
@@ -127,6 +127,7 @@ def test_upload_data(mocker, client_fixture):
     """
 
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker))
+    mocker.patch("src.plugin.metadata_model.MetadataModel.validate_token")
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
     mocker.patch("src.plugin.metadata_model.MetadataModel.save")
@@ -171,14 +172,14 @@ qgisMinimumVersion=4.0.0""",
 
         tmp.seek(0)
         zipped_bytes = tmp.read()
-        result = client_fixture.post("/plugin", data=zipped_bytes)
+        result = client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
     assert result.status_code == 201
     assert result.get_json() == {
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
-        "item_version": 0,
-        "revisions": 0,
+        "item_version": "0",
+        "revisions": "0",
         "created_at": "2019-10-07T00:57:19.868970+00:00",
         "deprecated": "False",
         "description": "Test",

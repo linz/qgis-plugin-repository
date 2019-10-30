@@ -16,6 +16,7 @@ import datetime
 import json
 import pytest
 from src.plugin.metadata_model import MetadataModel, ModelEncoder
+from src.plugin.error import DataError
 
 
 def test_default():
@@ -58,8 +59,8 @@ def test_metadata_model(mocker):
 
     metadata = {
         "id": "test_plugin",
-        "item_version": 0,
-        "revisions": 0,
+        "item_version": "0",
+        "revisions": "0",
         "name": "test",
         "qgis_minimum_version": "0.0.0",
         "qgis_maximum_version": "0.0.1",
@@ -157,3 +158,42 @@ def test_metadata_model_missing_required(mocker):
     with pytest.raises(ValueError) as excinfo:
         result.save()
         assert "ValueError" in str(excinfo.value)
+
+
+def query_iter_obj(mocker, secret):
+    """
+    Return pynamodb like iterator object
+    """
+
+    plugin_item = mocker.Mock()
+    plugin_item.secret = secret
+
+    li = [plugin_item]
+    for i in li:
+        yield i
+
+
+def test_validate_token(mocker):
+    """
+    Test successful matching of secret
+    """
+
+    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "12345"))
+
+    token = "12345"
+    content_disposition = "test_plugin"
+    MetadataModel.validate_token(token, content_disposition)
+
+
+def test_validate_token_incorrect_secret(mocker):
+    """
+    Fail if token does not match database secret
+    """
+
+    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "54321"))
+
+    token = "12345"
+    content_disposition = "test_plugin"
+    with pytest.raises(DataError) as error:
+        MetadataModel.validate_token(token, content_disposition)
+    assert "Invalid token" in str(error.value)

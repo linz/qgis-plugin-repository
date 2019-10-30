@@ -32,6 +32,8 @@ from src.plugin.error import DataError
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 
+AUTH_PREFIX = "Bearer "
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -60,6 +62,18 @@ def format_response(data, http_code):
     return response
 
 
+def get_access_token(headers):
+    """
+    Parse the bearer token
+    """
+    auth_header = headers.get("Authorization", None)
+    if not auth_header:
+        raise DataError(403, "Invalid token")
+    if not auth_header.startswith(AUTH_PREFIX):
+        raise DataError(403, "Invalid token")
+    return auth_header[len(AUTH_PREFIX) :]
+
+
 @app.route("/plugin", methods=["POST"])
 def upload():
     """
@@ -74,6 +88,9 @@ def upload():
     if not post_data:
         raise DataError(400, "No plugin file supplied")
 
+    # Get users access token from header
+    token = get_access_token(request.headers)
+
     # Test the file is a zipfile
     if not zipfile.is_zipfile(BytesIO(post_data)):
         raise DataError(400, "Plugin file supplied not a Zipfile")
@@ -86,6 +103,9 @@ def upload():
     # Get the plugins root dir. This is what QGIS references when handling plugins
     content_disposition = plugin_parser.zipfile_root_dir(plugin_zipfile)
     logging.info("Content Disposition: %s", content_disposition)
+
+    # tests access token
+    MetadataModel.validate_token(token, content_disposition)
 
     # Allocate a filename
     filename = str(uuid.uuid4())
