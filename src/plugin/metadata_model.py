@@ -20,10 +20,9 @@ import os
 from datetime import datetime
 import json
 import logging
-
 from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
 from pynamodb.models import Model
-
+from src.plugin.error import DataError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -40,6 +39,7 @@ class ModelEncoder(json.JSONEncoder):
         """
         Handle types associated with model for loading to json
         """
+
         if hasattr(o, "attribute_values"):
             return o.attribute_values
         if isinstance(o, datetime):
@@ -68,7 +68,7 @@ class MetadataModel(Model):
         region = os.environ.get("AWS_REGION")
 
     id = UnicodeAttribute(hash_key=True, null=False)
-    item_version = NumberAttribute(range_key=True, null=False)
+    item_version = UnicodeAttribute(range_key=True, null=False)
     revisions = NumberAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
@@ -91,6 +91,7 @@ class MetadataModel(Model):
     icon = UnicodeAttribute(null=True)
     category = UnicodeAttribute(null=True)
     file_name = UnicodeAttribute(null=False)
+    secret = UnicodeAttribute(null=True)
 
     def __iter__(self):
         for name, attr in self._get_attributes().items():
@@ -106,7 +107,7 @@ class MetadataModel(Model):
         """
 
         v_zeros = []
-        for item in cls.scan(cls.item_version == 0):
+        for item in cls.scan(cls.item_version == "0"):
             v_zeros.append(json.loads(json.dumps(item.attribute_values, cls=ModelEncoder)))
         return v_zeros
 
@@ -121,7 +122,7 @@ class MetadataModel(Model):
         :rtype: json
         """
 
-        result = cls.query(plugin_id, cls.item_version == 0)
+        result = cls.query(plugin_id, cls.item_version == "0")
         if result:
             version_zero = next(result)
         return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
@@ -192,7 +193,7 @@ class MetadataModel(Model):
         :param attributes: dict of properties representing the former version zero metadata
         :type attributes: dict
         """
-        attributes["item_version"] = attributes["revisions"]
+        attributes["item_version"] = str(attributes["revisions"])
         former_record = cls(**attributes)
         former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
@@ -203,8 +204,15 @@ class MetadataModel(Model):
         update the version zero record with its details and
         store a revision of the former version zero entry for
         database audit purposes.
+        :param metadata: ConfigParser representation of metadata.txt
+        :type metadata: configparser.ConfigParser
+        :param content_disposition: plugin root folder. Makes up the PK
+        :type content_disposition: str
+        :param filename: filename of plugin.zip in datastore (currently s3)
+        :type filename: str
         """
-        result = cls.query(content_disposition, cls.item_version == 0)
+
+        result = cls.query(content_disposition, cls.item_version == "0")
         version_zero = next(result)
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
@@ -212,3 +220,19 @@ class MetadataModel(Model):
         cls.revision_former_version_zero(version_zero.attribute_values)
         version_zero.refresh()
         return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+
+    @classmethod
+    def validate_token(cls, token, content_disposition):
+        """
+        Check the bearer-token against the plugins secret to ensure
+        the user can modify the plugin.
+        :param token: bearer-token as submitted by user. Ensures user can modify plugin record
+        :type token: str
+        :param content_disposition: plugin root folder. Makes up the PK
+        :type content_disposition: str
+        """
+
+        result = cls.query(content_disposition, cls.item_version == "metadata")
+        metadata = next(result)
+        if token != metadata.secret:
+            raise DataError(403, "Invalid token")

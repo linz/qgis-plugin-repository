@@ -93,7 +93,7 @@ resources:
           - AttributeName: id
             AttributeType: S
           - AttributeName: item_version
-            AttributeType: N
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
