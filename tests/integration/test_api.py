@@ -14,8 +14,6 @@
 
 import tempfile
 import zipfile
-import pytest
-from src.plugin.error import DataError
 
 
 def test_upload_no_data(client_fixture):
@@ -25,9 +23,9 @@ def test_upload_no_data(client_fixture):
     part of the post
     """
 
-    with pytest.raises(DataError) as error:
-        client_fixture.post("/plugin")
-    assert "No plugin file supplied" in str(error.value)
+    result = client_fixture.post("/plugin")
+    assert result.status_code == 400
+    assert result.json["message"] == "No plugin file supplied"
 
 
 def test_upload_no_metadata(client_fixture):
@@ -42,9 +40,10 @@ def test_upload_no_metadata(client_fixture):
             archive.writestr("plugin/testplugin.py", "print(hello word)")
         tmp.seek(0)
         zipped_bytes = tmp.read()
-        with pytest.raises(DataError) as error:
-            client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
-    assert "No metadata.txt file found in plugin directory" in str(error.value)
+
+        result = client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+    assert result.status_code == 400
+    assert result.json["message"] == "No metadata.txt file found in plugin directory"
 
 
 def test_upload_not_a_zipfile(client_fixture):
@@ -54,9 +53,9 @@ def test_upload_not_a_zipfile(client_fixture):
     data that is not a zipfile
     """
 
-    with pytest.raises(DataError) as error:
-        client_fixture.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
-    assert "Plugin file supplied not a Zipfile" in str(error.value)
+    result = client_fixture.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
+    assert result.status_code == 400
+    assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
 
 def query_iter_obj(mocker):
