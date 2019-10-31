@@ -19,13 +19,10 @@
 import os
 from datetime import datetime
 import json
-import logging
 from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
 from pynamodb.models import Model
 from src.plugin.error import DataError
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from src.plugin.log import get_log
 
 RECORD_FILL = 6
 
@@ -219,10 +216,17 @@ class MetadataModel(Model):
         version_zero = next(result)
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
+        get_log().info("VersionZeroUpdated", pluginId=content_disposition)
+
         # Insert former v0 into revision
         cls.revision_former_version_zero(version_zero.attribute_values)
         version_zero.refresh()
-        return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+        get_log().info("RevisionInserted", pluginId=content_disposition, revision=version_zero.revisions)
+
+        updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+        get_log().info("MetadataStored", metadata=updated_metadata)
+
+        return updated_metadata
 
     @classmethod
     def validate_token(cls, token, content_disposition):
@@ -238,4 +242,5 @@ class MetadataModel(Model):
         result = cls.query(content_disposition, cls.item_version == "metadata")
         metadata = next(result)
         if token != metadata.secret:
+            get_log().error("InvalidToken", pluginId=content_disposition)
             raise DataError(403, "Invalid token")
