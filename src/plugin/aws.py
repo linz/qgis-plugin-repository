@@ -15,11 +15,7 @@
 """
 
 
-import logging
 import boto3
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def s3_put(data, bucket, object_name, content_disposition=None):

@@ -12,7 +12,6 @@
 """
 
 import pytest
-from src.plugin.api import get_access_token
 from src.plugin.error import DataError
 
 
@@ -33,45 +32,40 @@ def test_format_response(api_fixture):
     assert result[1] == 201
 
 
-def test_get_access_token():
+def test_get_access_token(mocker, api_fixture):
     """
     Test token is extracted from header
     """
 
-    headers = {
-        "EnvironHeaders": "Host: 127.0.0.1:5000",
-        "User-Agent": "curl/7.64.0",
-        "Accept": "*/*",
-        "Authorization": "Bearer 12345",
-    }
-    token = get_access_token(headers)
+    mocker.patch("werkzeug.local.LocalProxy.__getattr__", return_value={"authorization": "bearer 12345"})
+
+    token = api_fixture.get_access_token()
     assert token == "12345"
 
 
-def test_get_access_token_basic_token():
+def test_get_access_token_basic_token(mocker, api_fixture):
     """
     Test error raised is Auth is not baerer
     """
 
-    headers = {
-        "EnvironHeaders": "Host: 127.0.0.1:5000",
-        "User-Agent": "curl/7.64.0",
-        "Accept": "*/*",
-        "Authorization": "Basic 12345",
-    }
+    mocker.patch("werkzeug.local.LocalProxy.__getattr__", return_value={"authorization": "basic 12345"})
+
     with pytest.raises(DataError) as error:
-        get_access_token(headers)
+        api_fixture.get_access_token()
     assert "Invalid token" in str(error.value)
 
 
-def test_get_access_token_no_auth_header():
+def test_get_access_token_no_auth_header(mocker, api_fixture):
     """
     Test error is raised is not auth header
     """
+    mocker.patch(
+        "werkzeug.local.LocalProxy.__getattr__",
+        return_value={"environHeaders": "host: 127.0.0.1:5000", "user-agent": "curl/7.64.0", "accept": "*/*"},
+    )
 
-    headers = {"EnvironHeaders": "Host: 127.0.0.1:5000", "User-Agent": "curl/7.64.0", "Accept": "*/*"}
     with pytest.raises(DataError) as error:
-        get_access_token(headers)
+        api_fixture.get_access_token()
     assert "Invalid token" in str(error.value)
 
 

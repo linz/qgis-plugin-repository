@@ -181,8 +181,8 @@ def test_validate_token(mocker):
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "12345"))
 
     token = "12345"
-    content_disposition = "test_plugin"
-    MetadataModel.validate_token(token, content_disposition)
+    plugin_id = "test_plugin"
+    MetadataModel.validate_token(token, plugin_id)
 
 
 def test_validate_token_incorrect_secret(mocker):
@@ -191,9 +191,10 @@ def test_validate_token_incorrect_secret(mocker):
     """
 
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "54321"))
+    mocker.patch("werkzeug.local.LocalProxy.__getattr__", return_value={"authorization": "basic 12345"})
 
     token = "12345"
-    content_disposition = "test_plugin"
+    plugin_id = "test_plugin"
     with pytest.raises(DataError) as error:
-        MetadataModel.validate_token(token, content_disposition)
+        MetadataModel.validate_token(token, plugin_id)
     assert "Invalid token" in str(error.value)

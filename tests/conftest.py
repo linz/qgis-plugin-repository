@@ -37,4 +37,5 @@ def client(api_fixture):
 
     app = api_fixture.app
     app.testing = True
+
     yield app.test_client()

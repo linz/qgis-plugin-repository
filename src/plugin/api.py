@@ -17,32 +17,68 @@
 
 
 import os
-import logging
 import zipfile
 import uuid
+import time
 from io import BytesIO
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
 from src.plugin import plugin_parser
 from src.plugin import aws
 from src.plugin import plugin_xml
 from src.plugin.metadata_model import MetadataModel
 from src.plugin.error import DataError, add_data_error_handler
+from src.plugin.log import get_log
 
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 add_data_error_handler(app)
 
-AUTH_PREFIX = "Bearer "
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+AUTH_PREFIX = "bearer "
 
 # Repository bucket name
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
+
+
+@app.before_request
+def before_request_callback():
+    """
+    Before request gather log details
+    """
+
+    # make headers lowercase for case insensitive dict searching
+    g.headers = {k.lower(): v for k, v in request.headers.items()}
+    g.start_time = time.time()
+    g.uri = request.path
+    g.method = request.method
+    g.request_id = g.headers.get("x-request-id", str(uuid.uuid4()))
+    g.correlation_id = g.headers.get("x-correlation-id", "LINZ")
+
+
+@app.after_request
+def after_request(response):
+    """
+    After request logout API/Lambda metrics
+    """
+
+    get_log().info(
+        "ExecutionMetadata",
+        requestId=g.request_id,
+        correlationId=g.correlation_id,
+        httpUri=g.uri,
+        httpMethod=g.method,
+        runDuration=f"{time.time() - g.start_time} seconds",
+        lambdaName=os.environ["AWS_LAMBDA_FUNCTION_NAME"],
+        lambdaMemory=os.environ["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"],
+        lambdaVersion=os.environ["AWS_LAMBDA_FUNCTION_VERSION"],
+        lambdaLogStreamName=os.environ["AWS_LAMBDA_LOG_STREAM_NAME"],
+        lambdaRegion=os.environ["AWS_REGION"],
+    )
+
+    return response
 
 
 def format_response(data, http_code):
@@ -58,18 +94,19 @@ def format_response(data, http_code):
     """
 
     response = jsonify(data), http_code
-    logging.info("Response Data: %s", str(data))
     return response
 
 
-def get_access_token(headers):
+def get_access_token():
     """
     Parse the bearer token
     """
-    auth_header = headers.get("Authorization", None)
+    auth_header = g.headers.get("authorization", None)
     if not auth_header:
+        get_log().error("InvalidToken", requestId=g.request_id)
         raise DataError(403, "Invalid token")
-    if not auth_header.startswith(AUTH_PREFIX):
+    if not auth_header.lower().startswith(AUTH_PREFIX):
+        get_log().error("InvalidToken", requestId=g.request_id, authHeader=auth_header)
         raise DataError(403, "Invalid token")
     return auth_header[len(AUTH_PREFIX) :]
 
@@ -84,15 +121,18 @@ def upload():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    get_log().info("Upload", requestId=g.request_id)
     post_data = request.get_data()
     if not post_data:
+        get_log().error("NoDataSupplied", requestId=g.request_id)
         raise DataError(400, "No plugin file supplied")
 
     # Get users access token from header
-    token = get_access_token(request.headers)
+    token = get_access_token()
 
     # Test the file is a zipfile
     if not zipfile.is_zipfile(BytesIO(post_data)):
+        get_log().error("NotZipfile", requestId=g.request_id)
         raise DataError(400, "Plugin file supplied not a Zipfile")
 
     # Extract plugin metadata
@@ -101,26 +141,25 @@ def upload():
     metadata = plugin_parser.metadata_contents(plugin_zipfile, metadata_path)
 
     # Get the plugins root dir. This is what QGIS references when handling plugins
-    content_disposition = plugin_parser.zipfile_root_dir(plugin_zipfile)
-    logging.info("Content Disposition: %s", content_disposition)
+    plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
+    get_log().info("PluginId", requestId=g.request_id, pluginId=plugin_id)
 
     # tests access token
-    MetadataModel.validate_token(token, content_disposition)
+    MetadataModel.validate_token(token, plugin_id)
 
     # Allocate a filename
     filename = str(uuid.uuid4())
-    logging.info("Plugin Id: %s", filename)
+    get_log().info("FileName", requestId=g.request_id, filename=filename)
 
     # Upload the plugin to s3
-    aws.s3_put(post_data, repo_bucket_name, filename, content_disposition)
-    logging.info("Plugin Upload to s3: %s", filename)
+    aws.s3_put(post_data, repo_bucket_name, filename, plugin_id)
+    get_log().info("UploadedTos3", requestId=g.request_id, pluginId=plugin_id, filename=filename, bucketName=repo_bucket_name)
 
     # Update metadata database
     try:
-        plugin_metadata = MetadataModel.new_plugin_version(metadata, content_disposition, filename)
+        plugin_metadata = MetadataModel.new_plugin_version(metadata, plugin_id, filename)
     except ValueError as error:
         raise DataError(400, str(error))
-    logging.info("Metadata updated for plugin: %s", metadata)
     return format_response(plugin_metadata, 201)
 
 
@@ -132,6 +171,7 @@ def get_all_plugins():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    get_log().info("GetAllPlugins", requestId=g.request_id)
     return format_response(MetadataModel.all_version_zeros(), 200)
 
 
@@ -146,6 +186,7 @@ def get_plugin(plugin_id):
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    get_log().info("GetPlugin", requestId=g.request_id, pluginId=plugin_id)
     return format_response(MetadataModel.plugin_version_zero(plugin_id), 200)
 
 
@@ -159,6 +200,7 @@ def get_all_revisions(plugin_id):
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    get_log().info("GetPluginRevisions", requestId=g.request_id, pluginId=plugin_id)
     return format_response(MetadataModel.plugin_all_versions(plugin_id), 200)
 
 
@@ -170,8 +212,8 @@ def qgis_plugin_xml():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    get_log().info("GetPluginsXml", requestId=g.request_id)
     xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region)
-    logging.info("Returnig plugin xml to user")
     return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 
