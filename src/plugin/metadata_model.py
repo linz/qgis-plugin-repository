@@ -27,6 +27,8 @@ from src.plugin.error import DataError
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+RECORD_FILL = 6
+
 
 class ModelEncoder(json.JSONEncoder):
     """
@@ -107,7 +109,7 @@ class MetadataModel(Model):
         """
 
         v_zeros = []
-        for item in cls.scan(cls.item_version == "0"):
+        for item in cls.scan(cls.item_version == "0".zfill(RECORD_FILL)):
             v_zeros.append(json.loads(json.dumps(item.attribute_values, cls=ModelEncoder)))
         return v_zeros
 
@@ -122,7 +124,7 @@ class MetadataModel(Model):
         :rtype: json
         """
 
-        result = cls.query(plugin_id, cls.item_version == "0")
+        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
         if result:
             version_zero = next(result)
         return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
@@ -193,7 +195,8 @@ class MetadataModel(Model):
         :param attributes: dict of properties representing the former version zero metadata
         :type attributes: dict
         """
-        attributes["item_version"] = str(attributes["revisions"])
+
+        attributes["item_version"] = str(attributes["revisions"]).zfill(RECORD_FILL)
         former_record = cls(**attributes)
         former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
@@ -212,7 +215,7 @@ class MetadataModel(Model):
         :type filename: str
         """
 
-        result = cls.query(content_disposition, cls.item_version == "0")
+        result = cls.query(content_disposition, cls.item_version == "0".zfill(RECORD_FILL))
         version_zero = next(result)
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)

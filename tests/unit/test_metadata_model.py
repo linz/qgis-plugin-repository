@@ -59,7 +59,7 @@ def test_metadata_model(mocker):
 
     metadata = {
         "id": "test_plugin",
-        "item_version": "0",
+        "item_version": "000000",
         "revisions": "0",
         "name": "test",
         "qgis_minimum_version": "0.0.0",

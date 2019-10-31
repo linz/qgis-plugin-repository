@@ -11,7 +11,6 @@
 ################################################################################
 """
 
-
 import tempfile
 import zipfile
 
@@ -68,7 +67,7 @@ def query_iter_obj(mocker):
     plugin_item.about = "For testing"
     plugin_item.author_name = "Tester"
     plugin_item.category = "Raster"
-    plugin_item.item_version = "0"
+    plugin_item.item_version = "000000"
     plugin_item.revisions = 0
     plugin_item.created_at = "2019-10-07T00:57:19.868970+00:00"
     plugin_item.deprecated = "False"
@@ -91,7 +90,7 @@ def query_iter_obj(mocker):
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
-        "item_version": "0",
+        "item_version": "000000",
         "revisions": 0,
         "created_at": "2019-10-07T00:57:19.868970+00:00",
         "deprecated": "False",
@@ -177,7 +176,7 @@ qgisMinimumVersion=4.0.0""",
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
-        "item_version": "0",
+        "item_version": "000000",
         "revisions": 0,
         "created_at": "2019-10-07T00:57:19.868970+00:00",
         "deprecated": "False",
