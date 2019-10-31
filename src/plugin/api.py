@@ -26,11 +26,12 @@ from src.plugin import plugin_parser
 from src.plugin import aws
 from src.plugin import plugin_xml
 from src.plugin.metadata_model import MetadataModel
-from src.plugin.error import DataError
+from src.plugin.error import DataError, add_data_error_handler
 
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
+add_data_error_handler(app)
 
 AUTH_PREFIX = "Bearer "
 
@@ -38,7 +39,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Repository bucket name
-# repo_bucket_name = os.environ["REPO_BUCKET_NAME"]
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
 # AWS region
