@@ -213,7 +213,11 @@ class MetadataModel(Model):
         """
 
         result = cls.query(content_disposition, cls.item_version == "0".zfill(RECORD_FILL))
-        version_zero = next(result)
+        try:
+            version_zero = next(result)
+        except StopIteration:
+            get_log().error("PluginNotFound", pluginId=content_disposition)
+            raise DataError(400, "Plugin Not Found")
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
         get_log().info("VersionZeroUpdated", pluginId=content_disposition)
@@ -240,7 +244,11 @@ class MetadataModel(Model):
         """
 
         result = cls.query(content_disposition, cls.item_version == "metadata")
-        metadata = next(result)
+        try:
+            metadata = next(result)
+        except StopIteration:
+            get_log().error("PluginNotFound", pluginId=content_disposition)
+            raise DataError(400, "Plugin Not Found")
         if token != metadata.secret:
             get_log().error("InvalidToken", pluginId=content_disposition)
             raise DataError(403, "Invalid token")
