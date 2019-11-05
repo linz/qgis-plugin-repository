@@ -19,13 +19,10 @@
 import os
 from datetime import datetime
 import json
-import logging
 from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
 from pynamodb.models import Model
 from src.plugin.error import DataError
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from src.plugin.log import get_log
 
 RECORD_FILL = 6
 
@@ -201,7 +198,7 @@ class MetadataModel(Model):
         former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
     @classmethod
-    def new_plugin_version(cls, metadata, content_disposition, filename):
+    def new_plugin_version(cls, metadata, plugin_id, filename):
         """
         If a new version of an existing plugin is submitted via the API
         update the version zero record with its details and
@@ -209,33 +206,49 @@ class MetadataModel(Model):
         database audit purposes.
         :param metadata: ConfigParser representation of metadata.txt
         :type metadata: configparser.ConfigParser
-        :param content_disposition: plugin root folder. Makes up the PK
-        :type content_disposition: str
+        :param plugin_id: plugin root folder. Makes up the PK
+        :type plugin_id: str
         :param filename: filename of plugin.zip in datastore (currently s3)
         :type filename: str
         """
 
-        result = cls.query(content_disposition, cls.item_version == "0".zfill(RECORD_FILL))
-        version_zero = next(result)
+        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+        try:
+            version_zero = next(result)
+        except StopIteration:
+            get_log().error("PluginNotFound")
+            raise DataError(400, "Plugin Not Found")
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
+        get_log().info("VersionZeroUpdated")
+
         # Insert former v0 into revision
         cls.revision_former_version_zero(version_zero.attribute_values)
         version_zero.refresh()
-        return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+        get_log().info("RevisionInserted", pluginId=plugin_id, revision=version_zero.revisions)
+
+        updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+        get_log().info("MetadataStored", metadata=updated_metadata)
+
+        return updated_metadata
 
     @classmethod
-    def validate_token(cls, token, content_disposition):
+    def validate_token(cls, token, plugin_id):
         """
         Check the bearer-token against the plugins secret to ensure
         the user can modify the plugin.
         :param token: bearer-token as submitted by user. Ensures user can modify plugin record
         :type token: str
-        :param content_disposition: plugin root folder. Makes up the PK
-        :type content_disposition: str
+        :param plugin_id: plugin root folder. Makes up the PK
+        :type plugin_id: str
         """
 
-        result = cls.query(content_disposition, cls.item_version == "metadata")
-        metadata = next(result)
+        result = cls.query(plugin_id, cls.item_version == "metadata")
+        try:
+            metadata = next(result)
+        except StopIteration:
+            get_log().error("PluginNotFound")
+            raise DataError(400, "Plugin Not Found")
         if token != metadata.secret:
+            get_log().error("InvalidToken")
             raise DataError(403, "Invalid token")

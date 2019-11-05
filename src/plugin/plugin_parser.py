@@ -16,13 +16,8 @@
 import re
 import configparser
 from io import StringIO
-import logging
 import os
 from src.plugin.error import DataError
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def metadata_path(plugin_zipfile):
@@ -39,7 +34,6 @@ def metadata_path(plugin_zipfile):
     path = [i for i in plugin_files if re.search(r"^[^/]*/metadata\.txt$", i)]
     if not path:
         raise DataError(400, "No metadata.txt file found in plugin directory")
-    logging.info("Metadata path: %s", path[0])
     return path[0]
 
 
@@ -61,7 +55,6 @@ def zipfile_root_dir(plugin_zipfile):
     if not plugin_root:
         raise DataError(400, "The plugin has no root directory. One must exist")
     plugin_root = next(iter(plugin_root))
-    logging.info("plugin_root: %s", plugin_root)
     return plugin_root
 
 
@@ -81,5 +74,4 @@ def metadata_contents(plugin_zipfile, metadata):
     config_parser = configparser.ConfigParser()
     config_parser.read_file(StringIO(metadata))
 
-    logging.info("Plugin metadata: %s", config_parser)
     return config_parser

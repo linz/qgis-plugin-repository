@@ -2,3 +2,6 @@ botocore #no-deploy
 boto3 #no-deploy
 Flask==1.1.1
 pynamodb==4.0.0
+structlog==19.2.0
+ulid-py==0.0.9
+blinker==1.4
