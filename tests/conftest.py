@@ -24,6 +24,12 @@ def api(monkeypatch):
     """
 
     monkeypatch.setenv("REPO_BUCKET_NAME", "dummy")
+    monkeypatch.setenv("AWS_LAMBDA_FUNCTION_NAME", "dummy")
+    monkeypatch.setenv("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "dummy")
+    monkeypatch.setenv("AWS_LAMBDA_FUNCTION_VERSION", "dummy")
+    monkeypatch.setenv("AWS_LAMBDA_LOG_STREAM_NAME", "dummy")
+    monkeypatch.setenv("AWS_REGION", "dummy")
+
     from src.plugin import api
 
     return api
@@ -37,4 +43,5 @@ def client(api_fixture):
 
     app = api_fixture.app
     app.testing = True
+
     yield app.test_client()

@@ -14,47 +14,76 @@
 import tempfile
 import zipfile
 
+from contextlib import contextmanager
+from flask import appcontext_pushed, g
 
-def test_upload_no_data(client_fixture):
+
+@contextmanager
+def set_global(app, plugin_id=None, request_id=None):
+    """
+    Set flask.g values
+    """
+    # pylint: disable=unused-argument
+    def handler(sender, **kwargs):
+        g.plugin_id = plugin_id
+        g.request_id = request_id
+
+    with appcontext_pushed.connected_to(handler, app):
+        yield
+
+
+def test_upload_no_data(api_fixture):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits no data as
     part of the post
     """
 
-    result = client_fixture.post("/plugin")
-    assert result.status_code == 400
-    assert result.json["message"] == "No plugin file supplied"
+    app = api_fixture.app
+
+    with set_global(app, 1234, 1234):
+        with app.test_client() as test_client:
+            result = test_client.post("/plugin")
+        assert result.status_code == 400
+        assert result.json["message"] == "No plugin file supplied"
 
 
-def test_upload_no_metadata(client_fixture):
+def test_upload_no_metadata(api_fixture):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
     data that contains no metadata.txt
     """
 
-    with tempfile.SpooledTemporaryFile() as tmp:
-        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("plugin/testplugin.py", "print(hello word)")
-        tmp.seek(0)
-        zipped_bytes = tmp.read()
+    app = api_fixture.app
 
-        result = client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
-    assert result.status_code == 400
-    assert result.json["message"] == "No metadata.txt file found in plugin directory"
+    with set_global(app, 1234, 1234):
+        with tempfile.SpooledTemporaryFile() as tmp:
+            with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr("plugin/testplugin.py", "print(hello word)")
+            tmp.seek(0)
+            zipped_bytes = tmp.read()
+
+            with app.test_client() as test_client:
+                result = test_client.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+            assert result.status_code == 400
+            assert result.json["message"] == "No metadata.txt file found in plugin directory"
 
 
-def test_upload_not_a_zipfile(client_fixture):
+def test_upload_not_a_zipfile(api_fixture):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
     data that is not a zipfile
     """
 
-    result = client_fixture.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
-    assert result.status_code == 400
-    assert result.json["message"] == "Plugin file supplied not a Zipfile"
+    app = api_fixture.app
+
+    with set_global(app, 1234, 1234):
+        with app.test_client() as test_client:
+            result = test_client.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
+        assert result.status_code == 400
+        assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
 
 def query_iter_obj(mocker):
@@ -116,13 +145,15 @@ def query_iter_obj(mocker):
         yield i
 
 
-def test_upload_data(mocker, client_fixture):
+def test_upload_data(mocker, api_fixture):
     """
     When the users submits the correct plugin data
     test API responds indicating success.
 
     This test is at the integration level
     """
+
+    app = api_fixture.app
 
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker))
     mocker.patch("src.plugin.metadata_model.MetadataModel.validate_token")
@@ -149,50 +180,53 @@ def test_upload_data(mocker, client_fixture):
             "ETag": '"55fb20a4577fb47ed847033592026cad"',
         },
     )
+    with set_global(app, 1234, 1234):
 
-    with tempfile.SpooledTemporaryFile() as tmp:
-        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("test_plugin/test_plugin.py", "hello word")
-            archive.writestr(
-                "test_plugin/metadata.txt",
-                """[general]
-name=test plugin
-icon=icon.png
-email=test@linz.govt.nz
-author=Tester
-description=Plugin for testing the repository
-version=0.1
-experimental=True
-about=this is a test
-repository=github/test
-qgisMinimumVersion=4.0.0""",
-            )
+        with tempfile.SpooledTemporaryFile() as tmp:
+            with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr("test_plugin/test_plugin.py", "hello word")
+                archive.writestr(
+                    "test_plugin/metadata.txt",
+                    """[general]
+    name=test plugin
+    icon=icon.png
+    email=test@linz.govt.nz
+    author=Tester
+    description=Plugin for testing the repository
+    version=0.1
+    experimental=True
+    about=this is a test
+    repository=github/test
+    qgisMinimumVersion=4.0.0""",
+                )
 
-        tmp.seek(0)
-        zipped_bytes = tmp.read()
-        result = client_fixture.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
-    assert result.status_code == 201
-    assert result.get_json() == {
-        "about": "For testing",
-        "author_name": "Tester",
-        "category": "Raster",
-        "item_version": "000000",
-        "revisions": 0,
-        "created_at": "2019-10-07T00:57:19.868970+00:00",
-        "deprecated": "False",
-        "description": "Test",
-        "email": "test@gmail",
-        "experimental": "False",
-        "file_name": "test",
-        "homepage": "http://github.com/test",
-        "icon": "icon.svg",
-        "id": "test_plugin",
-        "name": "test plugin",
-        "qgis_maximum_version": "4.00",
-        "qgis_minimum_version": "4.00",
-        "repository": "https://github.com/test",
-        "tags": "raster",
-        "tracker": "http://github.com/test/issues",
-        "updated_at": "2019-10-07T00:57:19.868980+00:00",
-        "version": "0.0.0",
-    }
+            tmp.seek(0)
+            zipped_bytes = tmp.read()
+            with app.test_client() as test_client:
+                test_client.testing = True
+                result = test_client.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+            assert result.status_code == 201
+            assert result.get_json() == {
+                "about": "For testing",
+                "author_name": "Tester",
+                "category": "Raster",
+                "item_version": "000000",
+                "revisions": 0,
+                "created_at": "2019-10-07T00:57:19.868970+00:00",
+                "deprecated": "False",
+                "description": "Test",
+                "email": "test@gmail",
+                "experimental": "False",
+                "file_name": "test",
+                "homepage": "http://github.com/test",
+                "icon": "icon.svg",
+                "id": "test_plugin",
+                "name": "test plugin",
+                "qgis_maximum_version": "4.00",
+                "qgis_minimum_version": "4.00",
+                "repository": "https://github.com/test",
+                "tags": "raster",
+                "tracker": "http://github.com/test/issues",
+                "updated_at": "2019-10-07T00:57:19.868980+00:00",
+                "version": "0.0.0",
+            }

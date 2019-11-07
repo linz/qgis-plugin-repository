@@ -12,11 +12,8 @@
     Custom Error class
 """
 
-import logging
 from flask import jsonify
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from src.plugin.log import get_log
 
 
 class DataError(Exception):
@@ -42,7 +39,8 @@ def handle_error(e: Exception):
     """
 
     response_body = {"message": "Internal Server Error"}
-    logging.info("Response Message: %s", e)
+    get_log().error("Exception", exception=e)
+
     return jsonify(response_body), 500
 
 
@@ -52,7 +50,8 @@ def handle_data_error(e: DataError):
     """
 
     response_body = {"message": e.msg}
-    logging.info("Response Message: %s %s", e.msg, e.http_code)
+    get_log().info("ResponseMessage", message=e.msg, httpCode=e.http_code)
+
     return jsonify(response_body), e.http_code
 
 
