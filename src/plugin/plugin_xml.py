@@ -61,7 +61,7 @@ def generate_xml_body(repo_bucket_name, aws_region):
     :rtype: string
     """
 
-    current_plugins = MetadataModel.all_version_zeros()
+    current_plugins = MetadataModel.version_zeros(current_only=True)
 
     root = ET.Element("plugins")
     for plugin in current_plugins:

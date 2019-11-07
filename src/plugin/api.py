@@ -201,6 +201,27 @@ def get_all_revisions(plugin_id):
     return format_response(MetadataModel.plugin_all_versions(plugin_id), 200)
 
 
+@app.route("/plugin/<plugin_id>", methods=["DELETE"])
+def archive(plugin_id):
+    """
+    Takes a plugin_id as input and adds an end-date to the
+    metadata record associated to the Id
+    :param plugin_id: plugin_id
+    :type data: string
+    :returns: tuple (http response, http code)
+    :rtype: tuple (flask.wrappers.Response, int)
+    """
+
+    g.plugin_id = plugin_id
+
+    # Get users access token from header
+    token = get_access_token(request.headers)
+    # validate access token
+    MetadataModel.validate_token(token, g.plugin_id)
+    # Archive plugins
+    return format_response(MetadataModel.archive_plugin(plugin_id), 200)
+
+
 @app.route("/plugins.xml", methods=["GET"])
 def qgis_plugin_xml():
     """
