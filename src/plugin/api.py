@@ -43,6 +43,9 @@ repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
 
+# Git commit SHA
+git_sha = os.environ.get("GIT_SHA", None)
+
 
 @app.before_request
 def before_request():
@@ -208,6 +211,15 @@ def qgis_plugin_xml():
 
     xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region)
     return app.response_class(response=xml, status=200, mimetype="text/xml")
+
+
+@app.route("/version", methods=["GET"])
+def version():
+    """
+    Return git commit SHA the API was deploy from
+    """
+
+    return format_response({"deployed from commit": git_sha}, 200)
 
 
 if __name__ == "__main__":
