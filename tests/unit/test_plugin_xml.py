@@ -44,7 +44,7 @@ def test_generate_xml_body(mocker):
 
     mock_return = [
         {
-            "id": "test+plugin",
+            "id": "testPlugin",
             "version": "0.0.0",
             "name": "Test_Plugin",
             "created_at": "2019-10-17T15:12:11.427110+00:00",
@@ -59,7 +59,7 @@ def test_generate_xml_body(mocker):
         + '<pyqgis_plugin name="Test_Plugin" version="0.0.0">'
         + "<version>0.0.0</version>"
         + "<created_at>2019-10-17T15:12:11.427110+00:00</created_at>"
-        + "<file_name>1111-1111-1111-1111</file_name>"
+        + "<file_name>testPlugin.0.0.0.zip</file_name>"
         + "<download_url>https://test.s3-ap-southeast-2.amazonaws.com/1111-1111-1111-1111</download_url>"
         + "</pyqgis_plugin></plugins>"
     )
