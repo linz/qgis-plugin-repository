@@ -216,27 +216,24 @@ def ping():
     Ping to confirm the service is up
     """
 
-    return format_response(f"Response in {(time.time() - g.start_time) * 1000}ms", 200)
+    return app.response_class(status=200)
 
 
-@app.route("/healthcheck", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def healthchek():
     """
     Ping to confirm the service is up
     """
-    checks = {}
 
     # check database connection
     MetadataModel.all_version_zeros()
-    checks["database connection"] = "PASS"
 
     # check s3 connection
     aws.s3_head_bucket(repo_bucket_name)
-    checks["s3 connection"] = "PASS"
 
     # Anything not a 200 has been caught as an
     # error and the healthchecks have failed
-    return format_response(checks, 200)
+    return app.response_class(status=200)
 
 
 if __name__ == "__main__":
