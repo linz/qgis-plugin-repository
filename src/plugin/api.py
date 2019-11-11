@@ -45,6 +45,7 @@ aws_region = os.environ.get("AWS_REGION", None)
 
 # Git commit SHA
 git_sha = os.environ.get("GIT_SHA", None)
+git_tag = os.environ.get("GIT_TAG", None)
 
 
 @app.before_request
@@ -217,9 +218,11 @@ def qgis_plugin_xml():
 def version():
     """
     Return git commit SHA the API was deploy from
+    :returns: Returns json object {hash: <git_sha>, 'version': <tag, if no tag git_sha>}
+    :rtype: json
     """
 
-    return format_response({"deployed from commit": git_sha}, 200)
+    return format_response({"version": git_tag, "hash": git_sha}, 200)
 
 
 if __name__ == "__main__":

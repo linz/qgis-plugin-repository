@@ -4,6 +4,7 @@ plugins:
   - serverless-python-requirements
   - serverless-wsgi
   - serverless-apigw-binary
+  - serverless-plugin-git-variables
 
 provider:
   name: aws
@@ -13,6 +14,8 @@ provider:
   environment:
     REPO_BUCKET_NAME: "qgis-plugin-repository"
     PLUGINS_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    GIT_SHA: ${git:sha1}
+    GIT_TAG: ${git:describeLight}
   iamRoleStatements:
     - Effect: Allow
       Action:
