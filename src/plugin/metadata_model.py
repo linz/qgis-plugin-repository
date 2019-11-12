@@ -99,15 +99,28 @@ class MetadataModel(Model):
     @classmethod
     def all_version_zeros(cls):
         """
+        Yields all version zero plugin metadata
+        :returns: json describing plugin metadata
+        :rtype: json
+        """
+
+        for item in cls.scan(cls.item_version == "0".zfill(RECORD_FILL)):
+            yield json.loads(json.dumps(item.attribute_values, cls=ModelEncoder))
+
+    @classmethod
+    def current_version_zeros(cls):
+        """
         Returns a json representation of all plugins
-        metadata for the most current version
+        :param current_only: If True, filter on only records not enddated (archived)
+        :type current_only: Boolean
         :returns: json describing plugin metadata
         :rtype: json
         """
 
         v_zeros = []
-        for item in cls.scan(cls.item_version == "0".zfill(RECORD_FILL)):
-            v_zeros.append(json.loads(json.dumps(item.attribute_values, cls=ModelEncoder)))
+        for item in cls.all_version_zeros():
+            if not item.get("ended_at"):
+                v_zeros.append(item)
         return v_zeros
 
     @classmethod
@@ -164,6 +177,7 @@ class MetadataModel(Model):
                 cls.name.set(general_metadata.get("name", None)),
                 cls.version.set(general_metadata.get("version", None)),
                 cls.revisions.set(version_zero.revisions + 1),
+                cls.ended_at.remove(),
                 cls.qgis_minimum_version.set(general_metadata.get("qgisMinimumVersion", None)),
                 cls.qgis_maximum_version.set(general_metadata.get("qgisMaximumVersion", None)),
                 cls.description.set(general_metadata.get("description", None)),
@@ -210,6 +224,8 @@ class MetadataModel(Model):
         :type plugin_id: str
         :param filename: filename of plugin.zip in datastore (currently s3)
         :type filename: str
+        :returns: json describing plugin metadata
+        :rtype: json
         """
 
         result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
@@ -252,3 +268,22 @@ class MetadataModel(Model):
         if token != metadata.secret:
             get_log().error("InvalidToken")
             raise DataError(403, "Invalid token")
+
+    @classmethod
+    def archive_plugin(cls, plugin_id):
+        """
+        Retire plugin by adding a enddate to the metadata record
+        :param plugin_id: plugin Id. Makes up the PK
+        :type plugin_id: str
+        :returns: json describing archived plugin metadata
+        :rtype: json
+        """
+        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+        try:
+            v_zero = next(result)
+        except StopIteration:
+            get_log().error("PluginNotFound")
+            raise DataError(400, "Plugin Not Found")
+        v_zero.update(actions=[cls.ended_at.set(datetime.now()), cls.updated_at.set(datetime.now())])
+        v_zero.refresh()
+        return cls.plugin_version_zero(plugin_id)

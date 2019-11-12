@@ -43,6 +43,9 @@ repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
 
+# Git commit SHA
+git_sha = os.environ.get("GIT_SHA", None)
+
 
 @app.before_request
 def before_request():
@@ -165,8 +168,8 @@ def get_all_plugins():
     :returns: tuple (http response, http code)
     :rtype: tuple (flask.wrappers.Response, int)
     """
-
-    return format_response(MetadataModel.all_version_zeros(), 200)
+    response = list(MetadataModel.all_version_zeros())
+    return format_response(response, 200)
 
 
 @app.route("/plugin/<plugin_id>", methods=["GET"])
@@ -198,6 +201,28 @@ def get_all_revisions(plugin_id):
     return format_response(MetadataModel.plugin_all_versions(plugin_id), 200)
 
 
+@app.route("/plugin/<plugin_id>", methods=["DELETE"])
+def archive(plugin_id):
+    """
+    Takes a plugin_id as input and adds an end-date to the
+    metadata record associated to the Id
+    :param plugin_id: plugin_id
+    :type data: string
+    :returns: tuple (http response, http code)
+    :rtype: tuple (flask.wrappers.Response, int)
+    """
+
+    g.plugin_id = plugin_id
+
+    # Get users access token from header
+    token = get_access_token(request.headers)
+    # validate access token
+    MetadataModel.validate_token(token, g.plugin_id)
+    # Archive plugins
+    response = MetadataModel.archive_plugin(plugin_id)
+    return format_response(response, 200)
+
+
 @app.route("/plugins.xml", methods=["GET"])
 def qgis_plugin_xml():
     """
@@ -208,6 +233,15 @@ def qgis_plugin_xml():
 
     xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region)
     return app.response_class(response=xml, status=200, mimetype="text/xml")
+
+
+@app.route("/version", methods=["GET"])
+def version():
+    """
+    Return git commit SHA the API was deploy from
+    """
+
+    return format_response({"deployed from commit": git_sha}, 200)
 
 
 if __name__ == "__main__":
