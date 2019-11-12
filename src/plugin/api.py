@@ -226,6 +226,7 @@ def health():
     """
 
     checks = {}
+
     # check database connection
     MetadataModel.all_version_zeros()
     checks["db"] = {"status": "UP"}
@@ -235,7 +236,7 @@ def health():
     checks["s3"] = {"status": "UP"}
 
     # Anything not a 200 has been caught as an
-    # error and the healthchecks have failed
+    # error and the health-checks have failed
     get_log().info({"status": "UP", "details": checks})
     return format_response({}, 200)
 
