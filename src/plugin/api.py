@@ -233,11 +233,11 @@ def health():
     # check s3 connection
     aws.s3_head_bucket(repo_bucket_name)
     checks["s3"] = {"status": "UP"}
+
     # Anything not a 200 has been caught as an
     # error and the healthchecks have failed
-
-    response = {"status": "UP", "details": checks}
-    return format_response(response, 200)
+    get_log().info({"status": "UP", "details": checks})
+    return format_response({}, 200)
 
 
 if __name__ == "__main__":
