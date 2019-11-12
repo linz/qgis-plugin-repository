@@ -30,3 +30,14 @@ def s3_put(data, bucket, object_name, content_disposition=None):
 
     s3_client = boto3.client("s3")
     s3_client.put_object(Body=data, Bucket=bucket, Key=object_name, ContentDisposition=content_disposition)
+
+
+def s3_head_bucket(bucket):
+    """
+    For healthcheck
+    :param bucket: bucket name
+    :type bucket: str
+    """
+
+    s3_client = boto3.resource("s3")
+    s3_client.meta.client.head_bucket(Bucket=bucket)

@@ -244,5 +244,36 @@ def version():
     return format_response({"deployed from commit": git_sha}, 200)
 
 
+@app.route("/ping", methods=["GET"])
+def ping():
+    """
+    Ping to confirm the service is up
+    """
+
+    return app.response_class(status=200)
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """
+    Ping to confirm the service is up
+    """
+
+    checks = {}
+
+    # check database connection
+    MetadataModel.all_version_zeros()
+    checks["db"] = {"status": "ok"}
+
+    # check s3 connection
+    aws.s3_head_bucket(repo_bucket_name)
+    checks["s3"] = {"status": "ok"}
+
+    # Anything not a 200 has been caught as an
+    # error and the health-checks have failed
+    get_log().info({"status": "ok", "details": checks})
+    return format_response({"status": "ok"}, 200)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
