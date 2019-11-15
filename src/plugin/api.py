@@ -188,7 +188,7 @@ def get_plugin(plugin_id):
     return format_response(MetadataModel.plugin_version_zero(plugin_id), 200)
 
 
-@app.route("/plugin/revisions/<plugin_id>", methods=["GET"])
+@app.route("/plugin/<plugin_id>/revision", methods=["GET"])
 def get_all_revisions(plugin_id):
     """
     Takes a plugin_id and returns all associated plugin revisions
