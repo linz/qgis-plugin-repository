@@ -16,6 +16,7 @@ provider:
     PLUGINS_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
     GIT_SHA: ${git:sha1}
     GIT_TAG: ${git:describeLight}
+    STAGE: ${self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -27,6 +28,22 @@ provider:
         - dynamodb:DeleteItem
         - dynamodb:DescribeTable
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
+
+
+components:
+  webFrontend:
+    type: static-website
+    inputs:
+      name: frontend
+      contentPath: ${self.path}/frontend
+      # templateValues:
+      #   apiUrl: ${productsApi.url}
+      contentIndex: index.html
+      contentError: index.html
+      hostingRegion: ${self:provider.region}
+      # hostingDomain: retail-${self.serviceId}.example.com
+      # aliasDomain: www.retail-${self.serviceId}.example.com
+
 
 custom:
   pythonRequirements:
@@ -53,7 +70,9 @@ functions:
     handler: wsgi_handler.handler
     events:
       - http: ANY /
+        cors: true
       - http: 'ANY {proxy+}'
+        cors: true
 
 resources:
   Resources:
