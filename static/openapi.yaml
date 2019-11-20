@@ -1,0 +1,363 @@
+openapi: 3.0.1
+info:
+  title: 'LINZ QGIS plugin repository '
+  description: API documnetaion for LINZ QGIS Plugin Repository.
+  termsOfService: ''
+  contact:
+    email: splanzer@linz.govt.nz
+  license:
+    name: BSD-3-Clause
+    url: 'http://www.opensource.org/licenses/BSD-3-Clause'
+  version: 1.0.0
+externalDocs:
+  description: source code repository
+  url: 'https://github.com/linz/s3-qgis-plugin-repo'
+servers:
+  - url: 'Placeholder.linz.govt.io'
+paths:
+  /plugin:
+    post:
+      tags:
+        - plugin
+      summary: Upload a QGIS Plugin
+      description: Upload a QGIS Plugin to the repository
+      operationId: addPlugin
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              properties:
+                file:
+                  type: string
+                  description: Plugin file to be uploaded
+                  format: binary
+        required: true
+      responses:
+        '201':
+          description: plugin upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plugin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+    get:
+      tags:
+        - plugin
+      summary: Lists all plugins stored in the repository
+      operationId: listAllPlugins
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PluginArray'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  '/plugin/{plugin_id}':
+    get:
+      tags:
+        - plugin
+      summary: Get details of specfic plugin from the repository
+      operationId: getPlugin
+      parameters:
+        - name: plugin_id
+          in: path
+          description: plugin id to retrive
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Plugin Retrived
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plugin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'   
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+    delete:
+      tags:
+        - plugin
+      summary: Removes a plugin from the repository
+      operationId: deletePlugin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: plugin_id
+          in: path
+          description: plugin id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Plugin removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plugin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'   
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  '/plugin/{plugin_id}/revision':
+    get:
+      tags:
+        - plugin
+      summary: Get all revisons for a specfic plugin
+      operationId: getPluginRevisions
+      parameters:
+        - name: plugin_id
+          in: path
+          description: revision as related to the plugin ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Plugin revisions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PluginArray'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  /plugins.xml:
+    get:
+      tags:
+        - plugins
+      summary: Get XML representation of all current plugins
+      operationId: getXml
+      parameters:
+        - in: query
+          name: qgis
+          schema:
+            type: string
+          description: QGIS version. Used to ensure plugins not compatable with the users QGIS 
+                       version are not served. Plugins with a minimum QGIS version less than 
+                       the query parameter are filtered out and not returned to the user.
+      responses:
+        '200':
+          description: Plugin XML
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/plugins'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  /version.xml:
+    get:
+      tags:
+        - api_metadata
+      summary: Get API version
+      operationId: version
+      responses:
+        '200':
+          description: Get API version information.
+                       'Hash' is the git commit hash the api was deplyoed from. 
+                       'Version' is the tag related to the commit the API was deployed from. If a tag 
+                       does not exist, 'Version' is also the commit hash. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  /health.xml:
+    get:
+      tags:
+        - api_metadata
+      summary: Get API health status
+      operationId: health
+      responses:
+        '200':
+          description: Get API health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+  /ping.xml:
+    get:
+      tags:
+        - api_metadata
+      summary: Ping
+      operationId: ping
+      responses:
+        '200':
+          description: Ping - Used to validate the service is up
+        '500':
+          $ref: '#/components/responses/InternalServerError'  
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    Plugin:
+      type: object
+      properties:
+        about:
+          type: string
+        author_name:
+          type: string
+        category:
+          type: string
+        changelog:
+          type: string
+        created_at:
+          type: string
+        deprecated:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
+        ended_at:
+          type: string
+        experimental:
+          type: string
+        file_name:
+          type: string
+        homepage:
+          type: string
+        icon:
+          type: string
+        id:
+          type: string
+        item_version:
+          type: string
+        name:
+          type: string
+        qgis_maximum_version:
+          type: string
+        qgis_minimum_version:
+          type: string
+        repository:
+          type: string
+        revisions:
+          type: integer
+          format: int32
+        tags:
+          type: string
+        tracker:
+          type: string
+        updated_at:
+          type: string
+        version:
+          type: string
+    PluginArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Plugin'
+    plugins:
+      type: object
+      properties:
+        pyqgis_plugin:
+          type: object
+          properties:
+            name:
+              type: string
+              xml:
+                attribute: true
+            version:
+              type: string
+              xml:
+                attribute: true
+            about:
+              type: string
+            author_name:
+              type: string
+            created_at:
+              type: string
+            deprecated:
+              type: string
+            experimental:
+              type: string
+            file_name:
+              type: string
+            homepage:
+              type: string
+            icon:
+              type: string
+            qgis_maximum_version:
+              type: string
+            qgis_minimum_version:
+              type: string
+            repository:
+              type: string
+            tags:
+              type: string
+            tracker:
+              type: string
+            updated_at:
+              type: string
+    Version:
+      type: object
+      properties:
+        hash:
+          type: string
+        version:
+          type: string
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+  responses:
+    BadRequest:
+      description: The server cannot or will not process the request due to something that is perceived 
+                   to be a client error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: The server understood the request, but is refusing to authorize it
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: The server encountered an unexpected condition that prevented it from fulfilling the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
