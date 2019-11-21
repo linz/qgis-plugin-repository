@@ -29,7 +29,10 @@ def s3_put(data, bucket, object_name, content_disposition=None):
     """
 
     s3_client = boto3.client("s3")
-    s3_client.put_object(Body=data, Bucket=bucket, Key=object_name, ContentDisposition=content_disposition)
+    if content_disposition:
+        s3_client.put_object(Body=data, Bucket=bucket, Key=object_name, ContentDisposition=content_disposition)
+    else:
+        s3_client.put_object(Body=data, Bucket=bucket, Key=object_name)
 
 
 def s3_head_bucket(bucket):

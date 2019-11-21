@@ -75,3 +75,15 @@ def metadata_contents(plugin_zipfile, metadata):
     config_parser.read_file(StringIO(metadata))
 
     return config_parser
+
+
+def extract_icon(icon_path, plugin_zipfile):
+    """
+    TODO
+    """
+    icon = None
+    root = zipfile_root_dir(plugin_zipfile)
+    full_icon_path = f"{root}/{icon_path}"
+    if icon_path and full_icon_path in plugin_zipfile.namelist():
+        icon = plugin_zipfile.read(full_icon_path)
+    return icon

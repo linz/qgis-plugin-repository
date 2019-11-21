@@ -154,9 +154,19 @@ def upload():
     aws.s3_put(post_data, repo_bucket_name, filename, g.plugin_id)
     get_log().info("UploadedTos3", filename=filename, bucketName=repo_bucket_name)
 
+    # Extract icon
+    icon_uri = None
+    icon_path = metadata['general'].get("icon", None)
+    ext = os.path.splitext(icon_path)[1]
+    icon = plugin_parser.extract_icon(icon_path, plugin_zipfile)
+
+    if icon:
+        aws.s3_put(icon, repo_bucket_name, f"static/{filename}{ext}")
+        icon_uri = f"https://{repo_bucket_name}.s3-{aws_region}.amazonaws.com/static/{filename}{ext}"
+
     # Update metadata database
     try:
-        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename)
+        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename, icon_uri)
     except ValueError as error:
         raise DataError(400, str(error))
     return format_response(plugin_metadata, 201)

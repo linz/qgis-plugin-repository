@@ -157,7 +157,7 @@ class MetadataModel(Model):
         return versions
 
     @classmethod
-    def update_version_zero(cls, metadata, version_zero, filename):
+    def update_version_zero(cls, metadata, version_zero, filename, icon_uri):
 
         """
         Update dynamodb metadata store for uploaded plugin
@@ -191,7 +191,7 @@ class MetadataModel(Model):
                 cls.homepage.set(general_metadata.get("homepage", None)),
                 cls.repository.set(general_metadata.get("repository", None)),
                 cls.tracker.set(general_metadata.get("tracker", None)),
-                cls.icon.set(general_metadata.get("icon", None)),
+                cls.icon.set(icon_uri),
                 cls.category.set(general_metadata.get("category", None)),
                 cls.file_name.set(filename),
             ],
@@ -212,7 +212,7 @@ class MetadataModel(Model):
         former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
     @classmethod
-    def new_plugin_version(cls, metadata, plugin_id, filename):
+    def new_plugin_version(cls, metadata, plugin_id, filename, icon_uri):
         """
         If a new version of an existing plugin is submitted via the API
         update the version zero record with its details and
@@ -235,7 +235,7 @@ class MetadataModel(Model):
             get_log().error("PluginNotFound")
             raise DataError(400, "Plugin Not Found")
         # Update version zero
-        cls.update_version_zero(metadata, version_zero, filename)
+        cls.update_version_zero(metadata, version_zero, filename, icon_uri)
         get_log().info("VersionZeroUpdated")
 
         # Insert former v0 into revision
