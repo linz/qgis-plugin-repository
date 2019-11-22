@@ -13,6 +13,10 @@
 
 
 import xml.etree.ElementTree as ET
+
+# pylint is unable to import distutils.version under virtualenv (affects travis)
+# pylint: disable=no-name-in-module,import-error
+from distutils.version import StrictVersion
 from src.plugin.metadata_model import MetadataModel
 
 
@@ -49,7 +53,21 @@ def new_xml_element(parameter, value):
     return new_element
 
 
-def generate_xml_body(repo_bucket_name, aws_region):
+def greater_than_min_qgis_version(metadata, min_version):
+    """
+    Test if plugin's qgis_minimum_version is greater than users requested
+    minimun qgis version.
+    :param metadata: Dictionary of plugin metadata
+    :type metadata: dictionary
+    :param min_version: User defined min qgis version
+    :type min_version: string
+    :returns: True if plugin's qgis_minimum_version > than users defined min version
+    :rtype: boolean
+    """
+    return StrictVersion(metadata["qgis_minimum_version"]) >= StrictVersion(min_version)
+
+
+def generate_xml_body(repo_bucket_name, aws_region, min_qgis_version):
     """
     Generate XML describing plugin store
     from dynamodb plugin metadata db
@@ -61,8 +79,9 @@ def generate_xml_body(repo_bucket_name, aws_region):
     :rtype: string
     """
 
-    current_plugins = MetadataModel.all_version_zeros()
-
+    current_plugins = filter(
+        lambda item: greater_than_min_qgis_version(item, min_qgis_version), MetadataModel.all_version_zeros()
+    )
     root = ET.Element("plugins")
     for plugin in current_plugins:
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})

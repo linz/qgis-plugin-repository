@@ -70,6 +70,7 @@ def after_request(response):
         uri=request.path,
         method=request.method,
         status=response.status,
+        args=dict(request.args),
         duration=(time.time() - g.start_time) * 1000,
         lambdaName=os.environ["AWS_LAMBDA_FUNCTION_NAME"],
         lambdaMemory=os.environ["AWS_LAMBDA_FUNCTION_MEMORY_SIZE"],
@@ -232,7 +233,9 @@ def qgis_plugin_xml():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
-    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region)
+    min_qgis_version = request.args.get("qgis", "0.0.0")
+
+    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, min_qgis_version)
     return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 
