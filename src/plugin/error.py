@@ -13,6 +13,7 @@
 """
 
 from flask import jsonify
+from werkzeug.exceptions import HTTPException
 from src.plugin.log import get_log
 
 
@@ -44,6 +45,17 @@ def handle_error(e: Exception):
     return jsonify(response_body), 500
 
 
+def handle_http_error(e: HTTPException):
+    """
+    Catch HTTP exceptions
+    """
+
+    response_body = {"message": e.description}
+    get_log().error("Exception", exception=e)
+
+    return jsonify(response_body), e.code
+
+
 def handle_data_error(e: DataError):
     """
     Custom error
@@ -61,4 +73,5 @@ def add_data_error_handler(app):
     """
 
     app.register_error_handler(DataError, handle_data_error)
+    app.register_error_handler(HTTPException, handle_http_error)
     app.register_error_handler(Exception, handle_error)
