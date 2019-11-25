@@ -153,7 +153,8 @@ class MetadataModel(Model):
         versions = []
         result = cls.query(plugin_id)
         for version in result:
-            versions.append(json.loads(json.dumps(version.attribute_values, cls=ModelEncoder)))
+            if version.item_version != "metadata":
+                versions.append(json.loads(json.dumps(version.attribute_values, cls=ModelEncoder)))
         return versions
 
     @classmethod
