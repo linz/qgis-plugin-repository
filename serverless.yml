@@ -9,11 +9,11 @@ plugins:
 provider:
   name: aws
   runtime: python3.7
-  stage: dev
   region: ap-southeast-2
   environment:
-    REPO_BUCKET_NAME: "qgis-plugin-repository"
-    PLUGINS_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    STATIC_ID: 4a27b070f676
+    REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.STATIC_ID}"
+    PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.STATIC_ID}"
     GIT_SHA: ${git:sha1}
     GIT_TAG: ${git:describeLight}
   iamRoleStatements:
@@ -24,7 +24,6 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
         - dynamodb:DescribeTable
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
 
