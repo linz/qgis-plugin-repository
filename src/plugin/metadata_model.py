@@ -74,7 +74,7 @@ class MetadataModel(Model):
     ended_at = UTCDateTimeAttribute(null=True)
     name = UnicodeAttribute(null=False)
     qgis_minimum_version = UnicodeAttribute(null=False)
-    qgis_maximum_version = UnicodeAttribute(null=False)
+    qgis_maximum_version = UnicodeAttribute(null=True)
     description = UnicodeAttribute(null=False)
     about = UnicodeAttribute(null=False)
     version = UnicodeAttribute(null=False)
