@@ -1,0 +1,526 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "LINZ QGIS plugin repository ",
+    "description": "API documnetaion for LINZ QGIS Plugin Repository.",
+    "termsOfService": "",
+    "contact": {
+      "email": "splanzer@linz.govt.nz"
+    },
+    "license": {
+      "name": "BSD-3-Clause",
+      "url": "http://www.opensource.org/licenses/BSD-3-Clause"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "source code repository",
+    "url": "https://github.com/linz/s3-qgis-plugin-repo"
+  },
+  "servers": [
+    {
+      "url": "/dev"
+    },
+    {
+      "url": "/prd"
+    }
+  ],
+  "paths": {
+    "/plugin": {
+      "post": {
+        "tags": [
+          "plugin"
+        ],
+        "summary": "Upload a QGIS Plugin",
+        "description": "Upload a QGIS Plugin to the repository",
+        "operationId": "addPlugin",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "Plugin file to be uploaded",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "plugin upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plugin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "plugin"
+        ],
+        "summary": "Lists all plugins stored in the repository",
+        "operationId": "listAllPlugins",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginArray"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/{plugin_id}": {
+      "get": {
+        "tags": [
+          "plugin"
+        ],
+        "summary": "Get details of specfic plugin from the repository",
+        "operationId": "getPlugin",
+        "parameters": [
+          {
+            "name": "plugin_id",
+            "in": "path",
+            "description": "plugin id to retrive",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin Retrived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plugin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "plugin"
+        ],
+        "summary": "Removes a plugin from the repository",
+        "operationId": "deletePlugin",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plugin_id",
+            "in": "path",
+            "description": "plugin id to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plugin"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugin/revision/{plugin_id}": {
+      "get": {
+        "tags": [
+          "plugin"
+        ],
+        "summary": "Get all revisons for a specfic plugin",
+        "operationId": "getPluginRevisions",
+        "parameters": [
+          {
+            "name": "plugin_id",
+            "in": "path",
+            "description": "revision as related to the plugin ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin revisions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginArray"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plugins.xml": {
+      "get": {
+        "tags": [
+          "plugins"
+        ],
+        "summary": "Get XML representation of all current plugins",
+        "operationId": "getXml",
+        "responses": {
+          "200": {
+            "description": "Plugin XML",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/plugins"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Plugin": {
+        "type": "object",
+        "properties": {
+          "about": {
+            "type": "string"
+          },
+          "author_name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "changelog": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "deprecated": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "ended_at": {
+            "type": "string"
+          },
+          "experimental": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "homepage": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "item_version": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "qgis_maximum_version": {
+            "type": "string"
+          },
+          "qgis_minimum_version": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "revisions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tags": {
+            "type": "string"
+          },
+          "tracker": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "PluginArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Plugin"
+        }
+      },
+      "plugins": {
+        "type": "object",
+        "properties": {
+          "pyqgis_plugin": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "xml": {
+                  "attribute": true
+                }
+              },
+              "version": {
+                "type": "string",
+                "xml": {
+                  "attribute": true
+                }
+              },
+              "about": {
+                "type": "string"
+              },
+              "author_name": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "deprecated": {
+                "type": "string"
+              },
+              "experimental": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              },
+              "homepage": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "qgis_maximum_version": {
+                "type": "string"
+              },
+              "qgis_minimum_version": {
+                "type": "string"
+              },
+              "repository": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "string"
+              },
+              "tracker": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

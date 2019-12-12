@@ -86,7 +86,7 @@ def generate_xml_body(repo_bucket_name, aws_region, min_qgis_version):
     for plugin in current_plugins:
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
         for key, value in plugin.items():
-            if key not in ("file_name", "name", "id", "plugin_id", "changelog", "category", "email", "item_version"):
+            if key not in ("file_name", "name", "id", "category", "email", "item_version"):
                 new_element = new_xml_element(key, value)
                 current_group.append(new_element)
         new_element = new_xml_element("file_name", f"{plugin['id']}.{plugin['version']}.zip")

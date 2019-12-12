@@ -26,12 +26,14 @@ from flask import Flask, request, jsonify, g
 from src.plugin import plugin_parser
 from src.plugin import aws
 from src.plugin import plugin_xml
+from src.plugin import swagger_ui
 from src.plugin.metadata_model import MetadataModel
 from src.plugin.error import DataError, add_data_error_handler
 from src.plugin.log import get_log
 
-
 app = Flask(__name__)
+
+
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 add_data_error_handler(app)
 
@@ -40,12 +42,26 @@ AUTH_PREFIX = "bearer "
 # Repository bucket name
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
+# Deployment stage
+stage = os.environ.get("STAGE")
+
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
 
 # Git commit SHA
 git_sha = os.environ.get("GIT_SHA", None)
 git_tag = os.environ.get("GIT_TAG", None)
+
+# Swagger documentation
+swagger_url = "/docs"
+api_url = "/dev/docs/swagger.json"
+blueprint_name = "swagger_ui"
+static_path = "./swagger_ui"
+swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(
+    swagger_url, api_url, stage, blueprint_name, static_path  # , config={"app_name": "QGIS plugin repository"}
+)
+
+app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
 
 @app.before_request
