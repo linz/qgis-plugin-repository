@@ -47,43 +47,26 @@ Standard Health, Ping and Version endpoints are avaiable.
 
 ## Upload a Plugin
 To upload a plugin, the repository's plugin metadata database must already have reference
-to the plugin. This is to ensure that only users that have the 'secret' for each plugin
-can modify plugins.
+to the plugin. This reference contains the 'secret' that allows users to modify plugins.
+This is used to ensure that only users that have the 'secret' can alter the plugins state
+in the plugin repository.
 
-### Adding a plugin to metadata database
+The adding of this initial plugin record should be via the 
+[new_plugin_record.sh](/utils/new_plugin_record.sh) script. Details on using this 
+script can be found in the [utils sub-directory README.md](/utils/README.md)
 
-This can only be performed by a administrator of the repository metadata database.
+Once this initial metadata record has been added to the database, the initial plugin file 
+and all subsequent plugin versions can be added to the repository via the API. 
 
-For each plugin:
-
-**1. A metedata record must be created**
-  * This stores the secret that must be validated to
-alter the plugin.
-
-```
-{
-  "id": "<plugin directory name>", # String
-  "item_version": "metadata", # String
-  "secret": "1b87bf4994a642f78af9a33626b59286"  # String
-}
-```
-_**Above:** An example of creating the metadata record. The plugin id must be the name of
-the QGIS plugin's root directory._
-
-**2. A version zero record must be created.**
+Example of adding a plugin via the API:
 
 ```
-{
-  "id": "<plugin directory name>", # String
-  "item_version": "000000", # String. Must be 6x0's
-  "revisions": 0,  # Number
-}
+curl -X POST -H 'Content-Type: application/octet-stream' -H "authorization:
+bearer <SECRET>" --data-binary @<PLUGIN FILE PATH> https://<API URL>/plugin
 ```
-_**Above:** An example of creating the version zero record._
 
-Once the initial records have been added to the DynamoDB database as above, anyone with
-the "secret" can modify the plugin stored in the repository by POSTing a plugin zipfile
-with the same root directory name (id must match plugin root directory name).
+where `<SECRET>` is the secret as stored in the plugin metadata database 
+and `<PLUGIN FILE PATH>` is the path to the plugin file being added to the plugin repository. 
 
 ## Development
 
