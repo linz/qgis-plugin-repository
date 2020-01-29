@@ -14,6 +14,18 @@ where:
 --plugin-id or -p:     Is the plugin's plugin id. This must match the plugins root directory name. 
 ```
 
+## Secret 
+On completion of the successful execution of the `new_plugin_record.sh` script, the secret 
+added to the database is returned to the user. This secret must be retained in a secure password
+manager as this secret is required when executing all API commands that modify the plugin. 
+
+for example 
+```
+$ ./new_plugin_record.sh -t <repo table name> -p <plugin id>
+> secret=gLKyO/lDPkM91JiU2s3QgHZF4WvW27DK
+
+```
+
 ### Environment Variables To Configure the AWS CLI
 The `./new_plugin_record.sh` script requires the `AWS_PROFILE` and `AWS_DEFAULT_REGION` 
 environment variables to be set. 
