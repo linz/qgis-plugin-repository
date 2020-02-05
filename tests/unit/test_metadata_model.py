@@ -192,6 +192,7 @@ def test_validate_token_incorrect_secret(mocker):
 
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "54321"))
     mocker.patch("werkzeug.local.LocalProxy.__getattr__", return_value={"authorization": "basic 12345"})
+    mocker.patch("src.plugin.log.g", return_value={"requestId": "1234567", "plugin_id": "test_plugin"})
 
     token = "12345"
     plugin_id = "test_plugin"

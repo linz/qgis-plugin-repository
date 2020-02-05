@@ -172,13 +172,18 @@ class MetadataModel(Model):
         """
 
         general_metadata = metadata["general"]
-
         version_zero.update(
             actions=[
                 cls.name.set(general_metadata.get("name", None)),
                 cls.version.set(general_metadata.get("version", None)),
                 cls.revisions.set(version_zero.revisions + 1),
                 cls.ended_at.remove(),
+                cls.created_at.set(
+                    datetime.now()
+                    if "created_at" not in version_zero.attribute_values
+                    else version_zero.attribute_values["created_at"]
+                ),
+                cls.updated_at.set(datetime.now()),
                 cls.qgis_minimum_version.set(general_metadata.get("qgisMinimumVersion", None)),
                 cls.qgis_maximum_version.set(general_metadata.get("qgisMaximumVersion", None)),
                 cls.description.set(general_metadata.get("description", None)),
@@ -200,17 +205,17 @@ class MetadataModel(Model):
         )
 
     @classmethod
-    def revision_former_version_zero(cls, attributes):
+    def insert_revision(cls, attributes):
         """
-        Insert a version of the previsous version zero record
+        Insert a version of the previous version zero record
         for audit purposes
         :param attributes: dict of properties representing the former version zero metadata
         :type attributes: dict
         """
 
         attributes["item_version"] = str(attributes["revisions"]).zfill(RECORD_FILL)
-        former_record = cls(**attributes)
-        former_record.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
+        revision = cls(**attributes)
+        revision.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
     @classmethod
     def new_plugin_version(cls, metadata, plugin_id, filename):
@@ -239,9 +244,8 @@ class MetadataModel(Model):
         cls.update_version_zero(metadata, version_zero, filename)
         get_log().info("VersionZeroUpdated")
 
-        # Insert former v0 into revision
-        cls.revision_former_version_zero(version_zero.attribute_values)
-        version_zero.refresh()
+        # Insert v0 into revision
+        cls.insert_revision(version_zero.attribute_values)
         get_log().info("RevisionInserted", pluginId=plugin_id, revision=version_zero.revisions)
 
         updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
@@ -281,10 +285,21 @@ class MetadataModel(Model):
         """
         result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
         try:
-            v_zero = next(result)
+            version_zero = next(result)
         except StopIteration:
             get_log().error("PluginNotFound")
             raise DataError(400, "Plugin Not Found")
-        v_zero.update(actions=[cls.ended_at.set(datetime.now()), cls.updated_at.set(datetime.now())])
-        v_zero.refresh()
-        return cls.plugin_version_zero(plugin_id)
+        version_zero.update(
+            actions=[
+                cls.ended_at.set(datetime.now()),
+                cls.updated_at.set(datetime.now()),
+                cls.revisions.set(version_zero.revisions + 1),
+            ]
+        )
+        # Insert former v0 into revision
+        cls.insert_revision(version_zero.attribute_values)
+        get_log().info("RevisionInserted", pluginId=plugin_id, revision=version_zero.revisions)
+        updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
+        get_log().info("MetadataStored", metadata=updated_metadata)
+
+        return updated_metadata
