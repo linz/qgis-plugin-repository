@@ -13,7 +13,7 @@
 
 # pylint: disable=redefined-outer-name
 
-
+from datetime import datetime
 import pytest
 
 
@@ -45,3 +45,13 @@ def client(api_fixture):
     app.testing = True
 
     yield app.test_client()
+
+
+@pytest.fixture(name="now_fixture")
+def datetime_now():
+    """
+    Fixture yielding static time and date for mocks
+    """
+
+    now = datetime.now()
+    yield now
