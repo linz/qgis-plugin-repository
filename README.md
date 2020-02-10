@@ -107,5 +107,11 @@ sls plugin install --name serverless-plugin-git-variables
 #### Deploy App
 The QGIS plugin repository is fully deployable with the use of [serverless](https://serverless.com/)
 ```
-serverless deploy
+serverless deploy --aws-profile <aws_profile> --stage <stage>  --resource-suffix <resource_suffix>
 ```
+
+Where: 
+* `aws_profile` is the user aws profile. Most commonly a reference to an entry in `~/.aws/credentials`.
+* `stage` the stage being deployed (e.g. dev/prd). If not supplied defaults to dev.
+*  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
+of creating unique names but more importantly obscuring these resource names from others. 
