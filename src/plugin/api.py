@@ -54,12 +54,10 @@ git_tag = os.environ.get("GIT_TAG", None)
 
 # Swagger documentation
 swagger_url = "/docs"
-api_url = "/dev/docs/swagger.json"
+api_url = f"/{stage}/docs/swagger.json"
 blueprint_name = "swagger_ui"
 static_path = "./swagger_ui"
-swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(
-    swagger_url, api_url, stage, blueprint_name, static_path  # , config={"app_name": "QGIS plugin repository"}
-)
+swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, stage, blueprint_name, static_path)
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
