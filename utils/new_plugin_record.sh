@@ -7,7 +7,7 @@ TABLE_NAME=""
 PLUGIN_ID=""
 VER_ZERO_JSON="{}"
 METADATA_JSON="{}"
-SECRET=$(cat /dev/urandom | head -c 32 | base64 | head -c 32)
+SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 
 # Parse args
 while [ $# -gt 1 ]
