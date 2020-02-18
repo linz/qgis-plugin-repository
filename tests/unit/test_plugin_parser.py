@@ -13,6 +13,7 @@
 
 import tempfile
 import zipfile
+import configparser
 import pytest
 from src.plugin.error import DataError
 from src.plugin import plugin_parser
@@ -83,3 +84,29 @@ def test_metadata_contents():
     assert result["general"]["name"] == "plugin"
     assert result["general"]["qgisMinimumVersion"] == "4.0"
     assert result["general"]["version"] == "0.1"
+
+
+def test_remove_no_values():
+    """
+    Test the removal of keys with empty strings from
+    config parser
+    """
+
+    config = configparser.ConfigParser()
+    config.add_section("general")
+    config["general"]["name"] = "plugin"
+    config["general"]["qgisMinimumVersion"] = "4.0"
+    config["general"]["version"] = "0.1"
+    config["general"]["tags"] = ""
+
+    # Check the key is in the config
+    assert "tags" in config["general"]
+
+    # run method to remove key
+    plugin_parser.metadata_remove_no_values(config)
+    assert "name" in config["general"]
+    assert "qgisMinimumVersion" in config["general"]
+    assert "qgisMinimumVersion" in config["general"]
+
+    # key should no longer be present in config
+    assert "tags" not in config["general"]

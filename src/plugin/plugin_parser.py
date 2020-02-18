@@ -58,6 +58,22 @@ def zipfile_root_dir(plugin_zipfile):
     return plugin_root
 
 
+def metadata_remove_no_values(config_parser):
+    """
+    Removes none values not removed by config parser
+    Many plug metadata.txt keys are with the delimiter (=) and no value.
+    for example "Tags='\n"
+    By default the configParser removes no_values but values are
+    only consider a no_value when the delimiter is not supplied (i.e "Tags\n")
+    """
+
+    # pylint: disable=W0212
+    original = config_parser._sections["general"]
+    filtered = {k: v for k, v in original.items() if v != ""}
+    original.clear()
+    original.update(filtered)
+
+
 def metadata_contents(plugin_zipfile, metadata):
     """
     Return metadata.txt contents
@@ -71,7 +87,8 @@ def metadata_contents(plugin_zipfile, metadata):
 
     metadata = plugin_zipfile.open(metadata)
     metadata = str(metadata.read(), "utf-8")
-    config_parser = configparser.ConfigParser()
+    config_parser = configparser.ConfigParser(allow_no_value=False)
     config_parser.read_file(StringIO(metadata))
+    metadata_remove_no_values(config_parser)
 
     return config_parser
