@@ -21,6 +21,12 @@ import zipfile
 import uuid
 import time
 from io import BytesIO
+
+# pylint fails to import distutils.version under virtualenv (affects TravisCI)
+# see - https://github.com/PyCQA/pylint/issues/73
+# pylint: disable=E0611
+# pylint: disable=E0401
+from distutils.version import StrictVersion
 import ulid
 from flask import Flask, request, jsonify, g
 from src.plugin import plugin_parser
@@ -239,6 +245,20 @@ def archive(plugin_id):
     return format_response(response, 200)
 
 
+def validate_qgis_version(qgis_version):
+    """
+    Ensure the query parameter is a valid version string
+    :param qgis_version: qgis version to filter by
+    :type qgis_version: string
+    """
+
+    try:
+        StrictVersion(qgis_version)
+    except ValueError:
+        get_log().error("Invalid QGIS version")
+        raise DataError(400, "Invalid QGIS version")
+
+
 @app.route("/plugins.xml", methods=["GET"])
 def qgis_plugin_xml():
     """
@@ -247,9 +267,10 @@ def qgis_plugin_xml():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
-    min_qgis_version = request.args.get("qgis", "0.0.0")
+    qgis_version = request.args.get("qgis", "0.0.0")
+    validate_qgis_version(qgis_version)
 
-    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, min_qgis_version)
+    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, qgis_version)
     return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 

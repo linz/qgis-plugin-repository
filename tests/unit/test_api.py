@@ -12,6 +12,7 @@
 """
 
 import pytest
+from src.plugin import api
 from src.plugin.error import DataError
 
 
@@ -59,6 +60,35 @@ def test_get_access_token_no_auth_header(api_fixture):
     with pytest.raises(DataError) as error:
         api_fixture.get_access_token({"environHeaders": "host: 127.0.0.1:5000", "user-agent": "curl/7.64.0", "accept": "*/*"})
     assert "Invalid token" in str(error.value)
+
+
+def test_validate_qgis_version_pass():
+    """
+    Test correct software version string formats pass validation
+    """
+    versions = ["2.0", "3.0", "3.100", "3.10.1", "3.10.99", "10.0", "10.1", "10.10.10"]
+    for version in versions:
+        api.validate_qgis_version(version)
+
+
+def test_validate_qgis_version_fail():
+    """
+    Test invalid software version string formats fail validation
+    """
+
+    versions = ["2", "two", "4.4.4.4", "3.10.a1"]
+    for version in versions:
+        with pytest.raises(DataError) as error:
+            api.validate_qgis_version(version)
+    assert "Invalid QGIS version" in str(error.value)
+
+
+def test_validate_qgis_version_defualt():
+    """
+    Ensure the default version value passes validation
+    """
+
+    api.validate_qgis_version('0.0.0')
 
 
 if __name__ == "__main__":

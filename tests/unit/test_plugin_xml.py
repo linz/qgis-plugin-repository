@@ -38,36 +38,34 @@ def test_new_xml_element():
     assert result.text == "Test"
 
 
-def test_greater_than_min_qgis_version_is_greater():
+def test_compatible_with_qgis_version_is_true():
     """
-    Test True is returned when plugin metadata qgis_minimum_version
-    is greater than user defined min version
+    QGIS version is greater than min plugin version but less than max.
+    Should return true.
     """
-    metadata = {"name": "a_plugin", "qgis_minimum_version": "9.9.9"}
-    result = plugin_xml.greater_than_min_qgis_version(metadata, "9.9.8")
+    metadata = {"qgis_minimum_version": "3.0", "qgis_maximum_version": "3.9"}
+    result = plugin_xml.compatible_with_qgis_version(metadata, "3.2")
     assert result is True
 
 
-def test_greater_than_min_qgis_version_is_less():
+def test_compatible_with_qgis_version_is_less_than():
     """
-    Test False is returned when plugin metadata qgis_minimum_version
-    is less than user defined min version
+    QGIS version is less than min plugin version. Should return False
     """
 
-    metadata = {"name": "a_plugin", "qgis_minimum_version": "1.9.9"}
-    result = plugin_xml.greater_than_min_qgis_version(metadata, "9.9.8")
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    result = plugin_xml.compatible_with_qgis_version(metadata, "3.0")
     assert result is False
 
 
-def test_greater_than_min_qgis_version_is_equall():
+def test_compatible_with_qgis_version_is_greater_than():
     """
-    Test True is returned when plugin metadata qgis_minimum_version
-    is equall to user defined min version
+    QGIS version is greater than max plugin version. Should return False
     """
 
-    metadata = {"name": "a_plugin", "qgis_minimum_version": "9.0.0"}
-    result = plugin_xml.greater_than_min_qgis_version(metadata, "9.0.0")
-    assert result is True
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    result = plugin_xml.compatible_with_qgis_version(metadata, "4.0")
+    assert result is False
 
 
 def test_generate_xml_body(mocker):
