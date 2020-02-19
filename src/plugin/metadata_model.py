@@ -26,6 +26,27 @@ from src.plugin.log import get_log
 
 RECORD_FILL = 6
 
+# Database to metadata.txt mapping
+DBMD_MAP = {
+    "name": "name",
+    "version": "version",
+    "qgis_minimum_version": "qgisMinimumVersion",
+    "qgis_maximum_version": "qgisMaximumVersion",
+    "description": "description",
+    "about": "about",
+    "author_name": "author",
+    "email": "email",
+    "changelog": "changelog",
+    "experimental": "experimental",
+    "deprecated": "deprecated",
+    "tags": "tags",
+    "homepage": "homepage",
+    "repository": "repository",
+    "tracker": "tracker",
+    "icon": "icon",
+    "category": "category",
+}
+
 
 class ModelEncoder(json.JSONEncoder):
     """
@@ -172,10 +193,16 @@ class MetadataModel(Model):
         """
 
         general_metadata = metadata["general"]
-        version_zero.update(
-            actions=[
-                cls.name.set(general_metadata.get("name", None)),
-                cls.version.set(general_metadata.get("version", None)),
+        action_list = []
+
+        for db_model_key, metadata_key in DBMD_MAP.items():
+            if metadata_key in general_metadata and general_metadata[metadata_key] != "":
+                model_item = getattr(cls, db_model_key)
+                action_list.append(model_item.set(general_metadata.get(metadata_key)))
+
+        # set all standard actions for the update
+        action_list.extend(
+            [
                 cls.revisions.set(version_zero.revisions + 1),
                 cls.ended_at.remove(),
                 cls.created_at.set(
@@ -184,25 +211,10 @@ class MetadataModel(Model):
                     else version_zero.attribute_values["created_at"]
                 ),
                 cls.updated_at.set(datetime.now()),
-                cls.qgis_minimum_version.set(general_metadata.get("qgisMinimumVersion", None)),
-                cls.qgis_maximum_version.set(general_metadata.get("qgisMaximumVersion", None)),
-                cls.description.set(general_metadata.get("description", None)),
-                cls.about.set(general_metadata.get("about", None)),
-                cls.author_name.set(general_metadata.get("author", None)),
-                cls.email.set(general_metadata.get("email", None)),
-                cls.changelog.set(general_metadata.get("changelog", None)),
-                cls.experimental.set(general_metadata.get("experimental", None)),
-                cls.deprecated.set(general_metadata.get("deprecated", None)),
-                cls.tags.set(general_metadata.get("tags", None)),
-                cls.homepage.set(general_metadata.get("homepage", None)),
-                cls.repository.set(general_metadata.get("repository", None)),
-                cls.tracker.set(general_metadata.get("tracker", None)),
-                cls.icon.set(general_metadata.get("icon", None)),
-                cls.category.set(general_metadata.get("category", None)),
                 cls.file_name.set(filename),
-            ],
-            condition=(cls.revisions == version_zero.revisions),
+            ]
         )
+        version_zero.update(actions=action_list, condition=(cls.revisions == version_zero.revisions))
 
     @classmethod
     def insert_revision(cls, attributes):
