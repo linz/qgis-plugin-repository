@@ -31,7 +31,6 @@ DBMD_MAP = {
     "name": "name",
     "version": "version",
     "qgis_minimum_version": "qgisMinimumVersion",
-    "qgis_maximum_version": "qgisMaximumVersion",
     "description": "description",
     "about": "about",
     "author_name": "author",
