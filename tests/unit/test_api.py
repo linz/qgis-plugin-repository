@@ -88,7 +88,7 @@ def test_validate_qgis_version_defualt():
     Ensure the default version value passes validation
     """
 
-    api.validate_qgis_version('0.0.0')
+    api.validate_qgis_version("0.0.0")
 
 
 if __name__ == "__main__":
