@@ -68,6 +68,16 @@ def test_compatible_with_qgis_version_is_greater_than():
     assert result is False
 
 
+def test_compatible_with_qgis_version_default():
+    """
+    Test the default qgis version
+    """
+
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    result = plugin_xml.compatible_with_qgis_version(metadata, "0.0.0")
+    assert result is True
+
+
 def test_generate_xml_body(mocker):
     """
     Test the xml generated for QGIS
