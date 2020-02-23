@@ -66,7 +66,7 @@ def test_validate_qgis_version_pass():
     """
     Test correct software version string formats pass validation
     """
-    versions = ["2.0", "3.0", "3.100", "3.10.1", "3.10.99", "10.0", "10.1", "10.10.10"]
+    versions = ["0.0", "0.0.0", "2.0", "3.0", "3.100", "3.10.1", "3.10.99", "10.0", "10.1", "10.10.10"]
     for version in versions:
         api.validate_qgis_version(version)
 
@@ -81,14 +81,6 @@ def test_validate_qgis_version_fail():
         with pytest.raises(DataError) as error:
             api.validate_qgis_version(version)
     assert "Invalid QGIS version" in str(error.value)
-
-
-def test_validate_qgis_version_defualt():
-    """
-    Ensure the default version value passes validation
-    """
-
-    api.validate_qgis_version("0.0.0")
 
 
 if __name__ == "__main__":
