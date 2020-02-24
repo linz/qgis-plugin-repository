@@ -86,6 +86,19 @@ def test_upload_not_a_zipfile(api_fixture):
         assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
 
+def test_qgis_plugin_xml_invalid_version(api_fixture):
+    """
+    Test an error is raised if incorrect software version is supplied
+    """
+
+    app = api_fixture.app
+
+    with app.test_client() as test_client:
+        result = test_client.get("/plugins.xml?qgis=3")
+    assert result.status_code == 400
+    assert result.json["message"] == "Invalid QGIS version"
+
+
 def query_iter_obj(mocker, now):
     """
     Return pynamodb like iterator object

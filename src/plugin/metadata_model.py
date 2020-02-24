@@ -31,7 +31,6 @@ DBMD_MAP = {
     "name": "name",
     "version": "version",
     "qgis_minimum_version": "qgisMinimumVersion",
-    "qgis_maximum_version": "qgisMaximumVersion",
     "description": "description",
     "about": "about",
     "author_name": "author",
@@ -203,6 +202,11 @@ class MetadataModel(Model):
         # set all standard actions for the update
         action_list.extend(
             [
+                cls.qgis_maximum_version.set(
+                    general_metadata.get(
+                        "qgisMaximumVersion", f"{general_metadata.get('qgisMinimumVersion').split('.')[0]}.999"
+                    )
+                ),
                 cls.revisions.set(version_zero.revisions + 1),
                 cls.ended_at.remove(),
                 cls.created_at.set(

@@ -53,21 +53,25 @@ def new_xml_element(parameter, value):
     return new_element
 
 
-def greater_than_min_qgis_version(metadata, min_version):
+def compatible_with_qgis_version(metadata, qgis_version):
     """
-    Test if plugin's qgis_minimum_version is greater than users requested
-    minimun qgis version.
+    Test if plugin's  and max version are compatible with the QGIS version.
     :param metadata: Dictionary of plugin metadata
     :type metadata: dictionary
     :param min_version: User defined min qgis version
     :type min_version: string
-    :returns: True if plugin's qgis_minimum_version > than users defined min version
+    :returns: True if compatible
     :rtype: boolean
     """
-    return StrictVersion(metadata["qgis_minimum_version"]) >= StrictVersion(min_version)
+
+    if qgis_version == "0.0.0":
+        return True
+    return StrictVersion(metadata["qgis_minimum_version"]) <= StrictVersion(qgis_version) and StrictVersion(
+        qgis_version
+    ) <= StrictVersion(metadata["qgis_maximum_version"])
 
 
-def generate_xml_body(repo_bucket_name, aws_region, min_qgis_version):
+def generate_xml_body(repo_bucket_name, aws_region, qgis_version):
     """
     Generate XML describing plugin store
     from dynamodb plugin metadata db
@@ -79,9 +83,7 @@ def generate_xml_body(repo_bucket_name, aws_region, min_qgis_version):
     :rtype: string
     """
 
-    current_plugins = filter(
-        lambda item: greater_than_min_qgis_version(item, min_qgis_version), MetadataModel.all_version_zeros()
-    )
+    current_plugins = filter(lambda item: compatible_with_qgis_version(item, qgis_version), MetadataModel.all_version_zeros())
     root = ET.Element("plugins")
     for plugin in current_plugins:
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
