@@ -106,7 +106,7 @@
           <y:Geometry height="113.98192036748992" width="1060.188880426504" x="189.01688197012209" y="110.7871195513319"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="4.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="34" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="43.578125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="744.5625" x="157.81319021325203" xml:space="preserve" y="35.20189768374496">USECASE ONE: User/CD uploads plugin<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="34" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="43.578125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="687.6357421875" x="186.27656911950203" xml:space="preserve" y="35.20189768374496">USECASE 1: User/CD uploads plugin<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:Shape type="rectangle"/>
         </y:ShapeNode>
       </data>
@@ -262,7 +262,7 @@
     <edge id="e5" source="n0" target="n7">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.edge.framed">
-          <y:Path sx="-55.2635338918509" sy="-74.76988719372571" tx="-32.62140176019574" ty="-3.497917251799192"/>
+          <y:Path sx="-60.57966148344212" sy="-73.65924593069667" tx="-32.62140176019574" ty="-3.497917251799192"/>
           <y:LineStyle color="#000000" type="line" width="7.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:StyleProperties>
