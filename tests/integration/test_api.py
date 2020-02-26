@@ -86,11 +86,23 @@ def test_upload_not_a_zipfile(api_fixture):
         assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
 
-def query_iter_obj(mocker):
+def test_qgis_plugin_xml_invalid_version(api_fixture):
+    """
+    Test an error is raised if incorrect software version is supplied
+    """
+
+    app = api_fixture.app
+
+    with app.test_client() as test_client:
+        result = test_client.get("/plugins.xml?qgis=3")
+    assert result.status_code == 400
+    assert result.json["message"] == "Invalid QGIS version"
+
+
+def query_iter_obj(mocker, now):
     """
     Return pynamodb like iterator object
     """
-
     plugin_item = mocker.Mock()
     plugin_item.id = "test_plugin"
     plugin_item.about = "For testing"
@@ -98,7 +110,7 @@ def query_iter_obj(mocker):
     plugin_item.category = "Raster"
     plugin_item.item_version = "000000"
     plugin_item.revisions = 0
-    plugin_item.created_at = "2019-10-07T00:57:19.868970+00:00"
+    plugin_item.created_at = now
     plugin_item.deprecated = "False"
     plugin_item.description = "Test"
     plugin_item.email = "test@gmail"
@@ -113,15 +125,16 @@ def query_iter_obj(mocker):
     plugin_item.repository = "https://github.com/test"
     plugin_item.tags = "raster"
     plugin_item.tracker = "http://github.com/test/issues"
-    plugin_item.updated_at = "2019-10-07T00:57:19.868980+00:00"
+    plugin_item.updated_at = now
     plugin_item.version = "0.0.0"
+
     plugin_item.attribute_values = {
         "about": "For testing",
         "author_name": "Tester",
         "category": "Raster",
         "item_version": "000000",
         "revisions": 0,
-        "created_at": "2019-10-07T00:57:19.868970+00:00",
+        "created_at": now,
         "deprecated": "False",
         "description": "Test",
         "email": "test@gmail",
@@ -136,7 +149,7 @@ def query_iter_obj(mocker):
         "repository": "https://github.com/test",
         "tags": "raster",
         "tracker": "http://github.com/test/issues",
-        "updated_at": "2019-10-07T00:57:19.868980+00:00",
+        "updated_at": now,
         "version": "0.0.0",
     }
 
@@ -145,7 +158,7 @@ def query_iter_obj(mocker):
         yield i
 
 
-def test_upload_data(mocker, api_fixture):
+def test_upload_data(mocker, api_fixture, now_fixture):
     """
     When the users submits the correct plugin data
     test API responds indicating success.
@@ -154,8 +167,9 @@ def test_upload_data(mocker, api_fixture):
     """
 
     app = api_fixture.app
+    now = now_fixture
 
-    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker))
+    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, now_fixture))
     mocker.patch("src.plugin.metadata_model.MetadataModel.validate_token")
     mocker.patch("pynamodb.connection.base.get_session")
     mocker.patch("pynamodb.connection.table.Connection")
@@ -210,9 +224,7 @@ def test_upload_data(mocker, api_fixture):
                 "about": "For testing",
                 "author_name": "Tester",
                 "category": "Raster",
-                "item_version": "000000",
-                "revisions": 0,
-                "created_at": "2019-10-07T00:57:19.868970+00:00",
+                "created_at": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "deprecated": "False",
                 "description": "Test",
                 "email": "test@gmail",
@@ -221,12 +233,14 @@ def test_upload_data(mocker, api_fixture):
                 "homepage": "http://github.com/test",
                 "icon": "icon.svg",
                 "id": "test_plugin",
+                "item_version": "000000",
                 "name": "test plugin",
                 "qgis_maximum_version": "4.00",
                 "qgis_minimum_version": "4.00",
                 "repository": "https://github.com/test",
+                "revisions": 0,
                 "tags": "raster",
                 "tracker": "http://github.com/test/issues",
-                "updated_at": "2019-10-07T00:57:19.868980+00:00",
+                "updated_at": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "version": "0.0.0",
             }

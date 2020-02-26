@@ -108,8 +108,72 @@ def test_metadata_model(mocker):
     result.save()
 
     for key in metadata:
-        print("assessing property: {0}".format(key))
         assert result.attribute_values[key] == metadata[key]
+
+
+def test_update_version_zero_no_empty_string(mocker):
+    """
+    Test empty strings are not added to the actions
+    """
+
+    metadata = {
+        "general": {
+            "id": "test_plugin",
+            "name": "test",
+            "qgisMinimumVersion": "0.0.0",
+            "qgisMaximumVersion": "0.0.1",
+            "description": "this is a test",
+            "about": "testing",
+            "version": "1.0.0",
+            "author": "me",
+            "email": "me@theinternet.com",
+            "tags": "raster",
+        }
+    }
+
+    mocker.patch("pynamodb.models.Model.update")
+    version_zero = mocker.Mock()
+    version_zero.revisions = 0
+    version_zero.ended_at = None
+    version_zero.attribute_values = {}
+    version_zero.updated_at = None
+    version_zero.file_name = None
+
+    MetadataModel.update_version_zero(metadata, version_zero, "c611a73c-12a0-4414-9ab5-ed1889122073")
+    assert "tags" in [str(i.values[0]) for i in version_zero.mock_calls[0][2]["actions"] if i.format_string != "{0}"]
+
+
+def test_update_version_zero_empty_string(mocker):
+    """
+    Test empty strings are not added to the actions
+    """
+
+    metadata = {
+        "general": {
+            "id": "test_plugin",
+            "name": "test",
+            "qgisMinimumVersion": "0.0.0",
+            "qgisMaximumVersion": "0.0.1",
+            "description": "this is a test",
+            "about": "testing",
+            "version": "1.0.0",
+            "author": "me",
+            "email": "me@theinternet.com",
+            "tags": "",
+        }
+    }
+
+    mocker.patch("pynamodb.models.Model.update")
+    version_zero = mocker.Mock()
+    version_zero.revisions = 0
+    version_zero.ended_at = None
+    version_zero.attribute_values = {}
+    version_zero.updated_at = None
+    version_zero.file_name = None
+
+    MetadataModel.update_version_zero(metadata, version_zero, "c611a73c-12a0-4414-9ab5-ed1889122073")
+    # check tags (value = empty string) did not make it in the actions
+    assert "tags" not in [str(i.values[0]) for i in version_zero.mock_calls[0][2]["actions"] if i.format_string != "{0}"]
 
 
 def test_metadata_model_missing_required(mocker):
@@ -192,6 +256,7 @@ def test_validate_token_incorrect_secret(mocker):
 
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "54321"))
     mocker.patch("werkzeug.local.LocalProxy.__getattr__", return_value={"authorization": "basic 12345"})
+    mocker.patch("src.plugin.log.g", return_value={"requestId": "1234567", "plugin_id": "test_plugin"})
 
     token = "12345"
     plugin_id = "test_plugin"

@@ -1,4 +1,4 @@
-service: linz-qgis-s3-plugin-repo
+service: qgis-s3-plugin-repo
 
 plugins:
   - serverless-python-requirements
@@ -11,12 +11,12 @@ provider:
   runtime: python3.7
   region: ap-southeast-2
   environment:
-    STATIC_ID: 4a27b070f676
-    REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.STATIC_ID}"
-    PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.STATIC_ID}"
+    STAGE: ${opt:stage, self:provider.stage}
+    RESOURCE_SUFFIX: ${opt:resource-suffix, ''}
+    REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
+    PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     GIT_SHA: ${git:sha1}
     GIT_TAG: ${git:describeLight}
-    STAGE: ${self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -27,22 +27,6 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DescribeTable
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
-
-
-components:
-  webFrontend:
-    type: static-website
-    inputs:
-      name: frontend
-      contentPath: ${self.path}/frontend
-      # templateValues:
-      #   apiUrl: ${productsApi.url}
-      contentIndex: index.html
-      contentError: index.html
-      hostingRegion: ${self:provider.region}
-      # hostingDomain: retail-${self.serviceId}.example.com
-      # aliasDomain: www.retail-${self.serviceId}.example.com
-
 
 custom:
   pythonRequirements:
