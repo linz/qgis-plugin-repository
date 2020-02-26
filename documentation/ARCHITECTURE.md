@@ -9,8 +9,8 @@ and is a good source to view/understand the API's architecture.
 ![image](/documentation/overview.png)
 **Above:** Overview of API architecture.  
  
-1. An entry is added to Amazon Route 53 for DNS mapping.
-2. All requests to the API are via the Amazon API Gateway.
+1. An entry is added to Route 53 for DNS mapping.
+2. All requests to the API are via the API Gateway.
 3. API logic is built into the Lambda function using Python and the 
  [Flask Python web framework](https://www.palletsprojects.com/p/flask/). For details on 
  specific API functionality, see the [README.md](https://github.com/linz/qgis-plugin-repository/blob/master/README.md#repository-api) 
