@@ -12,11 +12,18 @@ and is a good source to view/understand the API's architecture.
 1. An entry is added to Amazon Route 53 for DNS mapping.
 2. All requests to the API are via the Amazon API Gateway.
 3. API logic is built into the Lambda function using Python and the 
- [Flask Python web framework](https://www.palletsprojects.com/p/flask/). For details on specific API functionality, see the [README.md](https://github.com/linz/qgis-plugin-repository/blob/master/README.md#repository-api) document. 
+ [Flask Python web framework](https://www.palletsprojects.com/p/flask/). For details on 
+ specific API functionality, see the [README.md](https://github.com/linz/qgis-plugin-repository/blob/master/README.md#repository-api) 
+ document. 
 4. When a plugin is POSTed to the repository, the Lambda function reads 
-from the plugins metadata.txt file and adds this metadata to the DynamoDB Database. Each record is unique based on a composite key comprising of the  Primary Partition Key: `id` (this being the plugin Id taken from the plugin's root directory name. QGIS also uses this name when considering if a plugin is unique) and the Primary Sort Key: `item_version`. The `item_version` record 
-allows each plugin added to the repository to be tracked via database versioning and is implemented via [Amazon DynamoDB recommendations of version control best practises](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-sort-keys.html#bp-sort-keys-version-control).
-5. When a plugin file is POSTed to the API, the lambda function adds the plugin file to the repositories S3 data store. 
+from the plugins metadata.txt file and adds this metadata to the DynamoDB Database. Each record is 
+unique based on a composite key comprising of the  Primary Partition Key: `id` (this being the plugin Id 
+taken from the plugin's root directory name. QGIS also uses this name when considering if a 
+plugin is unique) and the Primary Sort Key: `item_version`. The `item_version` record allows 
+each plugin added to the repository to be tracked via database versioning and is implemented
+via [Amazon DynamoDB recommendations of version control best practises](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-sort-keys.html#bp-sort-keys-version-control).
+5. When a plugin file is POSTed to the API, the lambda function adds the plugin file to the 
+   repositories S3 data store. 
 
 ## Architecture by user workflow examples
 The below are user workflows to further demonstrate the API architecture 
@@ -46,7 +53,8 @@ for details on configuring QGIS repository sources). QGIS then makes the request
 API for the XML document describing available plugins. 
 3. The http request is via API gateway
 4. & 5. Lambda handles the request and invokes a DynamoDB query for all current QGIS plugins stored 
-in the repo. The result of this query is then used to generate an XML document that describes the plugins available for download.
+in the repo. The result of this query is then used to generate an XML document that describes the 
+plugins available for download.
 6. The plugin xml document is returned to QGIS.
 
 
