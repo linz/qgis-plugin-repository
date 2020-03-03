@@ -20,7 +20,9 @@ connecting QGIS to the repository is `https://<API URL>/plugins.xml`.
 
 ## Repository API
 ### Plugin management endpoints
-Plugin Repository endpoints are as below:
+\* For specifics on API schema see the swagger docs at `<API_URL>/docs`
+
+Plugin Repository endpoints and verbs are as below:
 * **`/plugin` `POST`**
   * Upload a new version of a plugin
   * Usage: _```curl -X POST -H 'Content-Type: application/octet-stream' -H "authorization:
@@ -38,9 +40,16 @@ Plugin Repository endpoints are as below:
 * **`/plugin/<plugin_id>/revision` `GET`**
   * List all revisions of a specific plugin
   * Usage: ```curl -X GET "https://<API URL>/plugin/<Plugin_id/revision>"```
-
+* **`/plugins.xml` `GET`**
+  * Retrieve the XML document describing current Plugins
+  * Usage: Most commonly added to QGIS configuration as per the [above details](https://github.com/linz/s3-qgis-plugin-repo/tree/developer-docs#consuming-the-qgis-plugins)
+  * Query Parameter Usage: The `qgis` query parameter can be supplied to filter 
+    out plugins from the XML document with a qgis maximum version value less than the 
+    `qgis` parameter value. This is for example to ensure the QGIS 3 application 
+    does not retrieve plugins only compatible with QGIS 2. 
+    For example: `curl -X GET "https://<API URL>/plugins?qgis=3.0` (this will
 ### Development endpoints
-Standard Health, Ping and Version endpoints are avaiable.
+Standard Health, Ping and Version endpoints are available.
 * `curl -X GET "https://<API URL>/health"`
 * `curl -X GET "https://<API URL>/ping"`
 * `curl -X GET "https://<API URL>/version"`
@@ -70,6 +79,9 @@ and `<PLUGIN FILE PATH>` is the path to the plugin file being added to the plugi
 
 ## Development
 
+
+### Create a development environment
+
 Create and activate a virtual env fff
 
 ```bash
@@ -91,11 +103,11 @@ black src/ --diff --check
 pylint src
 ```
 
-## Deployment
+### Deployment
 
-### Serverless
+#### Serverless
 [Serverless](serverless.com) employed to managed deployment of the application.
-#### Install plugins
+##### Install plugins
 
 ```bash
 sls plugin install --name serverless-python-requirements
@@ -104,7 +116,7 @@ sls plugin install --name serverless-apigw-binary
 sls plugin install --name serverless-plugin-git-variables
 ```
 
-#### Deploy App
+##### Deploy App
 The QGIS plugin repository is fully deployable with the use of [serverless](https://serverless.com/)
 ```
 serverless deploy --aws-profile <aws_profile> --stage <stage>  --resource-suffix <resource_suffix>
@@ -115,3 +127,6 @@ Where:
 * `stage` the stage being deployed (e.g. dev/prd). If not supplied defaults to dev.
 *  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
 of creating unique names but more importantly obscuring these resource names from others. 
+
+### Arcitecture 
+Please see the [/documentation/ARCHITECTURE.md](/documentation/ARCHITECTURE.md) document. 
