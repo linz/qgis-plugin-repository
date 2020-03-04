@@ -73,12 +73,11 @@ resources:
           Id: RepoBucketPolicy
           Version: '2012-10-17'
           Statement:
-            - Sid: PublicGetObjListBucket
+            - Sid: PublicGetObj
               Effect: Allow
               Principal: '*'
               Action:
                 - "s3:GetObject"
-                - "s3:ListBucket"
               Resource:
                 - Fn::Join:
                   - ""
