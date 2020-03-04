@@ -87,6 +87,7 @@ def test_generate_xml_body(mocker):
         {
             "id": "testPlugin",
             "version": "0.0.0",
+            "revisions": 3,
             "name": "Test_Plugin",
             "created_at": "2019-10-17T15:12:11.427110+00:00",
             "file_name": "testPlugin.0.0.0.zip",
@@ -100,6 +101,54 @@ def test_generate_xml_body(mocker):
         "<plugins>"
         + '<pyqgis_plugin name="Test_Plugin" version="0.0.0">'
         + "<version>0.0.0</version>"
+        + "<revisions>3</revisions>"
+        + "<created_at>2019-10-17T15:12:11.427110+00:00</created_at>"
+        + "<qgis_minimum_version>3.0.0</qgis_minimum_version>"
+        + "<file_name>testPlugin.0.0.0.zip</file_name>"
+        + "<download_url>https://test.s3-ap-southeast-2.amazonaws.com/testPlugin.0.0.0.zip</download_url>"
+        + "</pyqgis_plugin></plugins>"
+    )
+    repo_bucket_name = "test"
+    aws_region = "ap-southeast-2"
+
+    result = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, "0.0.0")
+    assert result == expected.encode()
+
+
+def test_generate_xml_body_filter_revisions_eq_zero(mocker):
+    """
+    Test those items with revisions==0 are filtered out
+    when the xml doc is generated for QGIS
+    """
+
+    mock_return = [
+        {
+            "id": "testPlugin",
+            "version": "0.0.0",
+            "revisions": 3,
+            "name": "Test_Plugin",
+            "created_at": "2019-10-17T15:12:11.427110+00:00",
+            "file_name": "testPlugin.0.0.0.zip",
+            "qgis_minimum_version": "3.0.0",
+        },
+        {
+            "id": "testPluginRevZero",
+            "revisions": 0,
+            "version": "0.0.0",
+            "name": "Test_Plugin",
+            "created_at": "2019-10-17T15:12:11.427110+00:00",
+            "file_name": "testPlugin.0.0.0.zip",
+            "qgis_minimum_version": "3.0.0",
+        },
+    ]
+
+    mocker.patch("src.plugin.metadata_model.MetadataModel.all_version_zeros", return_value=mock_return)
+
+    expected = (
+        "<plugins>"
+        + '<pyqgis_plugin name="Test_Plugin" version="0.0.0">'
+        + "<version>0.0.0</version>"
+        + "<revisions>3</revisions>"
         + "<created_at>2019-10-17T15:12:11.427110+00:00</created_at>"
         + "<qgis_minimum_version>3.0.0</qgis_minimum_version>"
         + "<file_name>testPlugin.0.0.0.zip</file_name>"
