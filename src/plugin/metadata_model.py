@@ -204,7 +204,7 @@ class MetadataModel(Model):
             [
                 cls.qgis_maximum_version.set(
                     general_metadata.get(
-                        "qgisMaximumVersion", f"{general_metadata.get('qgisMinimumVersion').split('.')[0]}.999"
+                        "qgisMaximumVersion", f"{general_metadata.get('qgisMinimumVersion').split('.')[0]}.99"
                     )
                 ),
                 cls.revisions.set(version_zero.revisions + 1),
