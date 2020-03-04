@@ -1,4 +1,4 @@
-service: qgis-s3-plugin-repo
+service: qgis-plugin-repo
 
 plugins:
   - serverless-python-requirements
