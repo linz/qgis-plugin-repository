@@ -86,6 +86,8 @@ def generate_xml_body(repo_bucket_name, aws_region, qgis_version):
     current_plugins = filter(lambda item: compatible_with_qgis_version(item, qgis_version), MetadataModel.all_version_zeros())
     root = ET.Element("plugins")
     for plugin in current_plugins:
+        if not plugin["revisions"]:
+            continue
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
         for key, value in plugin.items():
             if key not in ("file_name", "name", "id", "category", "email", "item_version"):
