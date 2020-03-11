@@ -33,8 +33,14 @@ shift
 done
 
 # JSON reprsentation of the new plugin's version zero record
+# VER_ZERO_JSON=$(cat <<EOF
+# {"id": {"S": "${PLUGIN_ID}"}, "item_version": {"S": "000000-${PLUGIN_STAGE}"} , "stage": {"S": "${PLUGIN_STAGE}"} , "revisions": {"N": "0"} }
+# EOF
+# )
+
+
 VER_ZERO_JSON=$(cat <<EOF
-{"id": {"S": "${PLUGIN_ID}"}, "item_version": {"S": "000000-${PLUGIN_STAGE}"} , "stage": {"S": "${PLUGIN_STAGE}"} , "revisions": {"N": "0"} }
+{"id": {"S": "${PLUGIN_ID}"}, "item_version": {"S": "000000"} , "revisions": {"N": "0"} }
 EOF
 )
 
@@ -44,10 +50,17 @@ aws dynamodb put-item \
     --item "$VER_ZERO_JSON" \
 
 # JSON reprsentation of the new plugin's metadata record
+
+# METADATA_JSON=$(cat <<EOF
+# {"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata-${PLUGIN_STAGE}"} , "secret": {"S": "$SECRET"} }
+# EOF
+# )
+
 METADATA_JSON=$(cat <<EOF
-{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata-${PLUGIN_STAGE}"} , "secret": {"S": "$SECRET"} }
+{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata"} , "secret": {"S": "$SECRET"} }
 EOF
 )
+
 
 # Create plugin metadata record
 aws dynamodb put-item \
