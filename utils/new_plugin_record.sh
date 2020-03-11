@@ -8,7 +8,7 @@ PLUGIN_ID=""
 VER_ZERO_JSON="{}"
 METADATA_JSON="{}"
 SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-
+SECRET_HASH=$(echo -n $SECRET | sha512sum)
 # Parse args
 while [ $# -gt 1 ]
 do
@@ -40,7 +40,7 @@ aws dynamodb put-item \
 
 # JSON reprsentation of the new plugin's metadata record
 METADATA_JSON=$(cat <<EOF
-{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata"} , "secret": {"S": "$SECRET"} }
+{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata"} , "secret": {"S": "$SECRET_HASH"} }
 EOF
 )
 
@@ -49,4 +49,4 @@ aws dynamodb put-item \
     --table-name "$TABLE_NAME" \
     --item "$METADATA_JSON" \
 
-echo secret="$SECRET"
+echo secret="$SECRET" hash="$SECRET_HASH"

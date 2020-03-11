@@ -19,6 +19,7 @@
 import os
 from datetime import datetime
 import json
+import hashlib
 from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
 from pynamodb.models import Model
 from src.plugin.error import DataError
@@ -45,6 +46,10 @@ DBMD_MAP = {
     "icon": "icon",
     "category": "category",
 }
+
+
+def hash_token(token):
+    return hashlib.sha512(token.encode("utf-8")).hexdigest()
 
 
 class ModelEncoder(json.JSONEncoder):
@@ -286,7 +291,7 @@ class MetadataModel(Model):
         except StopIteration:
             get_log().error("PluginNotFound")
             raise DataError(400, "Plugin Not Found")
-        if token != metadata.secret:
+        if hash_token(token) != metadata.secret:
             get_log().error("InvalidToken")
             raise DataError(403, "Invalid token")
 
