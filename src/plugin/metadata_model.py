@@ -88,7 +88,7 @@ class MetadataModel(Model):
 
     id = UnicodeAttribute(hash_key=True, null=False)
     item_version = UnicodeAttribute(range_key=True, null=False)
-    stage = UnicodeAttribute(null=False)
+    stage = UnicodeAttribute(null=True)
     revisions = NumberAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
@@ -216,6 +216,8 @@ class MetadataModel(Model):
                     else version_zero.attribute_values["created_at"]
                 ),
                 cls.updated_at.set(datetime.now()),
+                cls.updated_at.set(datetime.now()),
+
                 cls.file_name.set(filename),
             ]
         )
@@ -230,7 +232,7 @@ class MetadataModel(Model):
         :type attributes: dict
         """
 
-        attributes["item_version"] = f"{str(attributes['revisions']).zfill(RECORD_FILL)}-{attributes['stage']}"
+        attributes["item_version"] = f"{str(attributes['revisions']).zfill(RECORD_FILL)}{attributes['stage']}"
         revision = cls(**attributes)
         revision.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
@@ -253,12 +255,13 @@ class MetadataModel(Model):
         :rtype: json
         """
 
-        result = cls.query(plugin_id, cls.item_version == f"{'0'.zfill(RECORD_FILL)}-{plugin_stage}")
+        result = cls.query(plugin_id, cls.item_version == f"{'0'.zfill(RECORD_FILL)}{plugin_stage}")
         try:
             version_zero = next(result)
         except StopIteration:
             get_log().error("PluginNotFound")
             raise DataError(400, "Plugin Not Found")
+
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
         get_log().info("VersionZeroUpdated")
@@ -283,7 +286,7 @@ class MetadataModel(Model):
         :type plugin_id: str
         """
 
-        result = cls.query(plugin_id, cls.item_version == f"metadata-{plugin_stage}")
+        result = cls.query(plugin_id, cls.item_version == f"metadata{plugin_stage}")
         try:
             metadata = next(result)
         except StopIteration:

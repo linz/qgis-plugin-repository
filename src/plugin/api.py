@@ -133,6 +133,18 @@ def get_access_token(headers):
     return auth_header[len(AUTH_PREFIX) :]
 
 
+def validate_stage(plugin_stage):
+    """
+    # Becuase query params can not be used in QGIS with
+    # get XML the only acceptable param is dev or prd
+    """
+
+    if plugin_stage not in ["dev", ""]:
+        get_log().error("stage is not recognised")
+        raise DataError(400, "stage is not recognised")
+    return plugin_stage
+
+
 @app.route("/plugin", methods=["POST"])
 def upload():
     """
@@ -143,9 +155,8 @@ def upload():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
-    # Stage defaults to plugin, in theory this can be anything
-    # from "dev" to a branch name to a hash
-    plugin_stage = request.args.get("stage", "prd")
+    plugin_stage = request.args.get("stage", "")
+    validate_stage(plugin_stage)
 
     post_data = request.get_data()
     if not post_data:
@@ -194,6 +205,7 @@ def get_all_plugins():
     :returns: tuple (http response, http code)
     :rtype: tuple (flask.wrappers.Response, int)
     """
+
     response = list(MetadataModel.all_version_zeros())
     return format_response(response, 200)
 
