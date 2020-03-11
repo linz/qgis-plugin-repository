@@ -133,8 +133,8 @@ def get_access_token(headers):
     return auth_header[len(AUTH_PREFIX) :]
 
 
-@app.route("/plugin", methods=["POST"])
-def upload():
+@app.route("/plugin/<plugin_id>", methods=["POST"])
+def upload(plugin_id):
     """
     End point for processing QGIS plugin data POSTed by the user
     :param data: plugin
@@ -150,6 +150,7 @@ def upload():
 
     # Get users access token from header
     token = get_access_token(request.headers)
+    MetadataModel.validate_token(token, plugin_id)
 
     # Test the file is a zipfile
     if not zipfile.is_zipfile(BytesIO(post_data)):
@@ -163,9 +164,8 @@ def upload():
 
     # Get the plugins root dir. This is what QGIS references when handling plugins
     g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
-
-    # tests access token
-    MetadataModel.validate_token(token, g.plugin_id)
+    if g.plugin_id != plugin_id:
+        raise DataError(400, "Invalid plugin name %s" % g.plugin_id)
 
     # Allocate a filename
     filename = str(uuid.uuid4())

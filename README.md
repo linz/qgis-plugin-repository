@@ -23,13 +23,14 @@ connecting QGIS to the repository is `https://<API URL>/plugins.xml`.
 \* For specifics on API schema see the swagger docs at `<API_URL>/docs`
 
 Plugin Repository endpoints and verbs are as below:
-* **`/plugin` `POST`**
-  * Upload a new version of a plugin
-  * Usage: _```curl -X POST -H 'Content-Type: application/octet-stream' -H "authorization:
-    bearer 12345" --data-binary @linz-data-importer-2.0.1.zip https://<API URL>/plugin```
+
 * **`/plugin` `GET`**
   * List the most current version of all plugins
   * Usage: ```curl -X GET "https://<API URL>/plugin"```
+* **`/plugin/<plugin_id>` `POST`**
+  * Upload a new version of a plugin
+  * Usage: _```curl -X POST -H 'Content-Type: application/octet-stream' -H "authorization:
+    bearer 12345" --data-binary @linz-data-importer-2.0.1.zip https://<API URL>/plugin/linz-data-importer```
 * **`/plugin/<plugin_id>` `DELETE`**
   * Archive a plugin so that it is not accessible via QGIS
   * A plugin can be unarchived by POSTing a new version
@@ -43,10 +44,10 @@ Plugin Repository endpoints and verbs are as below:
 * **`/plugins.xml` `GET`**
   * Retrieve the XML document describing current Plugins
   * Usage: Most commonly added to QGIS configuration as per the [above details](https://github.com/linz/s3-qgis-plugin-repo/tree/developer-docs#consuming-the-qgis-plugins)
-  * Query Parameter Usage: The `qgis` query parameter can be supplied to filter 
-    out plugins from the XML document with a qgis maximum version value less than the 
-    `qgis` parameter value. This is for example to ensure the QGIS 3 application 
-    does not retrieve plugins only compatible with QGIS 2. 
+  * Query Parameter Usage: The `qgis` query parameter can be supplied to filter
+    out plugins from the XML document with a qgis maximum version value less than the
+    `qgis` parameter value. This is for example to ensure the QGIS 3 application
+    does not retrieve plugins only compatible with QGIS 2.
     For example: `curl -X GET "https://<API URL>/plugins?qgis=3.0` (this will
 ### Development endpoints
 Standard Health, Ping and Version endpoints are available.
@@ -60,12 +61,12 @@ to the plugin. This reference contains the 'secret' that allows users to modify 
 This is used to ensure that only users that have the 'secret' can alter the plugins state
 in the plugin repository.
 
-The adding of this initial plugin record should be via the 
-[new_plugin_record.sh](/utils/new_plugin_record.sh) script. Details on using this 
+The adding of this initial plugin record should be via the
+[new_plugin_record.sh](/utils/new_plugin_record.sh) script. Details on using this
 script can be found in the [utils sub-directory README.md](/utils/README.md)
 
-Once this initial metadata record has been added to the database, the initial plugin file 
-and all subsequent plugin versions can be added to the repository via the API. 
+Once this initial metadata record has been added to the database, the initial plugin file
+and all subsequent plugin versions can be added to the repository via the API.
 
 Example of adding a plugin via the API:
 
@@ -74,8 +75,8 @@ curl -X POST -H 'Content-Type: application/octet-stream' -H "authorization:
 bearer <SECRET>" --data-binary @<PLUGIN FILE PATH> https://<API URL>/plugin
 ```
 
-where `<SECRET>` is the secret as stored in the plugin metadata database 
-and `<PLUGIN FILE PATH>` is the path to the plugin file being added to the plugin repository. 
+where `<SECRET>` is the secret as stored in the plugin metadata database
+and `<PLUGIN FILE PATH>` is the path to the plugin file being added to the plugin repository.
 
 ## Development
 
@@ -122,11 +123,11 @@ The QGIS plugin repository is fully deployable with the use of [serverless](http
 serverless deploy --aws-profile <aws_profile> --stage <stage>  --resource-suffix <resource_suffix>
 ```
 
-Where: 
+Where:
 * `aws_profile` is the user aws profile. Most commonly a reference to an entry in `~/.aws/credentials`.
 * `stage` the stage being deployed (e.g. dev/prd). If not supplied defaults to dev.
 *  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
-of creating unique names but more importantly obscuring these resource names from others. 
+of creating unique names but more importantly obscuring these resource names from others.
 
-### Arcitecture 
-Please see the [/documentation/ARCHITECTURE.md](/documentation/ARCHITECTURE.md) document. 
+### Arcitecture
+Please see the [/documentation/ARCHITECTURE.md](/documentation/ARCHITECTURE.md) document.
