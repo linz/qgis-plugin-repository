@@ -43,7 +43,7 @@ def test_upload_no_data(api_fixture):
 
     with set_global(app, 1234, 1234):
         with app.test_client() as test_client:
-            result = test_client.post("/plugin")
+            result = test_client.post("/plugin/test_plugin")
         assert result.status_code == 400
         assert result.json["message"] == "No plugin file supplied"
 
@@ -65,7 +65,7 @@ def test_upload_no_metadata(api_fixture):
             zipped_bytes = tmp.read()
 
             with app.test_client() as test_client:
-                result = test_client.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+                result = test_client.post("/plugin/plugin_1234", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
             assert result.status_code == 400
             assert result.json["message"] == "No metadata.txt file found in plugin directory"
 
@@ -81,7 +81,7 @@ def test_upload_not_a_zipfile(api_fixture):
 
     with set_global(app, 1234, 1234):
         with app.test_client() as test_client:
-            result = test_client.post("/plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
+            result = test_client.post("/plugin/plugin_1234", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
         assert result.status_code == 400
         assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
@@ -218,7 +218,7 @@ def test_upload_data(mocker, api_fixture, now_fixture):
             zipped_bytes = tmp.read()
             with app.test_client() as test_client:
                 test_client.testing = True
-                result = test_client.post("/plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+                result = test_client.post("/plugin/test_plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
             assert result.status_code == 201
             assert result.get_json() == {
                 "about": "For testing",
