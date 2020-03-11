@@ -1,10 +1,11 @@
 #!/bin/sh
 
 # Usage:
-# ./new_plugin_record.sh -t '<dynamodb table>' -p <plugin_id>
+# ./new_plugin_record.sh -t '<dynamodb table>' -p <plugin_id> -s
 
 TABLE_NAME=""
 PLUGIN_ID=""
+PLUGIN_STAGE=""
 VER_ZERO_JSON="{}"
 METADATA_JSON="{}"
 SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
@@ -23,13 +24,17 @@ case $key in
     PLUGIN_ID="$2"
     shift
     ;;
+    -ps|--plugin-stage) #TODO// validation. must be one of dev or prd
+    PLUGIN_STAGE="$2"
+    shift
+    ;;
 esac
 shift
 done
 
 # JSON reprsentation of the new plugin's version zero record
 VER_ZERO_JSON=$(cat <<EOF
-{"id": {"S": "${PLUGIN_ID}"}, "item_version": {"S": "000000"} , "revisions": {"N": "0"} }
+{"id": {"S": "${PLUGIN_ID}"}, "item_version": {"S": "000000-${PLUGIN_STAGE}"} , "stage": {"S": "${PLUGIN_STAGE}"} , "revisions": {"N": "0"} }
 EOF
 )
 
@@ -40,7 +45,7 @@ aws dynamodb put-item \
 
 # JSON reprsentation of the new plugin's metadata record
 METADATA_JSON=$(cat <<EOF
-{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata"} , "secret": {"S": "$SECRET"} }
+{"id": {"S": "$PLUGIN_ID"}, "item_version": {"S": "metadata-${PLUGIN_STAGE}"} , "secret": {"S": "$SECRET"} }
 EOF
 )
 

@@ -109,6 +109,7 @@ def query_iter_obj(mocker, now):
     plugin_item.author_name = "Tester"
     plugin_item.category = "Raster"
     plugin_item.item_version = "000000"
+    plugin_item.stage = "prd"
     plugin_item.revisions = 0
     plugin_item.created_at = now
     plugin_item.deprecated = "False"
@@ -133,6 +134,7 @@ def query_iter_obj(mocker, now):
         "author_name": "Tester",
         "category": "Raster",
         "item_version": "000000",
+        "stage": "prd",
         "revisions": 0,
         "created_at": now,
         "deprecated": "False",
@@ -233,7 +235,8 @@ def test_upload_data(mocker, api_fixture, now_fixture):
                 "homepage": "http://github.com/test",
                 "icon": "icon.svg",
                 "id": "test_plugin",
-                "item_version": "000000",
+                "item_version": "000000-prd",
+                "stage": "prd",
                 "name": "test plugin",
                 "qgis_maximum_version": "4.00",
                 "qgis_minimum_version": "4.00",

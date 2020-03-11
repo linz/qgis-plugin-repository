@@ -49,7 +49,7 @@ AUTH_PREFIX = "bearer "
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
 # Deployment stage
-stage = os.environ.get("STAGE")
+aws_stage = os.environ.get("STAGE")
 
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
@@ -60,10 +60,10 @@ git_tag = os.environ.get("GIT_TAG", None)
 
 # Swagger documentation
 swagger_url = "/docs"
-api_url = f"/{stage}/docs/swagger.json"
+api_url = f"/{aws_stage}/docs/swagger.json"
 blueprint_name = "swagger_ui"
 static_path = "./swagger_ui"
-swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, stage, blueprint_name, static_path)
+swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, aws_stage, blueprint_name, static_path)
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
@@ -143,6 +143,10 @@ def upload():
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    # Stage defaults to plugin, in theory this can be anything
+    # from "dev" to a branch name to a hash
+    plugin_stage = request.args.get("stage", "prd")
+
     post_data = request.get_data()
     if not post_data:
         get_log().error("NoDataSupplied")
@@ -165,7 +169,7 @@ def upload():
     g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
 
     # tests access token
-    MetadataModel.validate_token(token, g.plugin_id)
+    MetadataModel.validate_token(token, g.plugin_id, plugin_stage)
 
     # Allocate a filename
     filename = str(uuid.uuid4())
@@ -177,7 +181,7 @@ def upload():
 
     # Update metadata database
     try:
-        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename)
+        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename, plugin_stage)
     except ValueError as error:
         raise DataError(400, str(error))
     return format_response(plugin_metadata, 201)
@@ -236,10 +240,12 @@ def archive(plugin_id):
 
     g.plugin_id = plugin_id
 
+    plugin_stage = request.args.get("stage", "prd")
+
     # Get users access token from header
     token = get_access_token(request.headers)
     # validate access token
-    MetadataModel.validate_token(token, g.plugin_id)
+    MetadataModel.validate_token(token, g.plugin_id, plugin_stage)
     # Archive plugins
     response = MetadataModel.archive_plugin(plugin_id)
     return format_response(response, 200)

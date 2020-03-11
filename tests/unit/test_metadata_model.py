@@ -60,6 +60,7 @@ def test_metadata_model(mocker):
     metadata = {
         "id": "test_plugin",
         "item_version": "000000",
+        "stage": "dev",
         "revisions": "0",
         "name": "test",
         "qgis_minimum_version": "0.0.0",
@@ -84,6 +85,7 @@ def test_metadata_model(mocker):
     result = MetadataModel(
         id=metadata.get("id"),
         item_version=metadata.get("item_version"),
+        stage=metadata.get("stage"),
         revisions=metadata.get("revisions"),
         name=metadata.get("name"),
         qgis_minimum_version=metadata.get("qgis_minimum_version"),
@@ -246,7 +248,7 @@ def test_validate_token(mocker):
 
     token = "12345"
     plugin_id = "test_plugin"
-    MetadataModel.validate_token(token, plugin_id)
+    MetadataModel.validate_token(token, plugin_id, "prd")
 
 
 def test_validate_token_incorrect_secret(mocker):
@@ -261,5 +263,5 @@ def test_validate_token_incorrect_secret(mocker):
     token = "12345"
     plugin_id = "test_plugin"
     with pytest.raises(DataError) as error:
-        MetadataModel.validate_token(token, plugin_id)
+        MetadataModel.validate_token(token, plugin_id, "prd")
     assert "Invalid token" in str(error.value)

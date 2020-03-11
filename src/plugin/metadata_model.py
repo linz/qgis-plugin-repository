@@ -88,6 +88,7 @@ class MetadataModel(Model):
 
     id = UnicodeAttribute(hash_key=True, null=False)
     item_version = UnicodeAttribute(range_key=True, null=False)
+    stage = UnicodeAttribute(null=False)
     revisions = NumberAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
@@ -229,12 +230,12 @@ class MetadataModel(Model):
         :type attributes: dict
         """
 
-        attributes["item_version"] = str(attributes["revisions"]).zfill(RECORD_FILL)
+        attributes["item_version"] = f"{str(attributes['revisions']).zfill(RECORD_FILL)}-{attributes['stage']}"
         revision = cls(**attributes)
         revision.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
     @classmethod
-    def new_plugin_version(cls, metadata, plugin_id, filename):
+    def new_plugin_version(cls, metadata, plugin_id, filename, plugin_stage):
         """
         If a new version of an existing plugin is submitted via the API
         update the version zero record with its details and
@@ -246,11 +247,13 @@ class MetadataModel(Model):
         :type plugin_id: str
         :param filename: filename of plugin.zip in datastore (currently s3)
         :type filename: str
+        :param plugin_stage: plugins stage (dev or prd)
+        :type stage: str
         :returns: json describing plugin metadata
         :rtype: json
         """
 
-        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+        result = cls.query(plugin_id, cls.item_version == f"{'0'.zfill(RECORD_FILL)}-{plugin_stage}")
         try:
             version_zero = next(result)
         except StopIteration:
@@ -262,7 +265,7 @@ class MetadataModel(Model):
 
         # Insert v0 into revision
         cls.insert_revision(version_zero.attribute_values)
-        get_log().info("RevisionInserted", pluginId=plugin_id, revision=version_zero.revisions)
+        get_log().info("RevisionInserted", pluginId=plugin_id, stage=plugin_stage, revision=version_zero.revisions)
 
         updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
         get_log().info("MetadataStored", metadata=updated_metadata)
@@ -270,7 +273,7 @@ class MetadataModel(Model):
         return updated_metadata
 
     @classmethod
-    def validate_token(cls, token, plugin_id):
+    def validate_token(cls, token, plugin_id, plugin_stage):
         """
         Check the bearer-token against the plugins secret to ensure
         the user can modify the plugin.
@@ -280,7 +283,7 @@ class MetadataModel(Model):
         :type plugin_id: str
         """
 
-        result = cls.query(plugin_id, cls.item_version == "metadata")
+        result = cls.query(plugin_id, cls.item_version == f"metadata-{plugin_stage}")
         try:
             metadata = next(result)
         except StopIteration:
