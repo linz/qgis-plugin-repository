@@ -49,6 +49,14 @@ DBMD_MAP = {
 
 
 def hash_token(token):
+    """
+    Returns a json representation of all plugins
+    :param token: user supplied token
+    :type token: str
+    :returns: hashed token
+    :rtype: str
+    """
+
     return hashlib.sha512(token.encode("utf-8")).hexdigest()
 
 

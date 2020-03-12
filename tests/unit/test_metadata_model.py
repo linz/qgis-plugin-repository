@@ -14,7 +14,9 @@
 import uuid
 import datetime
 import json
+import hashlib
 import pytest
+from src.plugin import metadata_model
 from src.plugin.metadata_model import MetadataModel, ModelEncoder
 from src.plugin.error import DataError
 
@@ -237,14 +239,21 @@ def query_iter_obj(mocker, secret):
         yield i
 
 
+def hash_token(token):
+    """
+    hash token for comparison
+    """
+
+    return hashlib.sha512(token.encode("utf-8")).hexdigest()
+
+
 def test_validate_token(mocker):
     """
     Test successful matching of secret
     """
 
-    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, "12345"))
-
     token = "12345"
+    mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, hash_token(token)))
     plugin_id = "test_plugin"
     MetadataModel.validate_token(token, plugin_id)
 
@@ -263,3 +272,15 @@ def test_validate_token_incorrect_secret(mocker):
     with pytest.raises(DataError) as error:
         MetadataModel.validate_token(token, plugin_id)
     assert "Invalid token" in str(error.value)
+
+
+def test_hash_token():
+    """
+    Test hashing is giving the expected result
+    """
+
+    token = "12345"
+    # pylint: disable=line-too-long
+    matching_hash = "3627909a29c31381a071ec27f7c9ca97726182aed29a7ddd2e54353322cfb30abb9e3a6df2ac2c20fe23436311d678564d0c8d305930575f60e2d3d048184d79"
+    result = metadata_model.hash_token(token)
+    assert result == matching_hash
