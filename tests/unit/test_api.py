@@ -44,7 +44,7 @@ def test_get_access_token(api_fixture):
 
 def test_get_access_token_basic_token(api_fixture):
     """
-    Test error raised is Auth is not baerer
+    Test error raised is Auth is not bearer
     """
 
     with pytest.raises(DataError) as error:

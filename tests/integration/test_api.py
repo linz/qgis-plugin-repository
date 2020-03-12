@@ -23,6 +23,7 @@ def set_global(app, plugin_id=None, request_id=None):
     """
     Set flask.g values
     """
+
     # pylint: disable=unused-argument
     def handler(sender, **kwargs):
         g.plugin_id = plugin_id
@@ -48,13 +49,14 @@ def test_upload_no_data(api_fixture):
         assert result.json["message"] == "No plugin file supplied"
 
 
-def test_upload_no_metadata(api_fixture):
+def test_upload_no_metadata(api_fixture, mocker):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
     data that contains no metadata.txt
     """
 
+    mocker.patch("src.plugin.metadata_model.MetadataModel.validate_token", return_value=True)
     app = api_fixture.app
 
     with set_global(app, 1234, 1234):
@@ -65,23 +67,24 @@ def test_upload_no_metadata(api_fixture):
             zipped_bytes = tmp.read()
 
             with app.test_client() as test_client:
-                result = test_client.post("/plugin/plugin_1234", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+                result = test_client.post("/plugin/testplugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
             assert result.status_code == 400
             assert result.json["message"] == "No metadata.txt file found in plugin directory"
 
 
-def test_upload_not_a_zipfile(api_fixture):
+def test_upload_not_a_zipfile(api_fixture, mocker):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
     data that is not a zipfile
     """
 
+    mocker.patch("src.plugin.metadata_model.MetadataModel.validate_token", return_value=True)
     app = api_fixture.app
 
     with set_global(app, 1234, 1234):
         with app.test_client() as test_client:
-            result = test_client.post("/plugin/plugin_1234", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
+            result = test_client.post("/plugin/test_plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
         assert result.status_code == 400
         assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
