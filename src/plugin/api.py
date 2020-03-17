@@ -44,12 +44,12 @@ app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 add_data_error_handler(app)
 
 AUTH_PREFIX = "bearer "
-
+DEFUALT_STAGE = ""
 # Repository bucket name
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
 # Deployment stage
-stage = os.environ.get("STAGE")
+aws_stage = os.environ.get("STAGE")
 
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
@@ -60,10 +60,10 @@ git_tag = os.environ.get("GIT_TAG", None)
 
 # Swagger documentation
 swagger_url = "/docs"
-api_url = f"/{stage}/docs/swagger.json"
+api_url = f"/{aws_stage}/docs/swagger.json"
 blueprint_name = "swagger_ui"
 static_path = "./swagger_ui"
-swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, stage, blueprint_name, static_path)
+swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, aws_stage, blueprint_name, static_path)
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
@@ -133,15 +133,35 @@ def get_access_token(headers):
     return auth_header[len(AUTH_PREFIX) :]
 
 
+def validate_stage(plugin_stage):
+    """
+    # As query params that are not "?qgis=x"can not be sent via QGIS,
+    # at this stage only dev and prd stages are able to be stored
+    # dev is opt in via `?stage=dev. If the `stage` query param is not supplied
+    # the API interactions are considered to be for prd plugins
+    """
+
+    if plugin_stage not in ["dev", ""]:
+        get_log().error("stage is not recognised")
+        raise DataError(400, "stage is not recognised")
+    return plugin_stage
+
+
 @app.route("/plugin/<plugin_id>", methods=["POST"])
 def upload(plugin_id):
     """
     End point for processing QGIS plugin data POSTed by the user
+    If the query param "?stage" is not supplied, plugins POSTed are
+    considered production. if `?stage=dev` is used the plugin
+    is stored as a dev version
     :param data: plugin
     :type data: binary data
     :returns: tuple (http response, http code)
     :rtype: tuple (flask.wrappers.Response, int)
     """
+
+    plugin_stage = request.args.get("stage", DEFUALT_STAGE)
+    validate_stage(plugin_stage)
 
     post_data = request.get_data()
     if not post_data:
@@ -150,7 +170,7 @@ def upload(plugin_id):
 
     # Get users access token from header
     token = get_access_token(request.headers)
-    MetadataModel.validate_token(token, plugin_id)
+    MetadataModel.validate_token(token, plugin_id, plugin_stage)
 
     # Test the file is a zipfile
     if not zipfile.is_zipfile(BytesIO(post_data)):
@@ -177,7 +197,7 @@ def upload(plugin_id):
 
     # Update metadata database
     try:
-        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename)
+        plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename, plugin_stage)
     except ValueError as error:
         raise DataError(400, str(error))
     return format_response(plugin_metadata, 201)
@@ -190,7 +210,9 @@ def get_all_plugins():
     :returns: tuple (http response, http code)
     :rtype: tuple (flask.wrappers.Response, int)
     """
-    response = list(MetadataModel.all_version_zeros())
+
+    plugin_stage = request.args.get("stage", DEFUALT_STAGE)
+    response = list(MetadataModel.all_version_zeros(plugin_stage))
     return format_response(response, 200)
 
 
@@ -205,8 +227,9 @@ def get_plugin(plugin_id):
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    plugin_stage = request.args.get("stage", DEFUALT_STAGE)
     g.plugin_id = plugin_id
-    return format_response(MetadataModel.plugin_version_zero(plugin_id), 200)
+    return format_response(MetadataModel.plugin_version_zero(plugin_id, plugin_stage), 200)
 
 
 @app.route("/plugin/<plugin_id>/revision", methods=["GET"])
@@ -219,8 +242,9 @@ def get_all_revisions(plugin_id):
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    plugin_stage = request.args.get("stage", DEFUALT_STAGE)
     g.plugin_id = plugin_id
-    return format_response(MetadataModel.plugin_all_versions(plugin_id), 200)
+    return format_response(MetadataModel.plugin_all_versions(plugin_id, plugin_stage), 200)
 
 
 @app.route("/plugin/<plugin_id>", methods=["DELETE"])
@@ -234,14 +258,15 @@ def archive(plugin_id):
     :rtype: tuple (flask.wrappers.Response, int)
     """
 
+    plugin_stage = request.args.get("stage", DEFUALT_STAGE)
     g.plugin_id = plugin_id
 
     # Get users access token from header
     token = get_access_token(request.headers)
     # validate access token
-    MetadataModel.validate_token(token, g.plugin_id)
+    MetadataModel.validate_token(token, g.plugin_id, plugin_stage)
     # Archive plugins
-    response = MetadataModel.archive_plugin(plugin_id)
+    response = MetadataModel.archive_plugin(plugin_id, plugin_stage)
     return format_response(response, 200)
 
 
@@ -259,8 +284,9 @@ def validate_qgis_version(qgis_version):
         raise DataError(400, "Invalid QGIS version")
 
 
-@app.route("/plugins.xml", methods=["GET"])
-def qgis_plugin_xml():
+@app.route("/<stage>/plugins.xml", methods=["GET"])
+@app.route("/plugins.xml", defaults={"stage": ""}, methods=["GET"])
+def qgis_plugin_xml(stage):
     """
     Get xml describing current plugins
     :returns: xml doc describing current (version==0) plugins
@@ -268,9 +294,11 @@ def qgis_plugin_xml():
     """
 
     qgis_version = request.args.get("qgis", "0.0.0")
+    plugin_stage = stage
+
     validate_qgis_version(qgis_version)
 
-    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, qgis_version)
+    xml = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, qgis_version, plugin_stage)
     return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 
@@ -302,7 +330,7 @@ def health():
     checks = {}
 
     # check database connection
-    MetadataModel.all_version_zeros()
+    MetadataModel.all_version_zeros(DEFUALT_STAGE)
     checks["db"] = {"status": "ok"}
 
     # check s3 connection

@@ -71,7 +71,7 @@ def compatible_with_qgis_version(metadata, qgis_version):
     ) <= StrictVersion(metadata["qgis_maximum_version"])
 
 
-def generate_xml_body(repo_bucket_name, aws_region, qgis_version):
+def generate_xml_body(repo_bucket_name, aws_region, qgis_version, plugin_stage):
     """
     Generate XML describing plugin store
     from dynamodb plugin metadata db
@@ -83,14 +83,16 @@ def generate_xml_body(repo_bucket_name, aws_region, qgis_version):
     :rtype: string
     """
 
-    current_plugins = filter(lambda item: compatible_with_qgis_version(item, qgis_version), MetadataModel.all_version_zeros())
+    current_plugins = filter(
+        lambda item: compatible_with_qgis_version(item, qgis_version), MetadataModel.all_version_zeros(plugin_stage)
+    )
     root = ET.Element("plugins")
     for plugin in current_plugins:
         if not plugin["revisions"]:
             continue
         current_group = ET.SubElement(root, "pyqgis_plugin", {"name": plugin["name"], "version": plugin["version"]})
         for key, value in plugin.items():
-            if key not in ("file_name", "name", "id", "category", "email", "item_version"):
+            if key not in ("file_name", "name", "id", "category", "email", "item_version", "stage"):
                 new_element = new_xml_element(key, value)
                 current_group.append(new_element)
         new_element = new_xml_element("file_name", f"{plugin['id']}.{plugin['version']}.zip")

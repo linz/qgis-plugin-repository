@@ -60,6 +60,19 @@ def hash_token(token):
     return hashlib.sha512(token.encode("utf-8")).hexdigest()
 
 
+def format_item_version(plugin_stage, item_version="0"):
+    """
+    string formatter, returns item_version string
+    :param plugin_stage: the plugin's stage (e.g. dev)
+    :type plugin_stage: str
+    :returns: item_version str
+    :rtype: str
+    """
+    if item_version != "metadata":
+        return f"{item_version.zfill(RECORD_FILL)}{plugin_stage}"
+    return f"metadata{plugin_stage}"
+
+
 class ModelEncoder(json.JSONEncoder):
     """
     Encode json
@@ -101,6 +114,7 @@ class MetadataModel(Model):
 
     id = UnicodeAttribute(hash_key=True, null=False)
     item_version = UnicodeAttribute(range_key=True, null=False)
+    stage = UnicodeAttribute(null=True)
     revisions = NumberAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now())
     updated_at = UTCDateTimeAttribute(null=False, default=datetime.now())
@@ -130,34 +144,32 @@ class MetadataModel(Model):
             yield name, attr.serialize(getattr(self, name))
 
     @classmethod
-    def all_version_zeros(cls):
+    def get_plugin_item(cls, plugin_id, plugin_stage, item_version="0"):
+        """
+        Query model to return specific version of a plugin
+        :param plugin_id: The plugin_id for the record to retrieve form the database.
+        :type plugin_id: str
+        :param plugin_stage: the plugin's stage (e.g. dev)
+        :type plugin_stage: str
+        :returns: json describing plugin metadata
+        :rtype: json
+        """
+
+        return cls.query(plugin_id, cls.item_version == format_item_version(plugin_stage, item_version))
+
+    @classmethod
+    def all_version_zeros(cls, plugin_stage):
         """
         Yields all version zero plugin metadata
         :returns: json describing plugin metadata
         :rtype: json
         """
 
-        for item in cls.scan(cls.item_version == "0".zfill(RECORD_FILL)):
+        for item in cls.scan(cls.item_version == format_item_version(plugin_stage)):
             yield json.loads(json.dumps(item.attribute_values, cls=ModelEncoder))
 
     @classmethod
-    def current_version_zeros(cls):
-        """
-        Returns a json representation of all plugins
-        :param current_only: If True, filter on only records not enddated (archived)
-        :type current_only: Boolean
-        :returns: json describing plugin metadata
-        :rtype: json
-        """
-
-        v_zeros = []
-        for item in cls.all_version_zeros():
-            if not item.get("ended_at"):
-                v_zeros.append(item)
-        return v_zeros
-
-    @classmethod
-    def plugin_version_zero(cls, plugin_id):
+    def plugin_version_zero(cls, plugin_id, plugin_stage):
         """
         Returns the most current metadata for the
         plugin matching the plugin_id parameter
@@ -166,14 +178,13 @@ class MetadataModel(Model):
         :returns: json describing plugin metadata
         :rtype: json
         """
-
-        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+        result = cls.get_plugin_item(plugin_id, plugin_stage)
         if result:
             version_zero = next(result)
         return json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
 
     @classmethod
-    def plugin_all_versions(cls, plugin_id):
+    def plugin_all_versions(cls, plugin_id, plugin_stage):
         """
         Returns the all versions of metadata for the
         plugin matching the plugin_id parameter
@@ -186,7 +197,8 @@ class MetadataModel(Model):
         versions = []
         result = cls.query(plugin_id)
         for version in result:
-            if version.item_version != "metadata":
+            stage = version.stage if version.stage else ""
+            if not version.item_version.startswith("metadata") and plugin_stage == stage:
                 versions.append(json.loads(json.dumps(version.attribute_values, cls=ModelEncoder)))
         return versions
 
@@ -241,13 +253,13 @@ class MetadataModel(Model):
         :param attributes: dict of properties representing the former version zero metadata
         :type attributes: dict
         """
-
-        attributes["item_version"] = str(attributes["revisions"]).zfill(RECORD_FILL)
+        plugin_stage = attributes["stage"] if "stage" in attributes else ""
+        attributes["item_version"] = format_item_version(plugin_stage, str(attributes["revisions"]))
         revision = cls(**attributes)
         revision.save(condition=(cls.revisions.does_not_exist() | cls.id.does_not_exist()))
 
     @classmethod
-    def new_plugin_version(cls, metadata, plugin_id, filename):
+    def new_plugin_version(cls, metadata, plugin_id, filename, plugin_stage):
         """
         If a new version of an existing plugin is submitted via the API
         update the version zero record with its details and
@@ -259,11 +271,13 @@ class MetadataModel(Model):
         :type plugin_id: str
         :param filename: filename of plugin.zip in datastore (currently s3)
         :type filename: str
+        :param plugin_stage: plugins stage (dev or prd)
+        :type stage: str
         :returns: json describing plugin metadata
         :rtype: json
         """
 
-        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+        result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
         except StopIteration:
@@ -278,12 +292,12 @@ class MetadataModel(Model):
         get_log().info("RevisionInserted", pluginId=plugin_id, revision=version_zero.revisions)
 
         updated_metadata = json.loads(json.dumps(version_zero.attribute_values, cls=ModelEncoder))
-        get_log().info("MetadataStored", metadata=updated_metadata)
+        get_log().info("RevisionInserted", pluginId=plugin_id, stage=plugin_stage, revision=version_zero.revisions)
 
         return updated_metadata
 
     @classmethod
-    def validate_token(cls, token, plugin_id):
+    def validate_token(cls, token, plugin_id, plugin_stage):
         """
         Check the bearer-token against the plugins secret to ensure
         the user can modify the plugin.
@@ -293,7 +307,7 @@ class MetadataModel(Model):
         :type plugin_id: str
         """
 
-        result = cls.query(plugin_id, cls.item_version == "metadata")
+        result = cls.get_plugin_item(plugin_id, plugin_stage, "metadata")
         try:
             metadata = next(result)
         except StopIteration:
@@ -304,7 +318,7 @@ class MetadataModel(Model):
             raise DataError(403, "Invalid token")
 
     @classmethod
-    def archive_plugin(cls, plugin_id):
+    def archive_plugin(cls, plugin_id, plugin_stage):
         """
         Retire plugin by adding a enddate to the metadata record
         :param plugin_id: plugin Id. Makes up the PK
@@ -312,7 +326,8 @@ class MetadataModel(Model):
         :returns: json describing archived plugin metadata
         :rtype: json
         """
-        result = cls.query(plugin_id, cls.item_version == "0".zfill(RECORD_FILL))
+
+        result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
         except StopIteration:
