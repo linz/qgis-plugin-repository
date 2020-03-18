@@ -110,8 +110,9 @@ def test_generate_xml_body(mocker):
     )
     repo_bucket_name = "test"
     aws_region = "ap-southeast-2"
+    plugin_stage = "dev"
 
-    result = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, "0.0.0")
+    result = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, "0.0.0", plugin_stage)
     assert result == expected.encode()
 
 
@@ -157,6 +158,7 @@ def test_generate_xml_body_filter_revisions_eq_zero(mocker):
     )
     repo_bucket_name = "test"
     aws_region = "ap-southeast-2"
+    plugin_stage = "dev"
 
-    result = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, "0.0.0")
+    result = plugin_xml.generate_xml_body(repo_bucket_name, aws_region, "0.0.0", plugin_stage)
     assert result == expected.encode()

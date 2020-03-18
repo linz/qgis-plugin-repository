@@ -253,9 +253,10 @@ def test_validate_token(mocker):
     """
 
     token = "12345"
+    plugin_stage = "dev"
     mocker.patch("src.plugin.metadata_model.MetadataModel.query", return_value=query_iter_obj(mocker, hash_token(token)))
     plugin_id = "test_plugin"
-    MetadataModel.validate_token(token, plugin_id)
+    MetadataModel.validate_token(token, plugin_id, plugin_stage)
 
 
 def test_validate_token_incorrect_secret(mocker):
@@ -269,8 +270,9 @@ def test_validate_token_incorrect_secret(mocker):
 
     token = "12345"
     plugin_id = "test_plugin"
+    plugin_stage = "dev"
     with pytest.raises(DataError) as error:
-        MetadataModel.validate_token(token, plugin_id)
+        MetadataModel.validate_token(token, plugin_id, plugin_stage)
     assert "Invalid token" in str(error.value)
 
 
@@ -284,3 +286,44 @@ def test_hash_token():
     matching_hash = "3627909a29c31381a071ec27f7c9ca97726182aed29a7ddd2e54353322cfb30abb9e3a6df2ac2c20fe23436311d678564d0c8d305930575f60e2d3d048184d79"
     result = metadata_model.hash_token(token)
     assert result == matching_hash
+
+
+def format_item_version_version_zero():
+    """
+    Test foramtting of item version string
+    """
+
+    plugin_stage = "dev"
+    result = metadata_model.format_item_version(plugin_stage)
+    assert result == "000000dev"
+
+
+def format_item_version_prd():
+    """
+    Test foramtting of item version string
+    """
+
+    plugin_stage = ""
+    result = metadata_model.format_item_version(plugin_stage)
+    assert result == "000000"
+
+
+def format_item_version_version_five():
+    """
+    Test foramtting of item version string
+    """
+
+    plugin_stage = "dev"
+    item_version = "000005"
+    result = metadata_model.format_item_version(plugin_stage, item_version)
+    assert result == "000005dev"
+
+
+def format_item_version_metadata():
+    """
+    Test foramtting of item version string
+    """
+
+    plugin_stage = "dev"
+    result = metadata_model.format_item_version(plugin_stage)
+    assert result == "metadatadev"
