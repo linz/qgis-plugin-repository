@@ -55,3 +55,12 @@ def datetime_now():
 
     now = datetime.now()
     yield now
+
+
+@pytest.fixture(name="api_version")
+def api_version():
+    """
+    Fixture yielding static time and date for mocks
+    """
+
+    return "v1"

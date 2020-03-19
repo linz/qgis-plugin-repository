@@ -45,6 +45,7 @@ add_data_error_handler(app)
 
 AUTH_PREFIX = "bearer "
 DEFUALT_STAGE = ""
+API_VERSION = "v1"
 # Repository bucket name
 repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 
@@ -147,7 +148,7 @@ def validate_stage(plugin_stage):
     return plugin_stage
 
 
-@app.route("/plugin/<plugin_id>", methods=["POST"])
+@app.route(f"/{API_VERSION}/plugin/<plugin_id>", methods=["POST"])
 def upload(plugin_id):
     """
     End point for processing QGIS plugin data POSTed by the user
@@ -203,7 +204,7 @@ def upload(plugin_id):
     return format_response(plugin_metadata, 201)
 
 
-@app.route("/plugin", methods=["GET"])
+@app.route(f"/{API_VERSION}/plugin", methods=["GET"])
 def get_all_plugins():
     """
     List all plugin's metadata
@@ -216,7 +217,7 @@ def get_all_plugins():
     return format_response(response, 200)
 
 
-@app.route("/plugin/<plugin_id>", methods=["GET"])
+@app.route(f"/{API_VERSION}/plugin/<plugin_id>", methods=["GET"])
 def get_plugin(plugin_id):
     """
     Takes a plugin_id as input and returns the metadata of the
@@ -232,7 +233,7 @@ def get_plugin(plugin_id):
     return format_response(MetadataModel.plugin_version_zero(plugin_id, plugin_stage), 200)
 
 
-@app.route("/plugin/<plugin_id>/revision", methods=["GET"])
+@app.route(f"/{API_VERSION}/plugin/<plugin_id>/revision", methods=["GET"])
 def get_all_revisions(plugin_id):
     """
     Takes a plugin_id and returns all associated plugin revisions
@@ -247,7 +248,7 @@ def get_all_revisions(plugin_id):
     return format_response(MetadataModel.plugin_all_versions(plugin_id, plugin_stage), 200)
 
 
-@app.route("/plugin/<plugin_id>", methods=["DELETE"])
+@app.route(f"/{API_VERSION}/plugin/<plugin_id>", methods=["DELETE"])
 def archive(plugin_id):
     """
     Takes a plugin_id as input and adds an end-date to the
@@ -284,8 +285,8 @@ def validate_qgis_version(qgis_version):
         raise DataError(400, "Invalid QGIS version")
 
 
-@app.route("/<stage>/plugins.xml", methods=["GET"])
-@app.route("/plugins.xml", defaults={"stage": ""}, methods=["GET"])
+@app.route(f"/{API_VERSION}/<stage>/plugins.xml", methods=["GET"])
+@app.route(f"/{API_VERSION}/plugins.xml", defaults={"stage": ""}, methods=["GET"])
 def qgis_plugin_xml(stage):
     """
     Get xml describing current plugins
@@ -302,7 +303,7 @@ def qgis_plugin_xml(stage):
     return app.response_class(response=xml, status=200, mimetype="text/xml")
 
 
-@app.route("/version", methods=["GET"])
+@app.route(f"/{API_VERSION}/version", methods=["GET"])
 def version():
     """
     Return git commit SHA the API was deploy from
@@ -312,7 +313,7 @@ def version():
     return format_response({"version": git_tag, "hash": git_sha}, 200)
 
 
-@app.route("/ping", methods=["GET"])
+@app.route(f"/{API_VERSION}/ping", methods=["GET"])
 def ping():
     """
     Ping to confirm the service is up
@@ -321,7 +322,7 @@ def ping():
     return app.response_class(status=200)
 
 
-@app.route("/health", methods=["GET"])
+@app.route(f"/{API_VERSION}/health", methods=["GET"])
 def health():
     """
     Ping to confirm the service is up
