@@ -33,7 +33,7 @@ def set_global(app, plugin_id=None, request_id=None):
         yield
 
 
-def test_upload_no_data(api_fixture):
+def test_upload_no_data(api_fixture, api_version):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits no data as
@@ -44,12 +44,12 @@ def test_upload_no_data(api_fixture):
 
     with set_global(app, 1234, 1234):
         with app.test_client() as test_client:
-            result = test_client.post("/plugin/test_plugin")
+            result = test_client.post(f"/{api_version}/plugin/test_plugin")
         assert result.status_code == 400
         assert result.json["message"] == "No plugin file supplied"
 
 
-def test_upload_no_metadata(api_fixture, mocker):
+def test_upload_no_metadata(api_fixture, api_version, mocker):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
@@ -67,12 +67,14 @@ def test_upload_no_metadata(api_fixture, mocker):
             zipped_bytes = tmp.read()
 
             with app.test_client() as test_client:
-                result = test_client.post("/plugin/testplugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+                result = test_client.post(
+                    f"/{api_version}/plugin/testplugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"}
+                )
             assert result.status_code == 400
             assert result.json["message"] == "No metadata.txt file found in plugin directory"
 
 
-def test_upload_not_a_zipfile(api_fixture, mocker):
+def test_upload_not_a_zipfile(api_fixture, api_version, mocker):
     """
     Via the flask client hit the /plugin POST endpoint
     to test error catching when the user submits plugin
@@ -84,12 +86,14 @@ def test_upload_not_a_zipfile(api_fixture, mocker):
 
     with set_global(app, 1234, 1234):
         with app.test_client() as test_client:
-            result = test_client.post("/plugin/test_plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"})
+            result = test_client.post(
+                f"/{api_version}/plugin/test_plugin", data=b"0011010101010", headers={"Authorization": "Bearer 12345"}
+            )
         assert result.status_code == 400
         assert result.json["message"] == "Plugin file supplied not a Zipfile"
 
 
-def test_qgis_plugin_xml_invalid_version(api_fixture):
+def test_qgis_plugin_xml_invalid_version(api_fixture, api_version):
     """
     Test an error is raised if incorrect software version is supplied
     """
@@ -97,7 +101,7 @@ def test_qgis_plugin_xml_invalid_version(api_fixture):
     app = api_fixture.app
 
     with app.test_client() as test_client:
-        result = test_client.get("/plugins.xml?qgis=3")
+        result = test_client.get(f"/{api_version}/plugins.xml?qgis=3")
     assert result.status_code == 400
     assert result.json["message"] == "Invalid QGIS version"
 
@@ -161,7 +165,7 @@ def query_iter_obj(mocker, now):
         yield i
 
 
-def test_upload_data(mocker, api_fixture, now_fixture):
+def test_upload_data(mocker, api_fixture, api_version, now_fixture):
     """
     When the users submits the correct plugin data
     test API responds indicating success.
@@ -221,7 +225,9 @@ def test_upload_data(mocker, api_fixture, now_fixture):
             zipped_bytes = tmp.read()
             with app.test_client() as test_client:
                 test_client.testing = True
-                result = test_client.post("/plugin/test_plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"})
+                result = test_client.post(
+                    f"/{api_version}/plugin/test_plugin", data=zipped_bytes, headers={"Authorization": "Bearer 12345"}
+                )
             assert result.status_code == 201
             assert result.get_json() == {
                 "about": "For testing",
