@@ -43,7 +43,7 @@ def test_compatible_with_qgis_version_is_true():
     QGIS version is greater than min plugin version but less than max.
     Should return true.
     """
-    metadata = {"qgis_minimum_version": "3.0", "qgis_maximum_version": "3.9"}
+    metadata = {"qgis_minimum_version": "3.0", "qgis_maximum_version": "3.9", "revisions": 2}
     result = plugin_xml.compatible_with_qgis_version(metadata, "3.2")
     assert result is True
 
@@ -53,7 +53,7 @@ def test_compatible_with_qgis_version_is_less_than():
     QGIS version is less than min plugin version. Should return False
     """
 
-    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99", "revisions": 2}
     result = plugin_xml.compatible_with_qgis_version(metadata, "3.0")
     assert result is False
 
@@ -63,8 +63,18 @@ def test_compatible_with_qgis_version_is_greater_than():
     QGIS version is greater than max plugin version. Should return False
     """
 
-    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99", "revisions": 2}
     result = plugin_xml.compatible_with_qgis_version(metadata, "4.0")
+    assert result is False
+
+
+def test_compatible_with_qgis_version_zero_revisions():
+    """
+    tets plugins with zero revisions are filtered prior to generating xml
+    """
+
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99", "revisions": 0}
+    result = plugin_xml.compatible_with_qgis_version(metadata, "3.4")
     assert result is False
 
 
@@ -73,7 +83,7 @@ def test_compatible_with_qgis_version_default():
     Test the default qgis version
     """
 
-    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99"}
+    metadata = {"qgis_minimum_version": "3.2", "qgis_maximum_version": "3.99", "revisions": 2}
     result = plugin_xml.compatible_with_qgis_version(metadata, "0.0.0")
     assert result is True
 
@@ -142,7 +152,6 @@ def test_generate_xml_body_filter_revisions_eq_zero(mocker):
             "qgis_minimum_version": "3.0.0",
         },
     ]
-
     mocker.patch("src.plugin.metadata_model.MetadataModel.all_version_zeros", return_value=mock_return)
 
     expected = (

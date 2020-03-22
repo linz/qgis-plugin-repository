@@ -64,6 +64,8 @@ def compatible_with_qgis_version(metadata, qgis_version):
     :rtype: boolean
     """
 
+    if metadata["revisions"] == 0:
+        return False
     if qgis_version == "0.0.0":
         return True
     return StrictVersion(metadata["qgis_minimum_version"]) <= StrictVersion(qgis_version) and StrictVersion(
