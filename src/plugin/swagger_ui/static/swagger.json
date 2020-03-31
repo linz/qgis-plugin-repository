@@ -8,8 +8,8 @@
       "email": "splanzer@linz.govt.nz"
     },
     "license": {
-      "name": "BSD-3-Clause",
-      "url": "http://www.opensource.org/licenses/BSD-3-Clause"
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
     },
     "version": "1.0.0"
   },
