@@ -4,8 +4,7 @@ plugins:
   - serverless-python-requirements
   - serverless-wsgi
   - serverless-apigw-binary
-  - serverless-plugin-git-variables 
-
+  - serverless-plugin-git-variables
 provider:
   name: aws
   runtime: python3.7
