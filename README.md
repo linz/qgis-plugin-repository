@@ -1,4 +1,5 @@
-# S3-QGIS plugins
+
+# QGIS plugin Repository
 
 [![Build Status](https://travis-ci.com/linz/s3-qgis-plugin-repo.svg?token=H9yU2isbwj6ss3KvHYyJ&branch=master)](https://travis-ci.com/linz/s3-qgis-plugin-repo)
 [![Build Status](https://github.com/linz/s3-qgis-plugin-repo/workflows/Build/badge.svg)](https://github.com/linz/s3-qgis-plugin-repo/actions)
@@ -153,6 +154,9 @@ pylint src
 
 #### Serverless
 [Serverless](serverless.com) employed to managed deployment of the application.
+
+#### Deployment - Development Environment
+
 ##### Install plugins
 
 ```bash
@@ -177,8 +181,16 @@ Where:
 *  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
 of creating unique names but more importantly obscuring these resource names from others.
 
+#### Deployment - Production Environment
+Deployment to the production environment must be via the GitHub Action. The
+Github Action's deployment step is triggered when a tag is pushed. Therefore
+to deploy to the production environment all that is required is to push a
+relevant tag via git.
 
-### Arcitecture
+###### Changelog
+As well as the GitHub action deploying the applicaiton to production on the push of a tag, it also generates a GitHuB release. The release notes are as per the changelog. Therefore, please ensure the changelog is updated as part of each release.  
+
+### Architecture
 
 Please see the [/documentation/ARCHITECTURE.md](/documentation/ARCHITECTURE.md) document.source_suffix>
 
