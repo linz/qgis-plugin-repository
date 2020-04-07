@@ -14,8 +14,8 @@ provider:
     RESOURCE_SUFFIX: ${opt:resource-suffix, ''}
     REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
-    # GIT_SHA: ${git:sha1}
-    # GIT_TAG: ${git:describeLight}
+    GIT_SHA: ${git:sha1}
+    GIT_TAG: ${git:describeLight}
   iamRoleStatements:
     - Effect: Allow
       Action:
