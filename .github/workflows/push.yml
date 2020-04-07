@@ -117,5 +117,6 @@ jobs:
       - name: install serverless plugin - serverless-apigw-binary
         run: sls plugin install -n serverless-apigw-binary
 
+
       - name: deploy app
         run: serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX }}
