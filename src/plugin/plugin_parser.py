@@ -1,15 +1,17 @@
 """
 ################################################################################
 #
-# Copyright 2019 Crown copyright (c)
-# Land Information New Zealand and the New Zealand Government.
-# All rights reserved
+#  LINZ QGIS plugin repository,
+#  Crown copyright (c) 2020, Land Information New Zealand on behalf of
+#  the New Zealand Government.
 #
-# This program is released under the terms of the 3 clause BSD license. See the
-# LICENSE file for more information.
+#  This file is released under the MIT licence. See the LICENCE file found
+#  in the top-level directory of this distribution for more information.
 #
 ################################################################################
+
     For parsing plugin metadata
+
 """
 
 
