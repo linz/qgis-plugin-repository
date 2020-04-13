@@ -2,11 +2,13 @@
   "name": "linz-qgis-s3-plugin-repo",
   "description": "",
   "version": "0.1.0",
-  "dependencies": {    "serverless": "^1.67.1",
+  "dependencies": {
+    "package.json": "^2.0.1",
+    "serverless": "^1.67.1",
     "serverless-apigw-binary": "^0.4.4",
     "serverless-plugin-git-variables": "^4.0.0",
     "serverless-python-requirements": "^5.1.0",
-    "serverless-wsgi": "^1.7.3"},
-  "devDependencies": {
-  }
+    "serverless-wsgi": "^1.7.3"
+  },
+  "devDependencies": {}
 }
