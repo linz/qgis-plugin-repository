@@ -103,7 +103,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: install serverless
-        run: npx install
+        run: npm install
 
       # - name: install serverless
       #   run: npm install -g serverless
