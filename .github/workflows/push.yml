@@ -103,7 +103,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: install serverless
-        run: npm install package.json
+        run: npx install
 
       # - name: install serverless
       #   run: npm install -g serverless
@@ -121,4 +121,4 @@ jobs:
       #   run: sls plugin install -n serverless-apigw-binary
 
       - name: deploy app
-        run: serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX }}
+        run: npx serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX }}
