@@ -3,7 +3,6 @@
   "description": "",
   "version": "0.1.0",
   "dependencies": {
-    "package.json": "^2.0.1",
     "serverless": "^1.67.1",
     "serverless-apigw-binary": "^0.4.4",
     "serverless-plugin-git-variables": "^4.0.0",

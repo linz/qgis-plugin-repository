@@ -40,7 +40,9 @@ jobs:
 
   deploy:
     name: deploy
-    if: contains(github.ref, 'refs/tags/')
+      if: contains(github.ref, 'refs/tags/') 
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
     needs: [build]
     runs-on: ubuntu-latest
     steps:
