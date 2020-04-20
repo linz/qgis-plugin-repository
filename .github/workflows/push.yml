@@ -1,8 +1,12 @@
 ---
 name: Build
 
-on: [push]
-
+on:
+  push:
+    # Build all branch on push 
+    # but only consider tags of format v.x.x.x for deployment
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,8 +45,6 @@ jobs:
   deploy:
     name: deploy
     if: contains(github.ref, 'refs/tags/') 
-    tags:
-      - v[0-9]+.[0-9]+.[0-9]+
     needs: [build]
     runs-on: ubuntu-latest
     steps:
