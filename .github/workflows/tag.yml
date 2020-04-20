@@ -106,9 +106,9 @@ jobs:
       # Deploy dev
       - name: deploy app
         if: endsWith(github.ref, 'dev')
-        run: npx serverless deploy --stage ${STAGE} --resource-suffix ${DEPLOYMENT_SUFFIX}
+        run: npx serverless deploy --stage dev --resource-suffix ${DEPLOYMENT_SUFFIX_DEV}
 
       # Deploy Prd
       - name: deploy app
         if: "!endsWith(github.ref, 'dev')"
-        run: npx serverless deploy --stage ${STAGE} --resource-suffix ${DEPLOYME
+        run: npx serverless deploy --stage prd --resource-suffix ${DEPLOYMENT_SUFFIX_PRD}
