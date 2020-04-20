@@ -32,14 +32,14 @@ jobs:
         run: |
           echo "::set-env name=DEPLOYMENT_SUFFIX::${{secrets.DEPLOYMENT_SUFFIX_DEV}}"
           echo "::set-env name=AWS_ROLE_TO_ASSUME::${{secrets.AWS_ROLE_TO_ASSUME_DEV}}"
-          echo "::set-env name=STAGE::"dev"
+          echo "::set-env name=STAGE::dev"
 
       - name: Set prd environment vars
         if: "!endsWith(github.ref, 'dev')"
         run: |
           echo "::set-env name=DEPLOYMENT_SUFFIX::${{secrets.DEPLOYMENT_SUFFIX_PRD}}"
           echo "::set-env name=AWS_ROLE_TO_ASSUME::${{secrets.AWS_ROLE_TO_ASSUME_PRD}}"
-          echo "::set-env name=STAGE::"prd"
+          echo "::set-env name=STAGE::prd"
 
       - name: Build project
         run: |
