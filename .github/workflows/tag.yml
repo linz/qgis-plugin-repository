@@ -7,12 +7,25 @@ on:
     - v[0-9]+.[0-9]+.[0-9]+
     - v[0-9]+.[0-9]+.[0-9]+\-dev
 
-
+jobs:
   deploy:
     name: deploy
+     if: contains(github.ref, 'refs/tags/') 
+         tags:
+      - v[0-9]+.[0-9]+.[0-9]+
     needs: [build]
     runs-on: ubuntu-latest
     steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2-beta
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Use Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
 
       - name: Echo github.ref
         run: |
