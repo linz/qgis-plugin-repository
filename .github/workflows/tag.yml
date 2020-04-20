@@ -42,12 +42,12 @@ jobs:
 
       - name: Echo envi var TEST
         run: |
-          echo ${{ AWS_ACCESS_KEY_ID }}
+          echo ${AWS_ACCESS_KEY_ID}
 
 
       - name: Echo envi var TEST3
         run: |
-          echo ${{ AWS_ROLE_TO_ASSUME }}
+          echo ${AWS_ROLE_TO_ASSUME}
 
       # - name: Build project
       #   run: |
