@@ -30,7 +30,7 @@ jobs:
       - name: Set dev environment vars
         if: endsWith(github.ref, 'dev')
         run: |
-          echo "::set-env name=AWS_ACCESS_KEY_ID::secrets.TEST"
+          echo "::set-env name=AWS_ACCESS_KEY_ID::${{secrets.TEST}}"
           echo "::set-env name=AWS_SECRET_ACCESS_KEY::678"
           echo "::set-env name=AWS_ROLE_TO_ASSUME::445"
 
