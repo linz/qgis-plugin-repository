@@ -1,5 +1,5 @@
 ---
-name: Build
+name: deploy
 
 on:
   push:
@@ -32,10 +32,9 @@ jobs:
         run: |
           echo "::set-env name=ENVIRONMENT::staging"
       - name: Set env to production
-        if: endsWith(github.ref, '[0-9]')
+        if: "!endsWith(github.ref, 'dev')"
         run: |
           echo "::set-env name=ENVIRONMENT::production"
-
       # - name: Checkout Code
       #   uses: actions/checkout@v2-beta
       #   with:
