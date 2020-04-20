@@ -80,7 +80,7 @@ jobs:
           aws-region: ap-southeast-2
           role-to-assume: ${{  secrets.AWS_ROLE_TO_ASSUME_DEV  }}
 
-      # Assume Dev Prd
+      # Assume Prd Role
       - name: Configure AWS Credentials
         if: "!endsWith(github.ref, 'dev')"
         uses: aws-actions/configure-aws-credentials@v1
@@ -104,11 +104,11 @@ jobs:
         run: npm install
 
       # Deploy dev
-      - name: deploy app
+      - name: deploy app to Dev
         if: endsWith(github.ref, 'dev')
-        run: npx serverless deploy --stage dev --resource-suffix ${DEPLOYMENT_SUFFIX_DEV}
+        run: npx serverless deploy --stage dev --resource-suffix ${{  DEPLOYMENT_SUFFIX_DEV  }}
 
       # Deploy Prd
-      - name: deploy app
+      - name: deploy app to Prd
         if: "!endsWith(github.ref, 'dev')"
-        run: npx serverless deploy --stage prd --resource-suffix ${DEPLOYMENT_SUFFIX_PRD}
+        run: npx serverless deploy --stage prd --resource-suffix ${{  DEPLOYMENT_SUFFIX_PRD  }}
