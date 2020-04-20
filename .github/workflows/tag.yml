@@ -30,72 +30,65 @@ jobs:
       - name: Set dev environment vars
         if: endsWith(github.ref, 'dev')
         run: |
-          echo "::set-env name=AWS_ACCESS_KEY_ID::${{secrets.TEST}}"
-          echo "::set-env name=AWS_SECRET_ACCESS_KEY::678"
-          echo "::set-env name=AWS_ROLE_TO_ASSUME::445"
+          echo "::set-env name=DEPLOYMENT_SUFFIX::${{secrets.DEPLOYMENT_SUFFIX_DEV}}"
+          echo "::set-env name=AWS_ROLE_TO_ASSUME::${{secrets.AWS_ROLE_TO_ASSUME_DEV}}"
+          echo "::set-env name=STAGE::"dev"
 
       - name: Set prd environment vars
         if: "!endsWith(github.ref, 'dev')"
         run: |
-          echo "::set-env name=ENVIRONMENT::production"
+          echo "::set-env name=DEPLOYMENT_SUFFIX::${{secrets.DEPLOYMENT_SUFFIX_PRD}}"
+          echo "::set-env name=AWS_ROLE_TO_ASSUME::${{secrets.AWS_ROLE_TO_ASSUME_PRD}}"
+          echo "::set-env name=STAGE::"prd"
 
-      - name: Echo envi var TEST
+      - name: Build project
         run: |
-          echo ${AWS_ACCESS_KEY_ID}
+          echo ${{ github.repository }}
+          zip -r qgis-plugin-repository.zip .
 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: |
+            See [${CHANGELOG} ${{ github.ref }}](https://github.com/linz/qgis-plugin-repository/tree/${CHANGELOG}#$(echo ${{ github.ref }} | sed -e 's/[a-zA-Z\.]//g')) for detailed release information.
+          draft: false
+          prerelease: false
 
-      - name: Echo envi var TEST3
-        run: |
-          echo ${AWS_ROLE_TO_ASSUME}
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./qgis-plugin-repository.zip
+          asset_name: qgis-plugin-repository
+          asset_content_type: application/zip
 
-      # - name: Build project
-      #   run: |
-      #     echo ${{ github.repository }}
-      #     zip -r qgis-plugin-repository.zip .
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+          role-to-assume: ${AWS_ROLE_TO_ASSUME}
 
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1.0.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: ${{ github.ref }}
-      #     body: |
-      #       See [${CHANGELOG} ${{ github.ref }}](https://github.com/linz/qgis-plugin-repository/tree/${CHANGELOG}#$(echo ${{ github.ref }} | sed -e 's/[a-zA-Z\.]//g')) for detailed release information.
-      #     draft: false
-      #     prerelease: false
+      - name: Identity Check
+        run: aws sts get-caller-identity
 
-      # - name: Upload Release Asset
-      #   id: upload-release-asset
-      #   uses: actions/upload-release-asset@v1.0.1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./qgis-plugin-repository.zip
-      #     asset_name: qgis-plugin-repository
-      #     asset_content_type: application/zip
+      - name: Install npm
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          registry-url: https://registry.npmjs.org
 
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ap-southeast-2
-      #     role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      - name: install serverless
+        run: npm install
 
-      # - name: Identity Check
-      #   run: aws sts get-caller-identity
-
-      # - name: Install npm
-      #   uses: actions/setup-node@v1
-      #   with:
-      #     node-version: '12.x'
-      #     registry-url: https://registry.npmjs.org
-
-      # - name: install serverless
-      #   run: npm install
-
-      # - name: deploy app
-      #   run: npx serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX }}
+      - name: deploy app
+        run: npx serverless deploy --stage ${STAGE} --resource-suffix ${DEPLOYMENT_SUFFIX}
