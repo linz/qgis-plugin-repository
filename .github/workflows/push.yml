@@ -31,12 +31,15 @@ jobs:
           pylint src/
           pylint tests/
 
-      - name: Test
-        run: python -m pytest
+      - name: Test (unit)
+        run: python -m pytest tests/unit/
+
+      - name: Test (integration)
+        run: python -m pytest tests/integration/
 
       - name: Coverage
         run: |
-          pytest --cov
+          pytest --cov src   tests/unit/  tests/integration/
 
   # Deploy to dev on merge to master
   deploy-dev:
@@ -56,6 +59,12 @@ jobs:
         with:
           python-version: 3.7
 
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
       - name: Configure AWS Dev Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -74,6 +83,12 @@ jobs:
 
       - name: deploy app
         run: npx serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX_DEV }}
+
+      - name: get dpeloyment url
+        run: echo ::set-env name=BASE_URL::$(npx serverless info | grep -o 'https.*\/dev\/')
+
+      - name: Test (sys)
+        run: BASE_URL=${{ env.BASE_URL }} python -m pytest tests/sys/
 
   # Deploy to prd on tag
   deploy-prd:
