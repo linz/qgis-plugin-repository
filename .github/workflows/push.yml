@@ -84,7 +84,7 @@ jobs:
       - name: deploy app
         run: npx serverless deploy --stage dev --resource-suffix ${{ secrets.DEPLOYMENT_SUFFIX_DEV }}
 
-      - name: get dpeloyment url
+      - name: get deployment url
         run: echo ::set-env name=BASE_URL::$(npx serverless info | grep -o 'https.*\/dev\/')
 
       - name: Test (sys)
