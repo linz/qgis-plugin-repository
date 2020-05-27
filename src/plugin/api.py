@@ -52,6 +52,9 @@ repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 # Deployment stage
 aws_stage = os.environ.get("STAGE")
 
+# Is a DNS entry used - used for swagger paths
+dns = os.environ.get("DNS")
+
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
 
@@ -60,11 +63,8 @@ git_sha = os.environ.get("GIT_SHA", None)
 git_tag = os.environ.get("GIT_TAG", None)
 
 # Swagger documentation
-swagger_url = "/docs"
-api_url = f"/{aws_stage}/docs/swagger.json"
-blueprint_name = "swagger_ui"
-static_path = "./swagger_ui"
-swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, aws_stage, blueprint_name, static_path)
+swagger_url = f"/{API_VERSION}/docs"
+swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, aws_stage, API_VERSION, dns)
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 

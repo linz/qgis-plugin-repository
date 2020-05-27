@@ -20,6 +20,12 @@
   "servers": [
     {
       "url": "/v1"
+    },
+    {
+      "url": "/dev/v1"
+    },
+    {
+      "url": "/prd/v1"
     }
   ],
   "paths": {
