@@ -180,7 +180,7 @@ Where:
 * `stage` the stage being deployed (e.g. dev/prd). If not supplied defaults to dev.
 *  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
 of creating unique names but more importantly obscuring these resource names from others.
-* `dns` (Not shown in the example as this option is used for development. Do not supply for prd deployments) Ensures correct paths for Swagger documents when not mapping the apigateway url to a domain name. When using raw apigateway urls use `--dns false` to ensure correct SwaggerUI paths
+* `dns` (Not shown in the example as this option is used for development. Do not supply for production deployments) Ensures correct paths for Swagger documents when not mapping the apigateway url to a domain name. When using raw apigateway urls use `--dns false` to ensure correct SwaggerUI paths
 
 #### Deployment - Production Environment
 Deployment to the production environment must be via the GitHub Action. The
