@@ -167,7 +167,7 @@ def test_retire_plugin(config_fixture, stage=""):
             "email": "test@linz.govt.nz",
             "experimental": "True",
             "icon": "icon.png",
-            "id": "PqvtapSnDMxnMqCh",
+            "id": config_fixture["plugin_id"],
             "item_version": f"000003{stage}",
             "name": "test plugin",
             "qgis_maximum_version": "5.0.0",
