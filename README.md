@@ -21,6 +21,16 @@ QGIS to the repository is:
 * `https://<API URL>/v1/plugins.xml` for production released plugins
 * `https://<API URL>/v1/dev/plugins.xml`for development version of plugins.
 
+## Access
+
+ **IMPORTANT**
+
+Although only plugin admins with a plugin's secret key can modify a plugin as stored in the repository, anyone with the repositories url can access the plugins. **For this reason, only plugins that meet the criteria for open sourcing should be uploaded to the repository**.
+
+To be sure if a plugin can be published, review the directives of NZGOAL. Start with the [exemptions section](https://www.data.govt.nz/manage-data/policies/nzgoal/nzgoal-se/#exceptions). 
+
+In short, do not publish if the plugin contains sensitive information. 
+
 ## Repository API
 
 ### Plugin  Management API - Dev/Prd  Separation
@@ -181,6 +191,7 @@ Where:
 *  `resource_suffix` Suffixed to the S3 bucket and DynamoDB resources for the purpose
 of creating unique names but more importantly obscuring these resource names from others.
 * `dns` (Not shown in the example as this option is used for development. Do not supply for production deployments) Ensures correct paths for Swagger documents when not mapping the apigateway url to a domain name. When using raw apigateway urls use `--dns false` to ensure correct SwaggerUI paths
+
 
 #### Deployment - Production Environment
 Deployment to the production environment must be via the GitHub Action. The
