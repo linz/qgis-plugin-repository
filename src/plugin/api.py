@@ -53,7 +53,7 @@ repo_bucket_name = os.environ.get("REPO_BUCKET_NAME")
 aws_stage = os.environ.get("STAGE")
 
 # Is a DNS entry used - used for swagger paths
-dns = os.environ.get("DNS")
+dns = os.environ.get("DNS", "false")
 
 # AWS region
 aws_region = os.environ.get("AWS_REGION", None)
