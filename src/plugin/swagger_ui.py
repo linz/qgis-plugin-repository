@@ -13,6 +13,7 @@
 
 import json
 import os
+from distutils import util
 from flask import Blueprint, send_from_directory, render_template, request
 
 
@@ -39,7 +40,7 @@ def get_swagger_ui_blueprint(base_url, stage, api_version, dns):
         blueprint_name, __name__, static_folder=f"{static_path}/static", template_folder=f"{static_path}/templates"
     )
 
-    if dns in [True, "true", "True"]:
+    if util.strtobool(dns) is True:
         docs_base_url = base_url
         api_url = f"/{api_version}/docs/swagger.json"
     else:
