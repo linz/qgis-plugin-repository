@@ -63,7 +63,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.environment.REPO_BUCKET_NAME}
-        AccessControl: PublicReadWrite
+        AccessControl: public-read
     RepoBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
