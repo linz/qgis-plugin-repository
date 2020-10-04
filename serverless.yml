@@ -83,7 +83,7 @@ resources:
                   - - "arn:aws:s3:::"
                     - "Ref" : "RepoBucket"
                     - '/*'
-                - Fn::Join:
+                - Fn::Jointemp:
                   - ""
                   - - "arn:aws:s3:::"
                     - "Ref" : "RepoBucket"
