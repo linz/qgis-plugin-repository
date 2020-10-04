@@ -63,7 +63,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.environment.REPO_BUCKET_NAME}
-        AccessControl: PublicReadWrite
+        AccessControl: PublicRead
     RepoBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
@@ -83,7 +83,7 @@ resources:
                   - - "arn:aws:s3:::"
                     - "Ref" : "RepoBucket"
                     - '/*'
-                - Fn::Join:
+                - Fn::Jointemp:
                   - ""
                   - - "arn:aws:s3:::"
                     - "Ref" : "RepoBucket"
