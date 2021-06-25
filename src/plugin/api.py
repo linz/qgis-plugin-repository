@@ -68,7 +68,7 @@ swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, 
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
 
-__slots__ = ('start_time','request_id','plugin_id')
+__slots__ = ("start_time", "request_id", "plugin_id")
 
 
 @app.before_request
@@ -310,7 +310,7 @@ def version():
     """
     Return git commit SHA the API was deploy from
     :returns: Returns json object {hash: <git_sha>, 'version': <tag, if no tag git_sha>}
-    :rtype: json """
+    :rtype: json"""
 
     return format_response({"version": git_tag, "hash": git_sha}, 200)
 
