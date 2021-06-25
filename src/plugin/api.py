@@ -13,7 +13,7 @@
     Flask API for managing the storage and retrieval QGIS Plugins in S3
 
 """
-# pylint: disable=W0703
+# pylint: disable=W0703,E0237
 
 
 import os
@@ -67,8 +67,6 @@ static_path = "./swagger_ui"
 swaggerui_blueprint = swagger_ui.get_swagger_ui_blueprint(swagger_url, api_url, aws_stage, blueprint_name, static_path)
 
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)
-
-__slots__ = ("start_time", "request_id", "plugin_id")
 
 
 @app.before_request
