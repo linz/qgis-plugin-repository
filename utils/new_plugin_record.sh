@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Usage:
 # ./new_plugin_record.sh -t '<dynamodb table>' -p <plugin_id> -s <plugin stage>
