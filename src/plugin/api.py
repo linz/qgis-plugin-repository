@@ -13,7 +13,7 @@
     Flask API for managing the storage and retrieval QGIS Plugins in S3
 
 """
-# pylint: disable=W0703
+# pylint: disable=W0703,E0237
 
 
 import os
@@ -308,7 +308,7 @@ def version():
     """
     Return git commit SHA the API was deploy from
     :returns: Returns json object {hash: <git_sha>, 'version': <tag, if no tag git_sha>}
-    :rtype: json """
+    :rtype: json"""
 
     return format_response({"version": git_tag, "hash": git_sha}, 200)
 
