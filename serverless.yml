@@ -77,7 +77,6 @@ resources:
               Principal: '*'
               Action:
                 - "s3:GetObject"
-                - "s3:PutObject"
               Resource:
                 - Fn::Join:
                   - ""
