@@ -16,7 +16,7 @@
 
 import xml.etree.ElementTree as ET
 
-# pylint is unable to import distutils.version under virtualenv (affects travis)
+# pylint is unable to import distutils.version under virtualenv
 # pylint: disable=no-name-in-module,import-error
 from distutils.version import StrictVersion
 from src.plugin.metadata_model import MetadataModel
