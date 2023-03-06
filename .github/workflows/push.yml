@@ -25,9 +25,7 @@ jobs:
         run: poetry run black .
 
       - name: Lint
-        run: |
-          pylint src/
-          pylint tests/
+        run: poetry run pylint src tests
 
       - name: Coverage
         run: |
