@@ -28,8 +28,7 @@ jobs:
         run: poetry run pylint src tests
 
       - name: Coverage
-        run: |
-          pytest --cov src   tests/unit/  tests/integration/
+        run: pytest --cov src tests/unit tests/integration
 
   # Deploy to dev on merge to master
   deploy-dev:
