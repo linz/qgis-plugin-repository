@@ -22,9 +22,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Format
-        run: |
-          black src/ --check --diff
-          black tests/ --check --diff
+        run: poetry run black .
 
       - name: Lint
         run: |
