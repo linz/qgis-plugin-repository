@@ -1,7 +1,6 @@
 
 # QGIS plugin Repository
 
-[![Build Status](https://travis-ci.com/linz/s3-qgis-plugin-repo.svg?token=H9yU2isbwj6ss3KvHYyJ&branch=master)](https://travis-ci.com/linz/s3-qgis-plugin-repo)
 [![Build Status](https://github.com/linz/s3-qgis-plugin-repo/workflows/Build/badge.svg)](https://github.com/linz/s3-qgis-plugin-repo/actions)
 
 
@@ -204,4 +203,3 @@ As well as the GitHub action deploying the applicaiton to production on the push
 ### Architecture
 
 Please see the [/documentation/ARCHITECTURE.md](/documentation/ARCHITECTURE.md) document.source_suffix>
-
