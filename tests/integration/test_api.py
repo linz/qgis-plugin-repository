@@ -204,7 +204,6 @@ def test_upload_data(mocker, api_fixture, api_version, now_fixture):
         },
     )
     with set_global(app, 1234, 1234):
-
         with tempfile.SpooledTemporaryFile() as tmp:
             with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as archive:
                 archive.writestr("test_plugin/test_plugin.py", "hello word")

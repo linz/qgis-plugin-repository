@@ -205,7 +205,6 @@ class MetadataModel(Model):
 
     @classmethod
     def update_version_zero(cls, metadata, version_zero, filename):
-
         """
         Update dynamodb metadata store for uploaded plugin
 
