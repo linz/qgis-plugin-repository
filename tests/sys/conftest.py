@@ -55,7 +55,6 @@ def system_tests():
 
 @pytest.fixture(name="dynamodb_client_fixture")
 def dynamodb_client():
-
     yield boto3.client(
         "dynamodb",
         aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
@@ -85,7 +84,7 @@ def clean_test_plugin():
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """ 
+    """
     Run post each test set/file
     """
 

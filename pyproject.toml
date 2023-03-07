@@ -1,2 +1,36 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
 [tool.black]
 line-length = 127
+
+[tool.poetry]
+authors = [
+    "Bill Nelson <bmnelson@linz.govt.nz>",
+    "Blayne Chard <bchard@linz.govt.nz>",
+    "Sandro Santilli <strk@kbt.io>",
+    "Simon Planzer <splanzer@linz.govt.nz>",
+    "Victor Engmark <vengmark@linz.govt.nz>",
+]
+description = ""
+name = "qgis-plugin-repository"
+readme = "README.md"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+blinker = "*"
+boto3 = "*"
+flask = "*"
+pynamodb = "*"
+python = "^3.7"
+structlog = "*"
+ulid-py = "*"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+isort = "*"
+pylint = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"

@@ -15,31 +15,23 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: Install
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install Python dependencies
+        run: poetry install --no-root
 
       - name: Format
-        run: |
-          black src/ --check --diff
-          black tests/ --check --diff
+        run: poetry run black .
 
       - name: Lint
-        run: |
-          pylint src/
-          pylint tests/
-
-      - name: Test (unit)
-        run: python -m pytest tests/unit/
-
-      - name: Test (integration)
-        run: python -m pytest tests/integration/
+        run: poetry run pylint src tests
 
       - name: Coverage
-        run: |
-          pytest --cov src   tests/unit/  tests/integration/
+        run: poetry run pytest --cov src tests/unit tests/integration
 
   # Deploy to dev on merge to master
   deploy-dev:
@@ -59,11 +51,14 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: Install
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install Python dependencies
+        run: poetry install --no-root
 
       - name: Configure AWS Dev Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -88,7 +83,7 @@ jobs:
         run: echo ::set-env name=BASE_URL::$(npx serverless info | grep -o 'https.*\/dev\/')
 
       - name: Test (sys)
-        run: BASE_URL=${{ env.BASE_URL }} python -m pytest tests/sys/
+        run: BASE_URL=${{ env.BASE_URL }} pytest tests/sys/
 
   # Deploy to prd on tag
   deploy-prd:

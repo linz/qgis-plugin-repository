@@ -21,14 +21,11 @@ import zipfile
 import uuid
 import time
 from io import BytesIO
+from re import match
 
-# pylint fails to import distutils.version under virtualenv (affects TravisCI)
-# see - https://github.com/PyCQA/pylint/issues/73
-# pylint: disable=E0611
-# pylint: disable=E0401
-from distutils.version import StrictVersion
 import ulid
 from flask import Flask, request, jsonify, g
+
 from src.plugin import plugin_parser
 from src.plugin import aws
 from src.plugin import plugin_xml
@@ -179,14 +176,14 @@ def upload(plugin_id):
         raise DataError(400, "Plugin file supplied not a Zipfile")
 
     # Extract plugin metadata
-    plugin_zipfile = zipfile.ZipFile(BytesIO(post_data), "r", zipfile.ZIP_DEFLATED, False)
-    metadata_path = plugin_parser.metadata_path(plugin_zipfile)
-    metadata = plugin_parser.metadata_contents(plugin_zipfile, metadata_path)
+    with zipfile.ZipFile(BytesIO(post_data), "r", zipfile.ZIP_DEFLATED, False) as plugin_zipfile:
+        metadata_path = plugin_parser.metadata_path(plugin_zipfile)
+        metadata = plugin_parser.metadata_contents(plugin_zipfile, metadata_path)
 
-    # Get the plugins root dir. This is what QGIS references when handling plugins
-    g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
+        # Get the plugins root dir. This is what QGIS references when handling plugins
+        g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
     if g.plugin_id != plugin_id:
-        raise DataError(400, "Invalid plugin name %s" % g.plugin_id)
+        raise DataError(400, f"Invalid plugin name {g.plugin_id}")
 
     # Allocate a filename
     filename = str(uuid.uuid4())
@@ -200,7 +197,7 @@ def upload(plugin_id):
     try:
         plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename, plugin_stage)
     except ValueError as error:
-        raise DataError(400, str(error))
+        raise DataError(400, str(error)) from error
     return format_response(plugin_metadata, 201)
 
 
@@ -278,9 +275,7 @@ def validate_qgis_version(qgis_version):
     :type qgis_version: string
     """
 
-    try:
-        StrictVersion(qgis_version)
-    except ValueError:
+    if not match(r"^\d+\.\d+(\.\d+)?$", qgis_version):
         get_log().error("Invalid QGIS version")
         raise DataError(400, "Invalid QGIS version")
 

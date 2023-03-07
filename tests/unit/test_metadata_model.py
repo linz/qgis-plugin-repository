@@ -109,8 +109,8 @@ def test_metadata_model(mocker):
 
     result.save()
 
-    for key in metadata:
-        assert result.attribute_values[key] == metadata[key]
+    for key, value in metadata.items():
+        assert result.attribute_values[key] == value
 
 
 def test_update_version_zero_no_empty_string(mocker):

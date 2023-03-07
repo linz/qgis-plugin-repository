@@ -111,7 +111,7 @@ def test_get_plugins(config_fixture, stage=""):
 def test_revision_plugin(config_fixture, stage=""):
     """
     Create a new revision of the previously posted plugin.
-    Ensure version numbers incremented. 
+    Ensure version numbers incremented.
     """
 
     plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"])
@@ -270,7 +270,7 @@ def test_plugin_xml(config_fixture, stage=""):
 
 def test_download_plugin(config_fixture, stage=""):
     """
-    Ensure the plugin can be download and the contents 
+    Ensure the plugin can be download and the contents
     is as expected.
     """
 

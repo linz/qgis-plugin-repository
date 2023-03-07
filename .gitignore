@@ -1,3 +1,6 @@
+/.coverage
+/.idea/
 .venv
 .pytest_cache
 node_modules
+__pycache__/

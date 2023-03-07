@@ -24,7 +24,7 @@ from subprocess import check_output
 
 def create_new_record_via_utils(config_fixture, stage=None):
     """
-    Create initial metadata record via utils/new_plugin_record.sh 
+    Create initial metadata record via utils/new_plugin_record.sh
     This also acts as a check to ensure utils/new_plugin_record.sh is
     functioning as expected
     """
@@ -99,13 +99,11 @@ def get_mock_plugin_no_metadata(plugin_name):
 
 
 def post_plugin(base_url, stage, plugin_id, plugin, secret):
-
     header = {"Authorization": f"Bearer {secret}", "content-type": "application/octet-stream"}
     return requests.post(f"{base_url}plugin/{plugin_id}?stage={stage}", data=plugin, headers=header)
 
 
 def retire_plugin(base_url, stage, plugin_id, secret):
-
     header = {"Authorization": f"Bearer {secret}", "content-type": "application/octet-stream"}
     return requests.delete(f"{base_url}plugin/{plugin_id}?stage={stage}", headers=header)
 

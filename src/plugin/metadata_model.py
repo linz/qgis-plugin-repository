@@ -205,7 +205,6 @@ class MetadataModel(Model):
 
     @classmethod
     def update_version_zero(cls, metadata, version_zero, filename):
-
         """
         Update dynamodb metadata store for uploaded plugin
 
@@ -244,7 +243,7 @@ class MetadataModel(Model):
                 cls.file_name.set(filename),
             ]
         )
-        version_zero.update(actions=action_list, condition=(cls.revisions == version_zero.revisions))
+        version_zero.update(actions=action_list, condition=cls.revisions == version_zero.revisions)
 
     @classmethod
     def insert_revision(cls, attributes):
@@ -281,9 +280,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
         get_log().info("VersionZeroUpdated")
@@ -311,9 +310,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage, "metadata")
         try:
             metadata = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         if hash_token(token) != metadata.secret:
             get_log().error("InvalidToken")
             raise DataError(403, "Invalid token")
@@ -331,9 +330,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         version_zero.update(
             actions=[
                 cls.ended_at.set(datetime.now()),
