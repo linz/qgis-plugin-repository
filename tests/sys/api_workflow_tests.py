@@ -193,9 +193,7 @@ def test_revive_plugin(config_fixture, stage=""):
     plugin_name = config_fixture["plugin_id"]
     plugin_metadata = config_fixture["plugin_metadata"]
     plugin = utils.get_mock_plugin(plugin_name, plugin_metadata)
-    response = utils.post_plugin(
-        config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
-    )
+    utils.post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
 
     # Bug #114 is stopping testing against the above response.
     # While bug exists the below check is instead being used to
