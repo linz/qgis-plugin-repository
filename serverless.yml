@@ -11,7 +11,7 @@ provider:
   region: ap-southeast-2
   environment:
     STAGE: ${opt:stage, self:provider.stage}
-    RESOURCE_SUFFIX: ${opt:resource-suffix, ''}
+    RESOURCE_SUFFIX: ${param:resource-suffix, ''}
     REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     GIT_SHA: ${git:sha1}
