@@ -60,10 +60,14 @@ functions:
   app:
     handler: wsgi_handler.handler
     events:
-      - http: ANY /
-        cors: true
-      - http: 'ANY {proxy+}'
-        cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: ANY
+          cors: true
 
 resources:
   Resources:
