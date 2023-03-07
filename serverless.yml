@@ -26,6 +26,15 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DescribeTable
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource:
+        - Fn::Join:
+          - ""
+          - - "arn:aws:s3:::"
+            - "Ref" : "RepoBucket"
+            - '/*'
 
 custom:
   pythonRequirements:
