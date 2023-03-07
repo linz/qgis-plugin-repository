@@ -138,25 +138,26 @@ and `<PLUGIN FILE PATH>` is the path to the plugin file being added to the plugi
 
 ### Create a development environment
 
-Create and activate a virtual env fff
+Create and activate a virtual env:
 
 ```bash
-virtualenv .venv
-source .venv/bin/activate
+python -m venv .venv
+. .venv/bin/activate
 ```
 
 Install the required dependencies
 
 ```bash
-pip install -r requirements-dev.txt
-pip install -r requirements.txt
+pip install --upgrade pip
+pip install poetry
+poetry install --no-root --sync
 ```
 
 Lint and format
 
 ```bash
-black src/ --diff --check
-pylint src
+poetry run black .
+poetry run pylint src tests
 ```
 
 ### Deployment
