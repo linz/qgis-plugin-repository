@@ -179,12 +179,12 @@ def upload(plugin_id):
         raise DataError(400, "Plugin file supplied not a Zipfile")
 
     # Extract plugin metadata
-    plugin_zipfile = zipfile.ZipFile(BytesIO(post_data), "r", zipfile.ZIP_DEFLATED, False)
-    metadata_path = plugin_parser.metadata_path(plugin_zipfile)
-    metadata = plugin_parser.metadata_contents(plugin_zipfile, metadata_path)
+    with zipfile.ZipFile(BytesIO(post_data), "r", zipfile.ZIP_DEFLATED, False) as plugin_zipfile:
+        metadata_path = plugin_parser.metadata_path(plugin_zipfile)
+        metadata = plugin_parser.metadata_contents(plugin_zipfile, metadata_path)
 
-    # Get the plugins root dir. This is what QGIS references when handling plugins
-    g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
+        # Get the plugins root dir. This is what QGIS references when handling plugins
+        g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
     if g.plugin_id != plugin_id:
         raise DataError(400, f"Invalid plugin name {g.plugin_id}")
 
