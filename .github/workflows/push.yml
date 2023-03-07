@@ -69,7 +69,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEV }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
@@ -141,7 +141,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRD }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
