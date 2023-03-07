@@ -180,7 +180,7 @@ sls plugin install --name serverless-plugin-git-variables
 The QGIS plugin repository is fully deployable with the use of [serverless](https://serverless.com/)
 
 ```
-serverless deploy --aws-profile <aws_profile> --stage <stage>  --resource-suffix <resource_suffix>
+serverless deploy --aws-profile <aws_profile> --stage <stage>  --param="resource-suffix=<resource_suffix>"
 ```
 
 Where:

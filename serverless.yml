@@ -1,4 +1,5 @@
 service: qgis-plugin-repo
+configValidationMode: error
 
 plugins:
   - serverless-python-requirements
@@ -11,30 +12,32 @@ provider:
   region: ap-southeast-2
   environment:
     STAGE: ${opt:stage, self:provider.stage}
-    RESOURCE_SUFFIX: ${opt:resource-suffix, ''}
+    RESOURCE_SUFFIX: ${param:resource-suffix, ''}
     REPO_BUCKET_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     GIT_SHA: ${git:sha1}
     GIT_TAG: ${git:describeLight}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DescribeTable
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-      Resource:
-        - Fn::Join:
-          - ""
-          - - "arn:aws:s3:::"
-            - "Ref" : "RepoBucket"
-            - '/*'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DescribeTable
+          Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource:
+            - Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - "Ref" : "RepoBucket"
+                - '/*'
 
 custom:
   pythonRequirements:
@@ -53,21 +56,25 @@ custom:
       - application/zip
 
 package:
-  exclude:
-    - ./.venv/**
+  patterns:
+    - '!./.venv/**'
 
 functions:
   app:
     handler: wsgi_handler.handler
     events:
-      - http: ANY /
-        cors: true
-      - http: 'ANY {proxy+}'
-        cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: ANY
+          cors: true
 
 resources:
   Resources:
-    # Configure Repo Bucket Ploicy
+    # Configure Repo Bucket Policy
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
