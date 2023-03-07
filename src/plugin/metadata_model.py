@@ -243,7 +243,7 @@ class MetadataModel(Model):
                 cls.file_name.set(filename),
             ]
         )
-        version_zero.update(actions=action_list, condition=(cls.revisions == version_zero.revisions))
+        version_zero.update(actions=action_list, condition=cls.revisions == version_zero.revisions)
 
     @classmethod
     def insert_revision(cls, attributes):
