@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Use Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -42,12 +42,12 @@ jobs:
     steps:
 
       - name: Checkout Code
-        uses: actions/checkout@v2-beta
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
       - name: Use Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -61,7 +61,7 @@ jobs:
         run: poetry install --no-root
 
       - name: Configure AWS Dev Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -69,7 +69,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEV }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
@@ -94,12 +94,12 @@ jobs:
     steps:
 
       - name: Checkout Code
-        uses: actions/checkout@v2-beta
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
       - name: Use Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -110,7 +110,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.0.1
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload Release Asset
         id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -133,7 +133,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Configure AWS Prd Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -141,7 +141,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRD }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
