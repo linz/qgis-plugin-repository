@@ -79,7 +79,7 @@ jobs:
         run: npx serverless deploy --stage dev --param="resource-suffix=${{ secrets.DEPLOYMENT_SUFFIX_DEV }}"
 
       - name: get deployment url
-        run: echo BASE_URL=$(npx serverless info | grep -o 'https.*\/dev\/') >> "$GITHUB_ENV"
+        run: echo BASE_URL=$(npx serverless info --stage dev | grep -o 'https.*\/dev\/') >> "$GITHUB_ENV"
 
       - name: Test (sys)
         run: BASE_URL=${{ env.BASE_URL }} poetry run pytest tests/sys/
