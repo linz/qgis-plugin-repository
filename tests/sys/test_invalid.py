@@ -20,6 +20,7 @@ import json
 import requests
 
 from .utils import (
+    REQUEST_TIMEOUT_SECONDS,
     create_new_record_via_utils,
     get_mock_plugin,
     get_mock_plugin_no_metadata,
@@ -83,7 +84,7 @@ def test_metadata_field_is_missing(config_fixture, stage=""):
 
 def test_invalid_qgis_version(config_fixture):
     qgis_version = "v3"
-    response = requests.get(f"{config_fixture['base_url']}plugins.xml?qgis={qgis_version}")
+    response = requests.get(f"{config_fixture['base_url']}plugins.xml?qgis={qgis_version}", timeout=REQUEST_TIMEOUT_SECONDS)
 
     assert response.status_code == 400
     assert json.loads(response.content) == {"message": "Invalid QGIS version"}

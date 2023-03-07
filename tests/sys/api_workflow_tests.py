@@ -24,6 +24,7 @@ import zipfile
 import requests
 
 from .utils import (
+    REQUEST_TIMEOUT_SECONDS,
     create_new_record_via_utils,
     get_mock_plugin,
     ignore_keys,
@@ -78,7 +79,7 @@ def test_get_plugins(config_fixture, stage=""):
     """
 
     # Get all plugins
-    response = requests.get(f"{config_fixture['base_url']}plugin?stage={stage}")
+    response = requests.get(f"{config_fixture['base_url']}plugin?stage={stage}", timeout=REQUEST_TIMEOUT_SECONDS)
     content = json.loads(response.content)
 
     # Search out the record just posted to ensure it is returned
@@ -202,7 +203,7 @@ def test_revive_plugin(config_fixture, stage=""):
     # ensure the plugin was un-enddated
 
     # Get all plugins
-    get_response = requests.get(f"{config_fixture['base_url']}plugin?stage={stage}")
+    get_response = requests.get(f"{config_fixture['base_url']}plugin?stage={stage}", timeout=REQUEST_TIMEOUT_SECONDS)
     content = json.loads(get_response.content)
 
     # Search out the record just posted to ensure it is returned
@@ -248,7 +249,7 @@ def test_plugin_xml(config_fixture, stage=""):
     else:
         url = f"{config_fixture['base_url']}plugins.xml"
 
-    response = requests.get(url)
+    response = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
 
     assert response.status_code == 200
     tree = ET.ElementTree(ET.fromstring(response.text))
@@ -279,13 +280,13 @@ def test_download_plugin(config_fixture, stage=""):
     else:
         url = f"{config_fixture['base_url']}plugins.xml"
 
-    response = requests.get(url)
+    response = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
     tree = ET.ElementTree(ET.fromstring(response.text))
     root = tree.getroot()
     download_url = root.find("pyqgis_plugin/download_url").text
 
     # Download plugin
-    r = requests.get(download_url)
+    r = requests.get(download_url, timeout=REQUEST_TIMEOUT_SECONDS)
     with zipfile.ZipFile(io.BytesIO(r.content)) as z:
         z.extractall()
 
