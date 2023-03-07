@@ -21,14 +21,11 @@ import zipfile
 import uuid
 import time
 from io import BytesIO
+from re import match
 
-# pylint fails to import distutils.version under virtualenv (affects TravisCI)
-# see - https://github.com/PyCQA/pylint/issues/73
-# pylint: disable=E0611
-# pylint: disable=E0401
-from distutils.version import StrictVersion
 import ulid
 from flask import Flask, request, jsonify, g
+
 from src.plugin import plugin_parser
 from src.plugin import aws
 from src.plugin import plugin_xml
@@ -278,11 +275,9 @@ def validate_qgis_version(qgis_version):
     :type qgis_version: string
     """
 
-    try:
-        StrictVersion(qgis_version)
-    except ValueError as error:
+    if not match(r"^\d+\.\d+(\.\d+)?$", qgis_version):
         get_log().error("Invalid QGIS version")
-        raise DataError(400, "Invalid QGIS version") from error
+        raise DataError(400, "Invalid QGIS version")
 
 
 @app.route(f"/{API_VERSION}/<stage>/plugins.xml", methods=["GET"])
