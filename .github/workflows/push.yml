@@ -10,10 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Python 3.7
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> "$GITHUB_ENV"
+
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Upgrade pip
         run: pip install --upgrade pip
@@ -45,10 +48,13 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Use Python 3.7
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> "$GITHUB_ENV"
+
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Upgrade pip
         run: pip install --upgrade pip
@@ -102,10 +108,13 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Use Python 3.7
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> "$GITHUB_ENV"
+
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Build project
         run: |
