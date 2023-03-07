@@ -37,6 +37,8 @@ jobs:
   deploy-dev:
     name: deploy-dev
     if: github.ref == 'refs/heads/master'
+    concurrency:
+      group: ${{ github.workflow }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -89,6 +91,8 @@ jobs:
   deploy-prd:
     name: deploy-prd
     if: startsWith(github.ref, 'refs/tags/v')
+    concurrency:
+      group: ${{ github.workflow }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
