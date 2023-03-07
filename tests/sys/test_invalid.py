@@ -76,7 +76,6 @@ def test_metadata_file_is_missing(config_fixture, stage=""):
 
 
 def test_metadata_feild_is_missing(config_fixture, stage=""):
-    config_fixture["plugin_metadata"]
     plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"].replace("name", "nameo"))
     response = utils.post_plugin(
         config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
