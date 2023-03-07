@@ -17,7 +17,6 @@
 import io
 import json
 
-import pytest
 import requests
 
 from tests.sys import utils
