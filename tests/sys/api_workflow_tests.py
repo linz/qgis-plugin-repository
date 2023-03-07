@@ -284,13 +284,13 @@ def test_download_plugin(config_fixture, stage=""):
 
     # Download plugin
     r = requests.get(download_url)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall()
+    with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+        z.extractall()
 
-    # Evaluate contents
-    filename_list = z.namelist()
-    assert f"{config_fixture['plugin_id']}/test_plugin.py" in filename_list
-    assert f"{config_fixture['plugin_id']}/metadata.txt" in filename_list
+        # Evaluate contents
+        filename_list = z.namelist()
+        assert f"{config_fixture['plugin_id']}/test_plugin.py" in filename_list
+        assert f"{config_fixture['plugin_id']}/metadata.txt" in filename_list
 
-    metadata = z.read(f"{config_fixture['plugin_id']}/metadata.txt").decode("utf-8")
-    assert metadata == config_fixture["plugin_metadata"]
+        metadata = z.read(f"{config_fixture['plugin_id']}/metadata.txt").decode("utf-8")
+        assert metadata == config_fixture["plugin_metadata"]
