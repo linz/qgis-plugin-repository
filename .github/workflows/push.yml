@@ -67,10 +67,13 @@ jobs:
           aws-region: ap-southeast-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEV }}
 
-      - name: Install npm
+      - name: Get Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
+
+      - name: Install Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
-          node-version: '12.x'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: install serverless
         run: npm install
@@ -141,10 +144,13 @@ jobs:
           aws-region: ap-southeast-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRD }}
 
-      - name: Install npm
+      - name: Get Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
+
+      - name: Install Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
-          node-version: '12.x'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: install serverless
         run: npm install
