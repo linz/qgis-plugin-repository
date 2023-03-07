@@ -16,9 +16,11 @@
 from datetime import datetime
 import pytest
 
+from src.plugin import api
+
 
 @pytest.fixture(name="api_fixture")
-def api(monkeypatch):
+def api_fixture(monkeypatch):
     """
     Must monkey patch envi vars before importing the api module
     """
@@ -29,8 +31,6 @@ def api(monkeypatch):
     monkeypatch.setenv("AWS_LAMBDA_FUNCTION_VERSION", "dummy")
     monkeypatch.setenv("AWS_LAMBDA_LOG_STREAM_NAME", "dummy")
     monkeypatch.setenv("AWS_REGION", "dummy")
-
-    from src.plugin import api
 
     return api
 
