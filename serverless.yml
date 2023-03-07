@@ -67,7 +67,7 @@ functions:
 
 resources:
   Resources:
-    # Configure Repo Bucket Ploicy
+    # Configure Repo Bucket Policy
     RepoBucket:
       Type: AWS::S3::Bucket
       Properties:
