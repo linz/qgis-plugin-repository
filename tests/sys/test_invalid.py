@@ -14,11 +14,12 @@
 
 """
 
-from tests.sys import utils
-import pytest
-import requests
-import json
 import io
+import json
+
+import requests
+
+import utils
 
 
 def test_wrong_secrect(config_fixture, stage=""):
@@ -75,7 +76,6 @@ def test_metadata_file_is_missing(config_fixture, stage=""):
 
 
 def test_metadata_feild_is_missing(config_fixture, stage=""):
-    config_fixture["plugin_metadata"]
     plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"].replace("name", "nameo"))
     response = utils.post_plugin(
         config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
@@ -84,7 +84,7 @@ def test_metadata_feild_is_missing(config_fixture, stage=""):
     assert json.loads(response.content) == {"message": "Attribute 'name' cannot be None"}
 
 
-def test_invalid_qgis_version(config_fixture, stage=""):
+def test_invalid_qgis_version(config_fixture):
     qgis_version = "v3"
     response = requests.get(f"{config_fixture['base_url']}plugins.xml?qgis={qgis_version}")
 
@@ -92,7 +92,7 @@ def test_invalid_qgis_version(config_fixture, stage=""):
     assert json.loads(response.content) == {"message": "Invalid QGIS version"}
 
 
-def test_stage_is_not_valid(config_fixture, stage=""):
+def test_stage_is_not_valid(config_fixture):
     stage = "testing"
 
     plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"].replace("name", "nameo"))

@@ -16,8 +16,7 @@
 """
 
 
-import pytest
-from tests.sys import api_workflow_tests
+import api_workflow_tests
 
 
 def test_post_dev_plugin(config_fixture):

@@ -16,6 +16,7 @@
 
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
+
 from src.plugin.log import get_log
 
 

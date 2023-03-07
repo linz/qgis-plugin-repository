@@ -16,14 +16,14 @@
 """
 
 
-import requests
-import json
-import zipfile
-import pytest
-import os
 import io
+import json
 import xml.etree.ElementTree as ET
-from tests.sys import utils
+import zipfile
+
+import requests
+
+import utils
 
 
 def test_post_plugin(config_fixture, stage=""):
@@ -193,9 +193,7 @@ def test_revive_plugin(config_fixture, stage=""):
     plugin_name = config_fixture["plugin_id"]
     plugin_metadata = config_fixture["plugin_metadata"]
     plugin = utils.get_mock_plugin(plugin_name, plugin_metadata)
-    response = utils.post_plugin(
-        config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
-    )
+    utils.post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
 
     # Bug #114 is stopping testing against the above response.
     # While bug exists the below check is instead being used to
@@ -286,13 +284,13 @@ def test_download_plugin(config_fixture, stage=""):
 
     # Download plugin
     r = requests.get(download_url)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall()
+    with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+        z.extractall()
 
-    # Evaluate contents
-    filename_list = z.namelist()
-    assert f"{config_fixture['plugin_id']}/test_plugin.py" in filename_list
-    assert f"{config_fixture['plugin_id']}/metadata.txt" in filename_list
+        # Evaluate contents
+        filename_list = z.namelist()
+        assert f"{config_fixture['plugin_id']}/test_plugin.py" in filename_list
+        assert f"{config_fixture['plugin_id']}/metadata.txt" in filename_list
 
-    metadata = z.read(f"{config_fixture['plugin_id']}/metadata.txt").decode("utf-8")
-    assert metadata == config_fixture["plugin_metadata"]
+        metadata = z.read(f"{config_fixture['plugin_id']}/metadata.txt").decode("utf-8")
+        assert metadata == config_fixture["plugin_metadata"]

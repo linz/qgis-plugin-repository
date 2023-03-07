@@ -14,12 +14,13 @@
 
 """
 
+import io
 import os
 import re
 import zipfile
-import io
-import requests
 from subprocess import check_output
+
+import requests
 
 
 def create_new_record_via_utils(config_fixture, stage=None):
@@ -108,7 +109,7 @@ def retire_plugin(base_url, stage, plugin_id, secret):
     return requests.delete(f"{base_url}plugin/{plugin_id}?stage={stage}", headers=header)
 
 
-def ignore_keys(dictionary, ignore=[]):
+def ignore_keys(dictionary, ignore):
     """Some returned parameters such as 'updated_at' can not be
     easily predicted and therefore tested. This method is for
     removing such parameters prior to assert comparisons.

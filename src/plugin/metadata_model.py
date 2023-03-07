@@ -17,14 +17,16 @@
 # pylint: disable=too-few-public-methods
 
 
+import hashlib
+import json
 import os
 from datetime import datetime
-import json
-import hashlib
-from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute, NumberAttribute
+
+from pynamodb.attributes import NumberAttribute, UnicodeAttribute, UTCDateTimeAttribute
 from pynamodb.models import Model
-from src.plugin.error import DataError
-from src.plugin.log import get_log
+
+from .error import DataError
+from .log import get_log
 
 RECORD_FILL = 6
 

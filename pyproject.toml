@@ -5,6 +5,9 @@ requires = ["poetry-core"]
 [tool.black]
 line-length = 127
 
+[tool.isort]
+profile = "black"
+
 [tool.poetry]
 authors = [
     "Bill Nelson <bmnelson@linz.govt.nz>",
@@ -30,7 +33,9 @@ ulid-py = "*"
 [tool.poetry.group.dev.dependencies]
 black = "*"
 isort = "*"
+pre-commit = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+requests = "*"

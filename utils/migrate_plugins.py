@@ -19,11 +19,12 @@
 
 """
 
+import argparse
 import os
 import re
 import zipfile
-import argparse
 from subprocess import check_output
+
 import requests
 
 
