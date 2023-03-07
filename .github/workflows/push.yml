@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Use Python 3.7
         uses: actions/setup-python@v4
@@ -42,7 +42,7 @@ jobs:
     steps:
 
       - name: Checkout Code
-        uses: actions/checkout@v2-beta
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
@@ -69,7 +69,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_DEV }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
@@ -94,7 +94,7 @@ jobs:
     steps:
 
       - name: Checkout Code
-        uses: actions/checkout@v2-beta
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
@@ -110,7 +110,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.0.1
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -141,7 +141,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_PRD }}
 
       - name: Install npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
