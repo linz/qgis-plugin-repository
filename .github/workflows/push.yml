@@ -82,7 +82,7 @@ jobs:
         run: echo BASE_URL=$(npx serverless info | grep -o 'https.*\/dev\/') >> "$GITHUB_ENV"
 
       - name: Test (sys)
-        run: BASE_URL=${{ env.BASE_URL }} pytest tests/sys/
+        run: BASE_URL=${{ env.BASE_URL }} poetry run pytest tests/sys/
 
   # Deploy to prd on tag
   deploy-prd:
