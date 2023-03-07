@@ -17,22 +17,19 @@
 
 
 import os
-import zipfile
-import uuid
 import time
+import uuid
+import zipfile
 from io import BytesIO
 from re import match
 
 import ulid
-from flask import Flask, request, jsonify, g
+from flask import Flask, g, jsonify, request
 
-from src.plugin import plugin_parser
-from src.plugin import aws
-from src.plugin import plugin_xml
-from src.plugin import swagger_ui
-from src.plugin.metadata_model import MetadataModel
+from src.plugin import aws, plugin_parser, plugin_xml, swagger_ui
 from src.plugin.error import DataError, add_data_error_handler
 from src.plugin.log import get_log
+from src.plugin.metadata_model import MetadataModel
 
 app = Flask(__name__)
 

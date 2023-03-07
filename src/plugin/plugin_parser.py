@@ -15,10 +15,11 @@
 """
 
 
-import re
 import configparser
-from io import StringIO
 import os
+import re
+from io import StringIO
+
 from src.plugin.error import DataError
 
 

@@ -11,14 +11,16 @@
 ################################################################################
 """
 
-import uuid
 import datetime
-import json
 import hashlib
+import json
+import uuid
+
 import pytest
+
 from src.plugin import metadata_model
-from src.plugin.metadata_model import MetadataModel, ModelEncoder
 from src.plugin.error import DataError
+from src.plugin.metadata_model import MetadataModel, ModelEncoder
 
 
 def test_default():

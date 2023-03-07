@@ -12,6 +12,7 @@
 """
 
 import pytest
+
 from src.plugin import api
 from src.plugin.error import DataError
 

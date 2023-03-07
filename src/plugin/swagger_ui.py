@@ -13,7 +13,8 @@
 
 import json
 import os
-from flask import Blueprint, send_from_directory, render_template, request
+
+from flask import Blueprint, render_template, request, send_from_directory
 
 
 def get_swagger_ui_blueprint(base_url, api_url, stage, blueprint_name, static_path):

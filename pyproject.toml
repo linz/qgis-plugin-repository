@@ -5,6 +5,9 @@ requires = ["poetry-core"]
 [tool.black]
 line-length = 127
 
+[tool.isort]
+profile = "black"
+
 [tool.poetry]
 authors = [
     "Bill Nelson <bmnelson@linz.govt.nz>",

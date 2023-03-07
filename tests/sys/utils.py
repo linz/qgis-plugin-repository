@@ -14,12 +14,13 @@
 
 """
 
+import io
 import os
 import re
 import zipfile
-import io
-import requests
 from subprocess import check_output
+
+import requests
 
 
 def create_new_record_via_utils(config_fixture, stage=None):

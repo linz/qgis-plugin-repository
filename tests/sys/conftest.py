@@ -13,8 +13,9 @@
 
 # pylint: disable=redefined-outer-name
 import os
-import pytest
+
 import boto3
+import pytest
 from boto3.dynamodb.conditions import Key
 
 TEST_CONFIG = {

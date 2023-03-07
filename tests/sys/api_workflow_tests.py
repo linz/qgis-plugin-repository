@@ -16,13 +16,15 @@
 """
 
 
-import requests
-import json
-import zipfile
-import pytest
-import os
 import io
+import json
+import os
 import xml.etree.ElementTree as ET
+import zipfile
+
+import pytest
+import requests
+
 from tests.sys import utils
 
 

@@ -2,9 +2,9 @@
 
 import os
 from datetime import datetime
-from flask import g
 
 import structlog
+from flask import g
 
 # Convert to pinojs standard level numbers
 NAME_TO_LEVEL = {

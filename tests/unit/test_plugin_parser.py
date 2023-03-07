@@ -13,9 +13,11 @@
 
 import tempfile
 import zipfile
+
 import pytest
-from src.plugin.error import DataError
+
 from src.plugin import plugin_parser
+from src.plugin.error import DataError
 
 
 def test_metadata_path():

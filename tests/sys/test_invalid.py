@@ -14,11 +14,13 @@
 
 """
 
-from tests.sys import utils
+import io
+import json
+
 import pytest
 import requests
-import json
-import io
+
+from tests.sys import utils
 
 
 def test_wrong_secrect(config_fixture, stage=""):
