@@ -33,6 +33,7 @@ ulid-py = "*"
 [tool.poetry.group.dev.dependencies]
 black = "*"
 isort = "*"
+pre-commit = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"

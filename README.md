@@ -156,8 +156,7 @@ poetry install --no-root --sync
 Lint and format
 
 ```bash
-poetry run black .
-poetry run pylint src tests
+poetry run pre-commit run --all-files
 ```
 
 ### Deployment

@@ -24,11 +24,8 @@ jobs:
       - name: Install Python dependencies
         run: poetry install --no-root
 
-      - name: Format
-        run: poetry run black .
-
-      - name: Lint
-        run: poetry run pylint src tests
+      - name: Lint and format
+        run: poetry run pre-commit run --all-files
 
       - name: Coverage
         run: poetry run pytest --cov src tests/unit tests/integration
