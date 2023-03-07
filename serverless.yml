@@ -17,25 +17,27 @@ provider:
     PLUGINS_TABLE_NAME: "${self:service}-${self:provider.environment.RESOURCE_SUFFIX}"
     GIT_SHA: ${git:sha1}
     GIT_TAG: ${git:describeLight}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DescribeTable
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-      Resource:
-        - Fn::Join:
-          - ""
-          - - "arn:aws:s3:::"
-            - "Ref" : "RepoBucket"
-            - '/*'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DescribeTable
+          Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.PLUGINS_TABLE_NAME}"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource:
+            - Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - "Ref" : "RepoBucket"
+                - '/*'
 
 custom:
   pythonRequirements:
@@ -54,8 +56,8 @@ custom:
       - application/zip
 
 package:
-  exclude:
-    - ./.venv/**
+  patterns:
+    - '!./.venv/**'
 
 functions:
   app:
