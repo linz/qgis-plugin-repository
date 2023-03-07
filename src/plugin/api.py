@@ -186,7 +186,7 @@ def upload(plugin_id):
     # Get the plugins root dir. This is what QGIS references when handling plugins
     g.plugin_id = plugin_parser.zipfile_root_dir(plugin_zipfile)
     if g.plugin_id != plugin_id:
-        raise DataError(400, "Invalid plugin name %s" % g.plugin_id)
+        raise DataError(400, f"Invalid plugin name {g.plugin_id}")
 
     # Allocate a filename
     filename = str(uuid.uuid4())
