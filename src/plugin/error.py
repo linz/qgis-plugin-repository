@@ -28,7 +28,7 @@ class DataError(Exception):
     msg: str
 
     def __init__(self, http_code: int, msg: str):
-        super(DataError, self).__init__(msg)
+        super().__init__(msg)
         self.msg = msg
         self.http_code = http_code
 
