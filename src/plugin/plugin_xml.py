@@ -16,9 +16,8 @@
 
 import xml.etree.ElementTree as ET
 
-# pylint is unable to import distutils.version under virtualenv
-# pylint: disable=no-name-in-module,import-error
-from distutils.version import StrictVersion
+from packaging.version import Version
+
 from src.plugin.metadata_model import MetadataModel
 
 
@@ -70,9 +69,9 @@ def compatible_with_qgis_version(metadata, qgis_version):
         return False
     if qgis_version == "0.0.0":
         return True
-    return StrictVersion(metadata["qgis_minimum_version"]) <= StrictVersion(qgis_version) and StrictVersion(
-        qgis_version
-    ) <= StrictVersion(metadata["qgis_maximum_version"])
+    return Version(metadata["qgis_minimum_version"]) <= Version(qgis_version) and Version(qgis_version) <= Version(
+        metadata["qgis_maximum_version"]
+    )
 
 
 def generate_xml_body(repo_bucket_name, aws_region, qgis_version, plugin_stage):
