@@ -1,4 +1,5 @@
 service: qgis-plugin-repo
+configValidationMode: error
 
 plugins:
   - serverless-python-requirements
