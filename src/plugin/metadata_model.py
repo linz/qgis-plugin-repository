@@ -280,9 +280,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         # Update version zero
         cls.update_version_zero(metadata, version_zero, filename)
         get_log().info("VersionZeroUpdated")
@@ -310,9 +310,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage, "metadata")
         try:
             metadata = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         if hash_token(token) != metadata.secret:
             get_log().error("InvalidToken")
             raise DataError(403, "Invalid token")
@@ -330,9 +330,9 @@ class MetadataModel(Model):
         result = cls.get_plugin_item(plugin_id, plugin_stage)
         try:
             version_zero = next(result)
-        except StopIteration:
+        except StopIteration as error:
             get_log().error("PluginNotFound")
-            raise DataError(400, "Plugin Not Found")
+            raise DataError(400, "Plugin Not Found") from error
         version_zero.update(
             actions=[
                 cls.ended_at.set(datetime.now()),

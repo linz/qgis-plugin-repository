@@ -200,7 +200,7 @@ def upload(plugin_id):
     try:
         plugin_metadata = MetadataModel.new_plugin_version(metadata, g.plugin_id, filename, plugin_stage)
     except ValueError as error:
-        raise DataError(400, str(error))
+        raise DataError(400, str(error)) from error
     return format_response(plugin_metadata, 201)
 
 
@@ -280,9 +280,9 @@ def validate_qgis_version(qgis_version):
 
     try:
         StrictVersion(qgis_version)
-    except ValueError:
+    except ValueError as error:
         get_log().error("Invalid QGIS version")
-        raise DataError(400, "Invalid QGIS version")
+        raise DataError(400, "Invalid QGIS version") from error
 
 
 @app.route(f"/{API_VERSION}/<stage>/plugins.xml", methods=["GET"])
