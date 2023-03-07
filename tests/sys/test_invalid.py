@@ -19,7 +19,7 @@ import json
 
 import requests
 
-from tests.sys import utils
+import utils
 
 
 def test_wrong_secrect(config_fixture, stage=""):

@@ -25,8 +25,8 @@ from datetime import datetime
 from pynamodb.attributes import NumberAttribute, UnicodeAttribute, UTCDateTimeAttribute
 from pynamodb.models import Model
 
-from src.plugin.error import DataError
-from src.plugin.log import get_log
+from .error import DataError
+from .log import get_log
 
 RECORD_FILL = 6
 

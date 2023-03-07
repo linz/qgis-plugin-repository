@@ -23,7 +23,7 @@ import zipfile
 
 import requests
 
-from tests.sys import utils
+import utils
 
 
 def test_post_plugin(config_fixture, stage=""):
