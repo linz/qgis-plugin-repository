@@ -2,6 +2,7 @@
 
 import os
 from datetime import datetime
+from typing import Any, MutableMapping
 
 import structlog
 from flask import g
@@ -22,7 +23,7 @@ NAME_TO_LEVEL = {
 # This is a standard format for the function so it needs all three arguments
 # Even thought we do not use them
 # pylint: disable=unused-argument
-def add_default_keys(current_logger, method_name: str, event_dict: dict):
+def add_default_keys(current_logger, method_name: str, event_dict: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
     """
     Configure structlog to output the same format as pinojs
     {
@@ -50,7 +51,7 @@ def add_default_keys(current_logger, method_name: str, event_dict: dict):
     return event_dict
 
 
-def add_flask_keys(current_logger, method_name: str, event_dict: dict):
+def add_flask_keys(current_logger, method_name: str, event_dict: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
     if "request_id" in g:
         event_dict["requestId"] = g.request_id
     if "plugin_id" in g:
