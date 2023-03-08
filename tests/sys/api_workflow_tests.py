@@ -23,7 +23,13 @@ import zipfile
 
 import requests
 
-import utils
+from .utils import (
+    create_new_record_via_utils,
+    get_mock_plugin,
+    ignore_keys,
+    post_plugin,
+    retire_plugin,
+)
 
 
 def test_post_plugin(config_fixture, stage=""):
@@ -32,17 +38,15 @@ def test_post_plugin(config_fixture, stage=""):
     productions and development plugin workflows
     """
 
-    utils.create_new_record_via_utils(config_fixture, stage)
+    create_new_record_via_utils(config_fixture, stage)
 
-    plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"])
-    response = utils.post_plugin(
-        config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
-    )
+    plugin = get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"])
+    response = post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
     content = json.loads(response.content)
 
     exclude_from_checks = ["created_at", "file_name", "updated_at"]
     assert response.status_code == 201
-    assert utils.ignore_keys(content, exclude_from_checks) == utils.ignore_keys(
+    assert ignore_keys(content, exclude_from_checks) == ignore_keys(
         {
             "about": "this is a test",
             "author_name": "Yossarian",
@@ -82,7 +86,7 @@ def test_get_plugins(config_fixture, stage=""):
 
     # check the test plugin is reported via the endpoint as expected
     assert response.status_code == 200
-    assert utils.ignore_keys(test_plugin, ["created_at", "file_name", "updated_at"]) == utils.ignore_keys(
+    assert ignore_keys(test_plugin, ["created_at", "file_name", "updated_at"]) == ignore_keys(
         {
             "about": "this is a test",
             "author_name": "Yossarian",
@@ -114,13 +118,11 @@ def test_revision_plugin(config_fixture, stage=""):
     Ensure version numbers incremented.
     """
 
-    plugin = utils.get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"])
-    response = utils.post_plugin(
-        config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"]
-    )
+    plugin = get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"])
+    response = post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
     content = json.loads(response.content)
 
-    assert utils.ignore_keys(content, ["created_at", "file_name", "updated_at"]) == utils.ignore_keys(
+    assert ignore_keys(content, ["created_at", "file_name", "updated_at"]) == ignore_keys(
         {
             "about": "this is a test",
             "author_name": "Yossarian",
@@ -151,14 +153,14 @@ def test_retire_plugin(config_fixture, stage=""):
     Retire the plugin
     """
 
-    response = utils.retire_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], config_fixture["secret"])
+    response = retire_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], config_fixture["secret"])
     content = json.loads(response.content)
 
     assert response.status_code == 200
 
     # version 00000 should be enddated.
     assert content["ended_at"] is not None
-    assert utils.ignore_keys(content, ["created_at", "file_name", "updated_at", "ended_at"]) == utils.ignore_keys(
+    assert ignore_keys(content, ["created_at", "file_name", "updated_at", "ended_at"]) == ignore_keys(
         {
             "about": "this is a test",
             "author_name": "Yossarian",
@@ -192,8 +194,8 @@ def test_revive_plugin(config_fixture, stage=""):
 
     plugin_name = config_fixture["plugin_id"]
     plugin_metadata = config_fixture["plugin_metadata"]
-    plugin = utils.get_mock_plugin(plugin_name, plugin_metadata)
-    utils.post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
+    plugin = get_mock_plugin(plugin_name, plugin_metadata)
+    post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
 
     # Bug #114 is stopping testing against the above response.
     # While bug exists the below check is instead being used to
@@ -208,7 +210,7 @@ def test_revive_plugin(config_fixture, stage=""):
 
     # check the test plugin is reported via the endpoint as expected
     assert get_response.status_code == 200
-    assert utils.ignore_keys(test_plugin, ["created_at", "file_name", "updated_at"]) == utils.ignore_keys(
+    assert ignore_keys(test_plugin, ["created_at", "file_name", "updated_at"]) == ignore_keys(
         {
             "about": "this is a test",
             "author_name": "Yossarian",
