@@ -74,7 +74,7 @@ def test_metadata_file_is_missing(config_fixture, stage=""):
     assert json.loads(response.content) == {"message": "No metadata.txt file found in plugin directory"}
 
 
-def test_metadata_feild_is_missing(config_fixture, stage=""):
+def test_metadata_field_is_missing(config_fixture, stage=""):
     plugin = get_mock_plugin(config_fixture["plugin_id"], config_fixture["plugin_metadata"].replace("name", "nameo"))
     response = post_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], plugin, config_fixture["secret"])
     assert response.status_code == 400
