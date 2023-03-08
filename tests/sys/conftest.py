@@ -84,7 +84,8 @@ def clean_test_plugin():
         response = table.delete_item(Key={"id": item["id"], "item_version": item["item_version"]})
 
 
-def pytest_sessionfinish(_session, _exitstatus):
+@pytest.fixture(autouse=True)
+def cleanup():
     """
     Run post each test set/file
     """
