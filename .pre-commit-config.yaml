@@ -18,6 +18,14 @@ repos:
         language: system
         stages: [commit]
 
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        stages: [commit]
+        types_or: [python, pyi]
+        require_serial: true
+
       - id: pylint
         name: pylint
         entry: pylint
