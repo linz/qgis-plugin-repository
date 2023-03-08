@@ -15,7 +15,7 @@
 
 """
 
-import api_workflow_tests
+from . import api_workflow_tests
 
 
 def test_post_prd_plugin(config_fixture):
