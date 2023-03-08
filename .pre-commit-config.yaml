@@ -11,6 +11,13 @@ repos:
         language: system
         stages: [commit]
 
+      - id: gitlint
+        name: gitlint
+        entry: gitlint
+        args: [--fail-without-commits, --staged, --msg-filename]
+        language: system
+        stages: [commit-msg]
+
       - id: isort
         name: isort
         entry: isort
