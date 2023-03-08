@@ -8,8 +8,8 @@ PLUGIN_ID=""
 PLUGIN_STAGE=""
 VER_ZERO_JSON="{}"
 METADATA_JSON="{}"
-SECRET=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-SECRET_HASH=$(echo -n $SECRET | sha512sum | tr -d "[:space:]-")
+SECRET=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 64 | head -n 1)
+SECRET_HASH=$(echo -n "$SECRET" | sha512sum | tr -d "[:space:]-")
 
 # Parse args
 while [ $# -gt 1 ]
@@ -34,7 +34,7 @@ shift
 done
 
 # JSON reprsentation of the new plugin's version zero record
-if [ ! -n "${PLUGIN_STAGE}" ];
+if [ -z "${PLUGIN_STAGE}" ];
 then
     VER_ZERO_JSON='{"id": {"S": "'"${PLUGIN_ID}"'"}, "item_version": {"S": "000000"} , "revisions": {"N": "0"} }'
 else
