@@ -5,7 +5,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +37,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}
     needs: [build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
       - name: Checkout Code
@@ -94,7 +94,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}
     needs: [build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
       - name: Checkout Code
