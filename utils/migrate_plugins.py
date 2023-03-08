@@ -23,12 +23,13 @@ import argparse
 import os
 import re
 import zipfile
+from datetime import timedelta
 from subprocess import check_output
 
 import requests
 
 
-def create_new_metadata_record(table_name, plugin_id, stage=None):
+def create_new_metadata_record(table_name, plugin_id, region, stage=None):
     """
     Create initial metadata record via utils/new_plugin_record.sh
     :param table_name: The Dynamodb table where metadata records are stored
@@ -55,12 +56,12 @@ def create_new_metadata_record(table_name, plugin_id, stage=None):
             "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID"),
             "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
             "AWS_SESSION_TOKEN": os.environ.get("AWS_SESSION_TOKEN"),
-            "AWS_DEFAULT_REGION": os.environ.get("AWS_REGION"),
+            "AWS_DEFAULT_REGION": region,
         },
     )
 
     match = re.search(r"(secret=)(?P<secret>.*)(\s)(?P<hash>hash.*)", new_record.decode("utf-8"))
-    return match.group("secret")
+    return match.group("secret"), match.group("hash")
 
 
 def zipfile_root_dir(plugin_zipfile):
@@ -104,7 +105,7 @@ def post_plugin(base_url, plugin, plugin_id, secret, stage=None):
     url = f"{base_url}plugin/{plugin_id}"
     if stage:
         url = url + f"?stage={stage}"
-    return requests.post(url, data=plugin, headers=header)
+    return requests.post(url, data=plugin, headers=header, timeout=timedelta(seconds=60).total_seconds())
 
 
 def upload_plugins(plugin_directory, table_name, base_url, stage=None):
@@ -130,7 +131,7 @@ def upload_plugins(plugin_directory, table_name, base_url, stage=None):
         if zipfile.is_zipfile(plugin_path):
             with zipfile.ZipFile(plugin_path, "r") as plugin_zipfile:
                 plugin_id = zipfile_root_dir(plugin_zipfile)
-                secret = create_new_metadata_record(table_name, plugin_id, stage)
+                secret = create_new_metadata_record(table_name, plugin_id, os.environ.get("AWS_REGION"), stage=stage)[0]
             with open(plugin_path, "rb") as f:
                 # Post the plugin
                 response = post_plugin(base_url, f, plugin_id, secret, stage)

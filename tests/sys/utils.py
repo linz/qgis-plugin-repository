@@ -15,12 +15,14 @@
 """
 
 import io
-import os
-import re
 import zipfile
-from subprocess import check_output
+from datetime import timedelta
 
 import requests
+
+from utils.migrate_plugins import create_new_metadata_record
+
+REQUEST_TIMEOUT_SECONDS = timedelta(seconds=2).total_seconds()
 
 
 def create_new_record_via_utils(config_fixture, stage=None):
@@ -29,29 +31,9 @@ def create_new_record_via_utils(config_fixture, stage=None):
     This also acts as a check to ensure utils/new_plugin_record.sh is
     functioning as expected
     """
-
-    source = os.path.dirname(__file__)
-    script_dir = os.path.join(source, "../../utils")
-    script = os.path.join(script_dir, "new_plugin_record.sh")
-
-    cmd = f"{script} -t {config_fixture['table_name']} -p {config_fixture['plugin_id']}"
-    if stage:
-        cmd = cmd + f" -s {stage}"
-
-    new_record = check_output(
-        [cmd],
-        shell=True,
-        env={
-            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID"),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            "AWS_SESSION_TOKEN": os.environ.get("AWS_SESSION_TOKEN", ""),
-            "AWS_DEFAULT_REGION": config_fixture["aws_region"],
-        },
+    config_fixture["secret"], config_fixture["hash"] = create_new_metadata_record(
+        config_fixture["table_name"], config_fixture["plugin_id"], config_fixture["aws_region"], stage=stage
     )
-
-    match = re.search(r"(secret=)(?P<secret>.*)(\s)(?P<hash>hash.*)", new_record.decode("utf-8"))
-    config_fixture["secret"] = match.group("secret")
-    config_fixture["hash"] = match.group("hash")
 
 
 def create_new_record(dynamodb_client_fixture, table, plugin_id, secret):
@@ -101,12 +83,14 @@ def get_mock_plugin_no_metadata(plugin_name):
 
 def post_plugin(base_url, stage, plugin_id, plugin, secret):
     header = {"Authorization": f"Bearer {secret}", "content-type": "application/octet-stream"}
-    return requests.post(f"{base_url}plugin/{plugin_id}?stage={stage}", data=plugin, headers=header)
+    return requests.post(
+        f"{base_url}plugin/{plugin_id}?stage={stage}", data=plugin, headers=header, timeout=REQUEST_TIMEOUT_SECONDS
+    )
 
 
 def retire_plugin(base_url, stage, plugin_id, secret):
     header = {"Authorization": f"Bearer {secret}", "content-type": "application/octet-stream"}
-    return requests.delete(f"{base_url}plugin/{plugin_id}?stage={stage}", headers=header)
+    return requests.delete(f"{base_url}plugin/{plugin_id}?stage={stage}", headers=header, timeout=REQUEST_TIMEOUT_SECONDS)
 
 
 def ignore_keys(dictionary, ignore):
