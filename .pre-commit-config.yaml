@@ -55,3 +55,10 @@ repos:
         types: [shell]
         language: system
         stages: [commit]
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: f21b778d68a3930f77d7424821022e81e3ae17d7 # frozen: v3.6.0-1
+    hooks:
+      - id: shfmt
+        args: [--case-indent, --indent=4, --list, --space-redirects, --write]
+        stages: [commit]
