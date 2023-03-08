@@ -1468,6 +1468,20 @@ files = [
 ]
 
 [[package]]
+name = "shellcheck-py"
+version = "0.9.0.2"
+description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "shellcheck_py-0.9.0.2-py2.py3-none-macosx_10_15_x86_64.whl", hash = "sha256:ddb9b9fd4750d726b9ac24df8b63599dc742c8749477bcdfd4ed639b22de21ae"},
+    {file = "shellcheck_py-0.9.0.2-py2.py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bbaaba3044d266e793964e391c8caad4fcccafcd64e63de24e9b87a31a0c7aff"},
+    {file = "shellcheck_py-0.9.0.2-py2.py3-none-win_amd64.whl", hash = "sha256:6a1be188d0a7183fc4bfcf52087512d879519bb6beb67d76927e0331edb45eb1"},
+    {file = "shellcheck_py-0.9.0.2.tar.gz", hash = "sha256:1c29aa5864cc937f037b84b8e6b13b7016d25a45f7a07a1f1f16d38e387c76b4"},
+]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1795,4 +1809,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8472107e78a51f61d78091fa663274f3f03deaf47dbece32826d49a5ce4935ee"
+content-hash = "76aaf5f9a3effc17894044cef6b8b8d3386f3bbb4477bfd14a7dbe215894b704"

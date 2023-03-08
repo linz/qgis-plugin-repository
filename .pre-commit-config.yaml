@@ -47,3 +47,11 @@ repos:
         types: [python]
         language: system
         stages: [commit]
+
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        args: [--external-sources]
+        types: [shell]
+        language: system
+        stages: [commit]
