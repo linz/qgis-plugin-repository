@@ -95,6 +95,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Cache Node.js packages
+        uses: actions/cache@v3.2.6
+        with:
+          path: ~/.npm
+          key:
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-${{ hashFiles('./package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-
+
       - name: install serverless
         run: npm install
 
@@ -181,6 +190,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache Node.js packages
+        uses: actions/cache@v3.2.6
+        with:
+          path: ~/.npm
+          key:
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-${{ hashFiles('./package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-
 
       - name: install serverless
         run: npm install
