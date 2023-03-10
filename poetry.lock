@@ -137,14 +137,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.87"
-description = "Type annotations for boto3 1.26.87 generated with mypy-boto3-builder 7.12.5"
+version = "1.26.88"
+description = "Type annotations for boto3 1.26.88 generated with mypy-boto3-builder 7.12.5"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.87.tar.gz", hash = "sha256:975aab248017b12143c7ac4849151bae77c0ca84b14eaa5032f605be89106b19"},
-    {file = "boto3_stubs-1.26.87-py3-none-any.whl", hash = "sha256:e16689deffe20025dc68b912e84653acaf8f5ffd019d98721886b32869857dd4"},
+    {file = "boto3-stubs-1.26.88.tar.gz", hash = "sha256:5b1321b394924b789923a28442a13321938918b8e0a8f0acf3b8b4cc156f55d8"},
+    {file = "boto3_stubs-1.26.88-py3-none-any.whl", hash = "sha256:66b890005ba64ea8e0a9d20584eec7d062d96650c396e72c6508f76b02ada2dc"},
 ]
 
 [package.dependencies]
@@ -187,7 +187,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.87)", "botocore (==1.29.87)"]
+boto3 = ["boto3 (==1.26.88)", "botocore (==1.29.88)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -818,29 +818,29 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 name = "gitlint"
-version = "0.19.0"
+version = "0.19.1"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "gitlint-0.19.0-py3-none-any.whl", hash = "sha256:3a566c6f641e054be26ecf67210c237e4fe45472f6606761c9fea7b44e570d3c"},
-    {file = "gitlint-0.19.0.tar.gz", hash = "sha256:82d3768fb21bc98ab8c45cc16b24e351934bcf91398f1821b7ef89f235bf5bcf"},
+    {file = "gitlint-0.19.1-py3-none-any.whl", hash = "sha256:26bb085959148d99fbbc178b4e56fda6c3edd7646b7c2a24d8ee1f8e036ed85d"},
+    {file = "gitlint-0.19.1.tar.gz", hash = "sha256:b5b70fb894e80849b69abbb65ee7dbb3520fc3511f202a6e6b6ddf1a71ee8f61"},
 ]
 
 [package.dependencies]
-gitlint-core = {version = "0.19.0", extras = ["trusted-deps"]}
+gitlint-core = {version = "0.19.1", extras = ["trusted-deps"]}
 
 [[package]]
 name = "gitlint-core"
-version = "0.19.0"
+version = "0.19.1"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "gitlint_core-0.19.0-py3-none-any.whl", hash = "sha256:b5c66ac380eae983bed3fa21e5dd35c03d93f3024c7a2bce3a0d1fa9a43c9494"},
-    {file = "gitlint_core-0.19.0.tar.gz", hash = "sha256:97d5d65a39f40d72f82545134e89949ea17d3845415bea7ce3c465b93a1ef2f2"},
+    {file = "gitlint_core-0.19.1-py3-none-any.whl", hash = "sha256:f41effd1dcbc06ffbfc56b6888cce72241796f517b46bd9fd4ab1b145056988c"},
+    {file = "gitlint_core-0.19.1.tar.gz", hash = "sha256:7bf977b03ff581624a9e03f65ebb8502cc12dfaa3e92d23e8b2b54bbdaa29992"},
 ]
 
 [package.dependencies]
