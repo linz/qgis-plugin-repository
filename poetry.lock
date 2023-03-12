@@ -117,18 +117,18 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.26.86"
+version = "1.26.88"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.86-py3-none-any.whl", hash = "sha256:e981703b76d2fb9274ce5cdda6ea382e29c9e7c65bc400c94c0a259b26f8914a"},
-    {file = "boto3-1.26.86.tar.gz", hash = "sha256:7e8fc7bfef6481e48380d13e18a0a036413d126dc7eda37eadc1a052a3426323"},
+    {file = "boto3-1.26.88-py3-none-any.whl", hash = "sha256:5374c409d0153e5da4ccde3a0f7e3efac81ce7c60e4e18ffc9acc87c67e0c0a3"},
+    {file = "boto3-1.26.88.tar.gz", hash = "sha256:f4839565feeaaca4ef775b74a8df996b79b61d988db62c90571bcc948a9f24c5"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.86,<1.30.0"
+botocore = ">=1.29.88,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -137,14 +137,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.86"
-description = "Type annotations for boto3 1.26.86 generated with mypy-boto3-builder 7.12.5"
+version = "1.26.88"
+description = "Type annotations for boto3 1.26.88 generated with mypy-boto3-builder 7.12.5"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.86.tar.gz", hash = "sha256:10ac340fba664ec07b1e662c50d8d30af16e59bc71bf2a6a30f60991488b73e3"},
-    {file = "boto3_stubs-1.26.86-py3-none-any.whl", hash = "sha256:c6d8e85624ea4ce26ac53d932243fd2a98c6c98108b59c0a2473460eb491f276"},
+    {file = "boto3-stubs-1.26.88.tar.gz", hash = "sha256:5b1321b394924b789923a28442a13321938918b8e0a8f0acf3b8b4cc156f55d8"},
+    {file = "boto3_stubs-1.26.88-py3-none-any.whl", hash = "sha256:66b890005ba64ea8e0a9d20584eec7d062d96650c396e72c6508f76b02ada2dc"},
 ]
 
 [package.dependencies]
@@ -187,7 +187,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.86)", "botocore (==1.29.86)"]
+boto3 = ["boto3 (==1.26.88)", "botocore (==1.29.88)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -500,14 +500,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.86"
+version = "1.29.88"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.86-py3-none-any.whl", hash = "sha256:6083c649791559dd916c9ff7ac62486b391f6f9464d3cf6964582a489c866b11"},
-    {file = "botocore-1.29.86.tar.gz", hash = "sha256:8a4afc6d540c01890e434b9a31fb1b17f8c759001e12c7ad7c49f55ea5805993"},
+    {file = "botocore-1.29.88-py3-none-any.whl", hash = "sha256:c320275d18ee140005ace4d04e9e720d5b1e30625cfde5267b1fc5133fd4d44d"},
+    {file = "botocore-1.29.88.tar.gz", hash = "sha256:48ed2af0a10e7c15a3445eda62f665b106a2aba4ffa1ce730d7083022fd9596f"},
 ]
 
 [package.dependencies]
@@ -818,29 +818,29 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 name = "gitlint"
-version = "0.19.0"
+version = "0.19.1"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "gitlint-0.19.0-py3-none-any.whl", hash = "sha256:3a566c6f641e054be26ecf67210c237e4fe45472f6606761c9fea7b44e570d3c"},
-    {file = "gitlint-0.19.0.tar.gz", hash = "sha256:82d3768fb21bc98ab8c45cc16b24e351934bcf91398f1821b7ef89f235bf5bcf"},
+    {file = "gitlint-0.19.1-py3-none-any.whl", hash = "sha256:26bb085959148d99fbbc178b4e56fda6c3edd7646b7c2a24d8ee1f8e036ed85d"},
+    {file = "gitlint-0.19.1.tar.gz", hash = "sha256:b5b70fb894e80849b69abbb65ee7dbb3520fc3511f202a6e6b6ddf1a71ee8f61"},
 ]
 
 [package.dependencies]
-gitlint-core = {version = "0.19.0", extras = ["trusted-deps"]}
+gitlint-core = {version = "0.19.1", extras = ["trusted-deps"]}
 
 [[package]]
 name = "gitlint-core"
-version = "0.19.0"
+version = "0.19.1"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "gitlint_core-0.19.0-py3-none-any.whl", hash = "sha256:b5c66ac380eae983bed3fa21e5dd35c03d93f3024c7a2bce3a0d1fa9a43c9494"},
-    {file = "gitlint_core-0.19.0.tar.gz", hash = "sha256:97d5d65a39f40d72f82545134e89949ea17d3845415bea7ce3c465b93a1ef2f2"},
+    {file = "gitlint_core-0.19.1-py3-none-any.whl", hash = "sha256:f41effd1dcbc06ffbfc56b6888cce72241796f517b46bd9fd4ab1b145056988c"},
+    {file = "gitlint_core-0.19.1.tar.gz", hash = "sha256:7bf977b03ff581624a9e03f65ebb8502cc12dfaa3e92d23e8b2b54bbdaa29992"},
 ]
 
 [package.dependencies]
@@ -1228,18 +1228,18 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pylint"
-version = "2.16.4"
+version = "2.17.0"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "pylint-2.16.4-py3-none-any.whl", hash = "sha256:4a770bb74fde0550fa0ab4248a2ad04e7887462f9f425baa0cd8d3c1d098eaee"},
-    {file = "pylint-2.16.4.tar.gz", hash = "sha256:8841f26a0dbc3503631b6a20ee368b3f5e0e5461a1d95cf15d103dab748a0db3"},
+    {file = "pylint-2.17.0-py3-none-any.whl", hash = "sha256:e097d8325f8c88e14ad12844e3fe2d963d3de871ea9a8f8ad25ab1c109889ddc"},
+    {file = "pylint-2.17.0.tar.gz", hash = "sha256:1460829b6397cb5eb0cdb0b4fc4b556348e515cdca32115f74a1eb7c20b896b4"},
 ]
 
 [package.dependencies]
-astroid = ">=2.14.2,<=2.16.0-dev0"
+astroid = ">=2.15.0,<=2.17.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
@@ -1573,14 +1573,14 @@ files = [
 
 [[package]]
 name = "types-pygments"
-version = "2.14.0.5"
+version = "2.14.0.6"
 description = "Typing stubs for Pygments"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pygments-2.14.0.5.tar.gz", hash = "sha256:55542e6fde27182b4e9575f50e94a4d9b2fe24f1a723494c5ef6db2efdc25d5a"},
-    {file = "types_Pygments-2.14.0.5-py3-none-any.whl", hash = "sha256:3014b91e9655e73a080dc6b6973e3f3ada0da44a1384c17796e0e0ffaa6ff198"},
+    {file = "types-Pygments-2.14.0.6.tar.gz", hash = "sha256:111c2accae3b8f8e0449889b285f5313f54bdb0ccaed5c4742d56988f867ee9e"},
+    {file = "types_Pygments-2.14.0.6-py3-none-any.whl", hash = "sha256:26b3eb1d69d9e552c4b09060f9663e4245b8290a6fb8a6d6ad637de734347b2b"},
 ]
 
 [package.dependencies]
@@ -1619,14 +1619,14 @@ types-awscrt = "*"
 
 [[package]]
 name = "types-setuptools"
-version = "67.5.0.0"
+version = "67.6.0.0"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-setuptools-67.5.0.0.tar.gz", hash = "sha256:fa6f231eeb27e86b1d6e8260f73de300e91f99c205b9a5e21debd49f3726a849"},
-    {file = "types_setuptools-67.5.0.0-py3-none-any.whl", hash = "sha256:f7f4bf4ab777e88631d3a387bbfdd4d480a2a4693ca896130f8ef738370377b8"},
+    {file = "types-setuptools-67.6.0.0.tar.gz", hash = "sha256:70b5e6a379e9fccf6579871a93ca3301a46252e3ae66957ec64281a2b6a812d9"},
+    {file = "types_setuptools-67.6.0.0-py3-none-any.whl", hash = "sha256:d669a80ee8e37eb1697dc31a23d41ea2c48a635464e2c7e6370dda811459b466"},
 ]
 
 [[package]]
