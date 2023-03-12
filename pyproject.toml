@@ -8,6 +8,9 @@ line-length = 127
 [tool.isort]
 profile = "black"
 
+[tool.mypy]
+show_error_codes = true
+
 [tool.poetry]
 authors = [
     "Bill Nelson <bmnelson@linz.govt.nz>",
