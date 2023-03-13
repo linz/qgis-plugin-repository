@@ -9,6 +9,7 @@ line-length = 127
 profile = "black"
 
 [tool.mypy]
+no_implicit_reexport = true
 show_error_codes = true
 warn_redundant_casts = true
 warn_unused_configs = true
