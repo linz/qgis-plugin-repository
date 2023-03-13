@@ -18,4 +18,4 @@ def test_health(config_fixture):
 
 def test_version(config_fixture):
     response = requests.get(f"{config_fixture['base_url']}version", timeout=REQUEST_TIMEOUT_SECONDS)
-    return json.loads(response.content)
+    assert response.status_code == 200, response.content
