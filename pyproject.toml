@@ -11,6 +11,7 @@ profile = "black"
 [tool.mypy]
 no_implicit_reexport = true
 show_error_codes = true
+strict_concatenate = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
