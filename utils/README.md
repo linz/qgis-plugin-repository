@@ -13,7 +13,7 @@ where:
 ```
 --table or -t:         Is the table name where the plugin repo metadata is stored
 --plugin-id or -p:     Is the plugin's plugin id. This must match the plugins root directory name. 
---stage or -s:         Is the stage of the plugin. This is optional and only '--stage dev' should
+--stage or -s:         Is the stage of the plugin. This is optional and only '--stage=dev' should
 be supplied when the plugin record is for a development version of the plugin. for production
 release of a plugin this argument should not be supplied. 
 ```

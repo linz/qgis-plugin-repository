@@ -21,7 +21,7 @@ from boto3.dynamodb.conditions import Key
 TEST_CONFIG = {
     "base_url": f"{os.environ.get('BASE_URL')}v1/",
     "aws_region": os.environ.get("AWS_REGION", "ap-southeast-2"),
-    "table_name": os.environ.get("TABLE_NAME", "qgis-plugin-repo-continuousdeployment"),
+    "table_name": os.environ.get("TABLE_NAME", f"qgis-plugin-repo-{os.environ['RESOURCE_SUFFIX']}"),
     "secret": "",
     "hash": "",
     "plugin_id": os.environ.get("PLUGIN_ID", "PqvtapSnDMxnMqCh"),
