@@ -96,7 +96,7 @@ jobs:
         run: npm install
 
       - name: deploy app
-        run: npx serverless deploy --stage dev --param="resource-suffix=${{ secrets.DEPLOYMENT_SUFFIX_DEV }}"
+        run: npx serverless deploy --stage dev --param=resource-suffix=continuousdeployment
 
       - name: get deployment url
         run: echo BASE_URL=$(npx serverless info --stage dev | grep -o 'https.*\/dev\/') >> "$GITHUB_ENV"
@@ -176,4 +176,4 @@ jobs:
         run: npm install
 
       - name: deploy app
-        run: npx serverless deploy --stage dev --param="resource-suffix=${{ secrets.DEPLOYMENT_SUFFIX_PRD }}"
+        run: npx serverless deploy --stage dev --param=resource-suffix=56c159c6dfdsw2378fec41dfd
