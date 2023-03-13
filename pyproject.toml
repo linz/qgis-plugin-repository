@@ -9,6 +9,7 @@ line-length = 127
 profile = "black"
 
 [tool.mypy]
+disallow_subclassing_any = true
 no_implicit_reexport = true
 show_error_codes = true
 strict_concatenate = true
