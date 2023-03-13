@@ -29,6 +29,10 @@ from subprocess import check_output
 import requests
 
 
+class RegexSearchMismatchError(Exception):
+    pass
+
+
 def create_new_metadata_record(table_name, plugin_id, region, stage=None):
     """
     Create initial metadata record via utils/new_plugin_record.sh
@@ -60,7 +64,9 @@ def create_new_metadata_record(table_name, plugin_id, region, stage=None):
         },
     )
 
-    match = re.search(r"(secret=)(?P<secret>.*)(\s)(?P<hash>hash.*)", new_record.decode("utf-8"))
+    if not (match := re.search(r"(secret=)(?P<secret>.*)(\s)(?P<hash>hash.*)", new_record.decode("utf-8"))):
+        raise RegexSearchMismatchError()
+
     return match.group("secret"), match.group("hash")
 
 

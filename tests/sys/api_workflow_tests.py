@@ -83,7 +83,7 @@ def test_get_plugins(config_fixture, stage=""):
     content = json.loads(response.content)
 
     # Search out the record just posted to ensure it is returned
-    test_plugin = next((item for item in content if item["id"] == config_fixture["plugin_id"]), None)
+    test_plugin = next((item for item in content if item["id"] == config_fixture["plugin_id"]))
 
     # check the test plugin is reported via the endpoint as expected
     assert response.status_code == 200
@@ -207,7 +207,7 @@ def test_revive_plugin(config_fixture, stage=""):
     content = json.loads(get_response.content)
 
     # Search out the record just posted to ensure it is returned
-    test_plugin = next((item for item in content if item["id"] == config_fixture["plugin_id"]), None)
+    test_plugin = next((item for item in content if item["id"] == config_fixture["plugin_id"]))
 
     # check the test plugin is reported via the endpoint as expected
     assert get_response.status_code == 200
@@ -255,18 +255,18 @@ def test_plugin_xml(config_fixture, stage=""):
     tree = ET.ElementTree(ET.fromstring(response.text))
     root = tree.getroot()
     assert root.tag == "plugins"
-    assert root.find("pyqgis_plugin/deprecated").text == "False"
-    assert root.find("pyqgis_plugin/experimental").text == "True"
-    assert root.find("pyqgis_plugin/repository").text == "github/test"
-    assert root.find("pyqgis_plugin/version").text == "0.1"
-    assert root.find("pyqgis_plugin/icon").text == "icon.png"
-    assert root.find("pyqgis_plugin/qgis_maximum_version").text == "5.0.0"
-    assert root.find("pyqgis_plugin/qgis_minimum_version").text == "4.0.0"
-    assert root.find("pyqgis_plugin/author_name").text == "Yossarian"
-    assert root.find("pyqgis_plugin/about").text == "this is a test"
-    assert root.find("pyqgis_plugin/description").text == "Plugin for testing the repository"
-    assert root.find("pyqgis_plugin/revisions").text == "4"
-    assert root.find("pyqgis_plugin/file_name").text == f"{config_fixture['plugin_id']}.0.1.zip"
+    assert root.findtext("pyqgis_plugin/deprecated") == "False"
+    assert root.findtext("pyqgis_plugin/experimental") == "True"
+    assert root.findtext("pyqgis_plugin/repository") == "github/test"
+    assert root.findtext("pyqgis_plugin/version") == "0.1"
+    assert root.findtext("pyqgis_plugin/icon") == "icon.png"
+    assert root.findtext("pyqgis_plugin/qgis_maximum_version") == "5.0.0"
+    assert root.findtext("pyqgis_plugin/qgis_minimum_version") == "4.0.0"
+    assert root.findtext("pyqgis_plugin/author_name") == "Yossarian"
+    assert root.findtext("pyqgis_plugin/about") == "this is a test"
+    assert root.findtext("pyqgis_plugin/description") == "Plugin for testing the repository"
+    assert root.findtext("pyqgis_plugin/revisions") == "4"
+    assert root.findtext("pyqgis_plugin/file_name") == f"{config_fixture['plugin_id']}.0.1.zip"
 
 
 def test_download_plugin(config_fixture, stage=""):
@@ -283,7 +283,8 @@ def test_download_plugin(config_fixture, stage=""):
     response = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
     tree = ET.ElementTree(ET.fromstring(response.text))
     root = tree.getroot()
-    download_url = root.find("pyqgis_plugin/download_url").text
+    download_url = root.findtext("pyqgis_plugin/download_url")
+    assert download_url is not None
 
     # Download plugin
     r = requests.get(download_url, timeout=REQUEST_TIMEOUT_SECONDS)
