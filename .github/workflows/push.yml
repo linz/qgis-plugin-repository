@@ -25,6 +25,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Cache pip
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('./poetry.lock') }}
+          restore-keys: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
+
       - name: Upgrade pip
         run: pip install --upgrade pip
 
@@ -67,6 +74,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Cache pip
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('./poetry.lock') }}
+          restore-keys: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
+
       - name: Upgrade pip
         run: pip install --upgrade pip
 
@@ -92,11 +106,20 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Cache Node.js packages
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.npm
+          key:
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-${{ hashFiles('./package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-
+
       - name: install serverless
         run: npm install
 
       - name: deploy app
-        run: npx serverless deploy --stage dev --param="resource-suffix=${{ secrets.DEPLOYMENT_SUFFIX_DEV }}"
+        run: npx serverless deploy --stage dev --param=resource-suffix=continuousdeployment
 
       - name: get deployment url
         run: echo BASE_URL=$(npx serverless info --stage dev | grep -o 'https.*\/dev\/') >> "$GITHUB_ENV"
@@ -126,6 +149,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('./poetry.lock') }}
+          restore-keys: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
 
       - name: Build project
         run: |
@@ -172,8 +202,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Cache Node.js packages
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.npm
+          key:
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-${{ hashFiles('./package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-
+
       - name: install serverless
         run: npm install
 
       - name: deploy app
-        run: npx serverless deploy --stage dev --param="resource-suffix=${{ secrets.DEPLOYMENT_SUFFIX_PRD }}"
+        run: npx serverless deploy --stage dev --param=resource-suffix=56c159c6dfdsw2378fec41dfd
