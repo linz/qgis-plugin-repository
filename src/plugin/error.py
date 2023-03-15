@@ -13,8 +13,9 @@
     Custom Error class
 
 """
+from typing import Optional
 
-from flask import jsonify
+from flask import Response, jsonify
 from werkzeug.exceptions import HTTPException
 
 from src.plugin.log import get_log
@@ -37,7 +38,7 @@ class DataError(Exception):
         return repr(self.msg)
 
 
-def handle_error(e: Exception):
+def handle_error(e: Exception) -> tuple[Response, int]:
     """
     Catch python standard exception
     """
@@ -48,7 +49,7 @@ def handle_error(e: Exception):
     return jsonify(response_body), 500
 
 
-def handle_http_error(e: HTTPException):
+def handle_http_error(e: HTTPException) -> tuple[Response, Optional[int]]:
     """
     Catch HTTP exceptions
     """
@@ -59,7 +60,7 @@ def handle_http_error(e: HTTPException):
     return jsonify(response_body), e.code
 
 
-def handle_data_error(e: DataError):
+def handle_data_error(e: DataError) -> tuple[Response, int]:
     """
     Custom error
     """
