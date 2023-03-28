@@ -117,18 +117,18 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.26.99"
+version = "1.26.100"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.99-py3-none-any.whl", hash = "sha256:536d9e7a074f4f16cc87b426f91b3079edd5c6927541a04f7e3fa28c53293532"},
-    {file = "boto3-1.26.99.tar.gz", hash = "sha256:d9fd57d6e98fd919cdbd613428f685e05b48c71477fda1aa7fbf51867262c7d1"},
+    {file = "boto3-1.26.100-py3-none-any.whl", hash = "sha256:b5be5bcffe17d70a72622f8ecbb428df7b11ef8d1facdfa984e94c6fc9fa301b"},
+    {file = "boto3-1.26.100.tar.gz", hash = "sha256:567f03ac638c3a6f4af00d88d081df7d6b8de4d127a26543c4ec1e7509e1a626"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.99,<1.30.0"
+botocore = ">=1.29.100,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -137,14 +137,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.99"
-description = "Type annotations for boto3 1.26.99 generated with mypy-boto3-builder 7.14.2"
+version = "1.26.100"
+description = "Type annotations for boto3 1.26.100 generated with mypy-boto3-builder 7.14.4"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.99.tar.gz", hash = "sha256:cae61a62af8579963cb4590d3dd04a9b713f695c0fc47be7ba45822c9e500fcd"},
-    {file = "boto3_stubs-1.26.99-py3-none-any.whl", hash = "sha256:b0c9951dfb288bd2d2deda679d332d1f3aa3b19831d0c6f8742e75f488bf2ff0"},
+    {file = "boto3-stubs-1.26.100.tar.gz", hash = "sha256:744d090e1cdb42668e5a3706d95345d4cd70455485d66b30cdb2bde7a8db6d74"},
+    {file = "boto3_stubs-1.26.100-py3-none-any.whl", hash = "sha256:3d00405316e561d951078774e3ee90ab2bf710a9be631062ba5ebd83b612594a"},
 ]
 
 [package.dependencies]
@@ -186,7 +186,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.99)", "botocore (==1.29.99)"]
+boto3 = ["boto3 (==1.26.100)", "botocore (==1.29.100)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -500,14 +500,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.99"
+version = "1.29.100"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.99-py3-none-any.whl", hash = "sha256:15c205e4578253da1e8cc247b9d4755042f5f873f68ac6e5fed48f4bd6f008c6"},
-    {file = "botocore-1.29.99.tar.gz", hash = "sha256:d1770b4fe5531870af7a81e9897b2092d2f89e4ba8cb7abbbaf3ab952f6b8a6f"},
+    {file = "botocore-1.29.100-py3-none-any.whl", hash = "sha256:d5c4c5bbbbf0ec62a4235ccac1b9bbb579558f7bb3231d7fb6054e1f64d3a623"},
+    {file = "botocore-1.29.100.tar.gz", hash = "sha256:ff6585df3dcef2057be5e54b45d254608d3769d726ea4ccd4e17f77825e5b13d"},
 ]
 
 [package.dependencies]
@@ -1549,14 +1549,14 @@ files = [
 
 [[package]]
 name = "types-colorama"
-version = "0.4.15.8"
+version = "0.4.15.9"
 description = "Typing stubs for colorama"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-colorama-0.4.15.8.tar.gz", hash = "sha256:c6bb245aa868c7dd78c3b16bd48484cd366127d61e4efa15676eac23acd82b76"},
-    {file = "types_colorama-0.4.15.8-py3-none-any.whl", hash = "sha256:7ebcb66eb2c672c4f576fc7445a45860eba5f4f05e459de6cea413fac8ef4d2c"},
+    {file = "types-colorama-0.4.15.9.tar.gz", hash = "sha256:fb6e6d21ad3b01b1878fc6a7d3f266d1f8458b013d7145933bd908eb1e668fb2"},
+    {file = "types_colorama-0.4.15.9-py3-none-any.whl", hash = "sha256:ef41da74c762a80d7b32061aeeef7da50e86f025788b974896f197c23a64828d"},
 ]
 
 [[package]]
@@ -1589,14 +1589,14 @@ types-setuptools = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.11.16"
+version = "2.28.11.17"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-requests-2.28.11.16.tar.gz", hash = "sha256:9d4002056df7ebc4ec1f28fd701fba82c5c22549c4477116cb2656aa30ace6db"},
-    {file = "types_requests-2.28.11.16-py3-none-any.whl", hash = "sha256:a86921028335fdcc3aaf676c9d3463f867db6af2303fc65aa309b13ae1e6dd53"},
+    {file = "types-requests-2.28.11.17.tar.gz", hash = "sha256:0d580652ce903f643f8c3b494dd01d29367ea57cea0c7ad7f65cf3169092edb0"},
+    {file = "types_requests-2.28.11.17-py3-none-any.whl", hash = "sha256:cc1aba862575019306b2ed134eb1ea994cab1c887a22e18d3383e6dd42e9789b"},
 ]
 
 [package.dependencies]
