@@ -1549,14 +1549,14 @@ files = [
 
 [[package]]
 name = "types-colorama"
-version = "0.4.15.9"
+version = "0.4.15.10"
 description = "Typing stubs for colorama"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-colorama-0.4.15.9.tar.gz", hash = "sha256:fb6e6d21ad3b01b1878fc6a7d3f266d1f8458b013d7145933bd908eb1e668fb2"},
-    {file = "types_colorama-0.4.15.9-py3-none-any.whl", hash = "sha256:ef41da74c762a80d7b32061aeeef7da50e86f025788b974896f197c23a64828d"},
+    {file = "types-colorama-0.4.15.10.tar.gz", hash = "sha256:e384d6e4d79595fff506fe5a2e51ff09ef143ed62ee40cc3b06b40f41eafb490"},
+    {file = "types_colorama-0.4.15.10-py3-none-any.whl", hash = "sha256:9a313f616123f9d3003006d7cf2369eaf583b6088ea1b1aad4e1ec5466234b7b"},
 ]
 
 [[package]]
