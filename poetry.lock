@@ -113,13 +113,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.150"
-description = "Type annotations for boto3 1.26.150 generated with mypy-boto3-builder 7.14.5"
+version = "1.26.151"
+description = "Type annotations for boto3 1.26.151 generated with mypy-boto3-builder 7.14.5"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.150.tar.gz", hash = "sha256:e12d36f4abcb509012595fbbfd91790b4970c1053bb1b000ed596805aea93896"},
-    {file = "boto3_stubs-1.26.150-py3-none-any.whl", hash = "sha256:30cb325177dda51bd44d9b0c35f8ddbdb7caea34b038134c13b2c3767e1a2916"},
+    {file = "boto3-stubs-1.26.151.tar.gz", hash = "sha256:ba7e3e441e0925e4dcda411f7f5be72168591b88754bceb68007922775b628ef"},
+    {file = "boto3_stubs-1.26.151-py3-none-any.whl", hash = "sha256:7857341b16d65129f493fd1a1b48ccd712ff81d743dde9456853ba4c99528131"},
 ]
 
 [package.dependencies]
@@ -161,7 +161,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.150)", "botocore (==1.29.150)"]
+boto3 = ["boto3 (==1.26.151)", "botocore (==1.29.151)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
