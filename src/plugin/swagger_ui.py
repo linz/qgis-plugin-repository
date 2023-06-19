@@ -17,6 +17,10 @@ import os
 from flask import Blueprint, render_template, request, send_from_directory
 
 
+class MissingStaticFolderError(Exception):
+    pass
+
+
 def get_swagger_ui_blueprint(base_url, api_url, stage, blueprint_name, static_path):
     """
     Factory function for setting of swagger_ui blueprint
@@ -58,6 +62,8 @@ def get_swagger_ui_blueprint(base_url, api_url, stage, blueprint_name, static_pa
                 default_config.update({"oauth2RedirectUrl": os.path.join(request.base_url, "oauth2-redirect.html")})
                 fields["config_json"] = json.dumps(default_config)
             return render_template("index.template.html", **fields)
+        if not swagger_ui.static_folder:
+            raise MissingStaticFolderError()
         return send_from_directory(os.path.join(swagger_ui.root_path, swagger_ui.static_folder), path)
 
     return swagger_ui
