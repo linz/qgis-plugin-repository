@@ -72,7 +72,6 @@ structlog.configure(
         structlog.processors.format_exc_info,
         structlog.processors.JSONRenderer(),
     ],
-    context_class=structlog.threadlocal.wrap_dict(dict),
 )
 
 

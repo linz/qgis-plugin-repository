@@ -46,7 +46,7 @@ def test_post_plugin(config_fixture, stage=""):
     content = json.loads(response.content)
 
     exclude_from_checks = ["created_at", "file_name", "updated_at"]
-    assert response.status_code == 201
+    assert response.status_code == 201, response.content
     assert ignore_keys(content, exclude_from_checks) == ignore_keys(
         {
             "about": "this is a test",
@@ -86,7 +86,7 @@ def test_get_plugins(config_fixture, stage=""):
     test_plugin = next((item for item in content if item["id"] == config_fixture["plugin_id"]))
 
     # check the test plugin is reported via the endpoint as expected
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content
     assert ignore_keys(test_plugin, ["created_at", "file_name", "updated_at"]) == ignore_keys(
         {
             "about": "this is a test",
@@ -157,7 +157,7 @@ def test_retire_plugin(config_fixture, stage=""):
     response = retire_plugin(config_fixture["base_url"], stage, config_fixture["plugin_id"], config_fixture["secret"])
     content = json.loads(response.content)
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content
 
     # version 00000 should be enddated.
     assert content["ended_at"] is not None
@@ -251,7 +251,7 @@ def test_plugin_xml(config_fixture, stage=""):
 
     response = requests.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content
     tree = ET.ElementTree(ET.fromstring(response.text))
     root = tree.getroot()
     assert root.tag == "plugins"
