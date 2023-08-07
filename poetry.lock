@@ -110,13 +110,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.28.19"
-description = "Type annotations for boto3 1.28.19 generated with mypy-boto3-builder 7.17.1"
+version = "1.28.20"
+description = "Type annotations for boto3 1.28.20 generated with mypy-boto3-builder 7.17.2"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.28.19.tar.gz", hash = "sha256:7c08c74f0f6fbedc9760e32b0ef7219fdd2b5b396d6a6762945522a352e6c227"},
-    {file = "boto3_stubs-1.28.19-py3-none-any.whl", hash = "sha256:e452e3e68e0c312675ee5a0d1b83504c40672b65622d2d6d4db12891551f5bd9"},
+    {file = "boto3-stubs-1.28.20.tar.gz", hash = "sha256:21050c5dc37a8f34dfe7ed8b1b12d1fd9ff187eaf4bd9bfa187585e07e6b6b76"},
+    {file = "boto3_stubs-1.28.20-py3-none-any.whl", hash = "sha256:e08cc66bf744e12cbdcbcd64ab520900ee5fc61c22bceefe08a2f04cdb1d5c0c"},
 ]
 
 [package.dependencies]
@@ -159,7 +159,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.28.0,<1.29.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.28.0,<1.29.0)"]
 batch = ["mypy-boto3-batch (>=1.28.0,<1.29.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.28.0,<1.29.0)"]
-boto3 = ["boto3 (==1.28.19)", "botocore (==1.31.19)"]
+boto3 = ["boto3 (==1.28.20)", "botocore (==1.31.20)"]
 braket = ["mypy-boto3-braket (>=1.28.0,<1.29.0)"]
 budgets = ["mypy-boto3-budgets (>=1.28.0,<1.29.0)"]
 ce = ["mypy-boto3-ce (>=1.28.0,<1.29.0)"]
@@ -1504,13 +1504,13 @@ files = [
 
 [[package]]
 name = "types-pygments"
-version = "2.15.0.2"
+version = "2.16.0.0"
 description = "Typing stubs for Pygments"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pygments-2.15.0.2.tar.gz", hash = "sha256:a1b56b792aa1015f6cecd092af00c71ecb12d9d5dd0a30313f9cb3839044389a"},
-    {file = "types_Pygments-2.15.0.2-py3-none-any.whl", hash = "sha256:60fc96777722942eafd4e7cd248568861aa8696246e3b1effcddabd51001a977"},
+    {file = "types-Pygments-2.16.0.0.tar.gz", hash = "sha256:aa93e4664e2d6cfea7570cde156e3966bf939f9c7d736cd179c4c8e94f7600b2"},
+    {file = "types_Pygments-2.16.0.0-py3-none-any.whl", hash = "sha256:4624a547d5ba73c971fac5d6fd327141e85e65f6123448bee76f0c8557652a71"},
 ]
 
 [package.dependencies]
