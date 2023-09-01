@@ -54,6 +54,9 @@ custom:
     textMimeTypes:
       - application/octet-stream
       - application/zip
+  deletionPolicy:
+    prod: Retain
+    other: Delete
 
 package:
   patterns:
@@ -105,7 +108,7 @@ resources:
                     - "Ref" : "RepoBucket"
     PluginsDynamoDBTable:
       Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.deletionPolicy.${self:provider.environment.STAGE}, self:custom.deletionPolicy.other}
       Properties:
         TableName: ${self:provider.environment.PLUGINS_TABLE_NAME}
         AttributeDefinitions:
