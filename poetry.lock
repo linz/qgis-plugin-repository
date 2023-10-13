@@ -106,13 +106,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.28.62"
-description = "Type annotations for boto3 1.28.62 generated with mypy-boto3-builder 7.19.0"
+version = "1.28.63"
+description = "Type annotations for boto3 1.28.63 generated with mypy-boto3-builder 7.19.0"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.28.62.tar.gz", hash = "sha256:f5ae08d2abae7709fff3e7cacea66c41cb43236527cfaf3975e506c6c67439a0"},
-    {file = "boto3_stubs-1.28.62-py3-none-any.whl", hash = "sha256:22a08e27d2ede1849dd0d75e8501099240b34bd70adb606584a2af2e12f3a22b"},
+    {file = "boto3-stubs-1.28.63.tar.gz", hash = "sha256:ecf4fb2b5b71be52cfc970ee059fe17439ed1904d0395508f5545c380d4d951d"},
+    {file = "boto3_stubs-1.28.63-py3-none-any.whl", hash = "sha256:bd1becb0f8781d0a3022261a41d33f757a121117bf84ea6476b4761cb9e3cfd5"},
 ]
 
 [package.dependencies]
@@ -158,7 +158,7 @@ batch = ["mypy-boto3-batch (>=1.28.0,<1.29.0)"]
 bedrock = ["mypy-boto3-bedrock (>=1.28.0,<1.29.0)"]
 bedrock-runtime = ["mypy-boto3-bedrock-runtime (>=1.28.0,<1.29.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.28.0,<1.29.0)"]
-boto3 = ["boto3 (==1.28.62)", "botocore (==1.31.62)"]
+boto3 = ["boto3 (==1.28.63)", "botocore (==1.31.63)"]
 braket = ["mypy-boto3-braket (>=1.28.0,<1.29.0)"]
 budgets = ["mypy-boto3-budgets (>=1.28.0,<1.29.0)"]
 ce = ["mypy-boto3-ce (>=1.28.0,<1.29.0)"]
@@ -1118,13 +1118,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "3.4.0"
+version = "3.5.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pre_commit-3.4.0-py2.py3-none-any.whl", hash = "sha256:96d529a951f8b677f730a7212442027e8ba53f9b04d217c4c67dc56c393ad945"},
-    {file = "pre_commit-3.4.0.tar.gz", hash = "sha256:6bbd5129a64cad4c0dfaeeb12cd8f7ea7e15b77028d985341478c8af3c759522"},
+    {file = "pre_commit-3.5.0-py2.py3-none-any.whl", hash = "sha256:841dc9aef25daba9a0238cd27984041fa0467b4199fc4852e27950664919f660"},
+    {file = "pre_commit-3.5.0.tar.gz", hash = "sha256:5804465c675b659b0862f07907f96295d490822a450c4c40e747d0b1c6ebcb32"},
 ]
 
 [package.dependencies]
