@@ -102,7 +102,7 @@ jobs:
         run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
 
       - name: Install Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -198,7 +198,7 @@ jobs:
         run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
 
       - name: Install Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
