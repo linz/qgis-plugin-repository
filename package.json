@@ -3,7 +3,7 @@
   "description": "",
   "version": "0.1.0",
   "dependencies": {
-    "serverless": "^4.4.9",
+    "serverless": "^4.4.10",
     "serverless-apigw-binary": "^0.4.4",
     "serverless-plugin-git-variables": "^5.2.0",
     "serverless-python-requirements": "^6.1.1",
